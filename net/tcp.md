@@ -130,8 +130,6 @@ sequenceDiagram
     	
     ```
 
-    
-
 - 导致在2MSL内，定义该TCP连接的四元组不能重用 或者 更严格的 该本地端口在默认的情况下不能再被使用
 
 - 解决方案
@@ -201,7 +199,67 @@ sequenceDiagram
   5. tcp_tw_recycle **~~通常~~不要使用**
 
      - 在开启tcp_tw_recycle和tcp_timestamps两个选项之后，60秒内来源于同一个ip主机的socket connect中的时间戳必须要是递增的，否则会被丢弃
+
      - 比如说连接中存在NAT 必然是会出问题的 *NAT修改src ip但是不修改时间戳*
+
+#### 复位报文段 RST位
+
+- 请求不存在的端口
+- 异常终止一个连接 *使用RST进行关闭而不是FIN*
+- 如果对一个half-open连接发送消息，接收方丢失了连接，就会返回RST
+
+### TCP针对交互数据流的处理
+
+- Nagle算法
+  - 要求一个TCP连接上最多只能有一个未被确认的未完成的小分组
+  - 收集小分组，当ACK到达时一次性全部发送
+
+### TCP针对成块数据流的处理
+
+- 延迟ACK
+- 滑动窗口
+- 慢启动 *拥塞窗口 cwnd*
+  - 每个连接cwnd初始化为1
+  - 每收取一个ACK cwnd增加1
+
+### TCP的超时与重传
+
+- 对于每个连接，TCP维护四个计时器
+  1. 重传定时器：计算收到另一端的确认的超时
+  2. 坚持定时器：使窗口大小信息保持不断流动
+  3. 保活定时器：检测一个空闲连接的另一端何时崩溃或重启
+  4. 2MSL定时器：测量TIME_WAIT状态
+- 拥塞避免算法
+  - 拥塞窗口cwnd 和 慢启动阈值ssthresh
+  - 算法流程
+    1. 初始化，cwnd=1 ssthresh=65535
+    2. cwnd逐步增加，直到发生拥塞 **（超时或收到重复确认）到这为止都是慢启动**
+    3. 发生拥塞：
+       - 重复确认：ssthresh置为cwnd的一半
+       - 超时：ssthresh置为cwnd的一半 cwnd置为1
+    4. cwnd逐步增加
+       - cwnd <= ssthresh 每个ACK $cwnd += 1MSS$ **这里是慢启动**
+       - cwnd > ssthresh 每个ACK $cwnd += \frac{MSS}{cwnd}$  **这里是拥塞避免**
+- 快速重传与快速恢复算法
+  - 收到三个重复的ACK时，置 $ssthresh=\frac{cwnd}{2}$，重传丢失报文段，置 $cwnd = \frac{cwnd}{2} + 3MSS$
+  - 随后每收到一个重复ACK，cwnd增加1MSS，并发送一个分组
+  - 直到第一个确认新数据的ACK到达时，设置 $cwnd = ssthresh$ 
+- 坚持定时器
+- 保活定时器
+- 2MSL定时器
+
+## TCP的未来
+
+- 路径MTU发现
+- 长肥管道
+  - $capacity=bandwidth(b/s)\times rount-trip time(RTT)$
+  - capacity称为带宽时延乘积
+  - 一个具有大capacity的网络称为长肥网络
+  - 问题
+    - 需要更大的窗口提高大吞吐量 *（RTT大）*
+    - 分组丢失会造成吞吐量的急剧减少
+    - RTT需要更好的测量方法
+    - 序号有限，会短时间内发生回绕 *（带宽变大 发送相同数量包的时间减少）*
 
 ## 参考
 
