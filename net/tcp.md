@@ -94,7 +94,7 @@ sequenceDiagram
 
 #### 经典的状态变迁图
 
-![image-20180814120213079](/Users/zhaohui/blog/imgs/tcp状态变迁图.png)
+![image-20180814120213079](http://img-1252266831.file.myqcloud.com/p/tcp%E7%8A%B6%E6%80%81%E5%8F%98%E8%BF%81%E5%9B%BE.png)
 
 #### 经典的TIME_WAIT问题
 
