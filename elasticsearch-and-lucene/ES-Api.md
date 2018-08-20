@@ -1,4 +1,4 @@
-# ES接口简介
+# ES接口
 
 *Elasticsearch 6.3*
 

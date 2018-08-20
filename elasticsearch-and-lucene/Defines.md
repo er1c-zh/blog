@@ -1,4 +1,4 @@
-# elasticsearch中的概念
+# 简介
 
 *Elasticsearch 6.3*
 
@@ -14,12 +14,14 @@ Elasticsearch是 **高度可扩展** 的 **全文搜索和分析引擎**
 
 - es将数据存储在索引中
 - 可以向索引中写入文档、从索引中读取文档
+- 索引不存储原始数据
 - **类比于sql中的数据库**
 
 #### 文档 document
 
 - 文档是es的主要实体
-- 由 **字段** 构成 字段可以有 **一个或者多个值**
+- 由 **字段** 构成 字段可以有 **一个或者多个值** 
+- **一个索引中的所有不同类型文档的相同字段类型一定要相同**
 - 文档没有特别的规则 类似于 **JSON对象**
 - **类比于sql中的行**
 
@@ -32,7 +34,8 @@ Elasticsearch是 **高度可扩展** 的 **全文搜索和分析引擎**
 
 #### 映射 mapping
 
-- 存储分析链所需的所有信息 Q2A
+- 存储 `分析` 所需的所有信息，包括 字段的信息 等
+- 每个文档类型都有自己的映射，就算没有定义
 
 #### 节点 node
 
@@ -53,6 +56,8 @@ Elasticsearch是 **高度可扩展** 的 **全文搜索和分析引擎**
 
 - *（为了解决访问压力过大单机无法承受的问题）*为每个分片创建冗余的 **副本** *（分布在不同的节点上）*
 - 同时，避免了单点问题
+- 其中有 `主分片 primary shard` 负责 **更改索引**  ，其他称为 `副本分片 replica shard` 
+- 当 `主分片` 不可用时，会从 `副本分片` 中选择一个作为 `主分片`
 
 ### 关键特性
 
@@ -108,8 +113,78 @@ Elasticsearch是 **高度可扩展** 的 **全文搜索和分析引擎**
 - 词项 在 字段文本 中的 **一次出现**
 - $<词项的文本, 开始的偏移, 结束的偏移, 词条的类型>$
 
+
+
+## ES对数据的操作
+
+### 分析
+
+#### 什么是分析
+
+- 传入的文档转化为倒排索引
+- 查询文本变成可被搜索的词
+- **这种数据转化的过程称为分析**
+
+#### 谁来进行分析
+
+- **分析器** 完成分析
+- **分析器** 由 **一个分词器 tokenizer** 和 **若干个标记过滤器 token filter** 和 **若干个字符映射器 character mapper** 组成
+
+#### 分析的流程
+
+```mermaid
+graph TD;
+	原始文本 -->|字符映射器| 被处理过的文本;
+	被处理过的文本 -->|分词器| 标记流;
+	标记流 -->|标记过滤器| 标记流;
+	标记流 -->|流过所有的标记过滤器之后| 经过处理的标记流
+```
+
+### 评分和查询相关性
+
+#### 什么是评分 scoring
+
+评分时根据文档和查询的匹配度用计分公式计算的结果
+
+> 默认情况下，Lucene使用TF/IDF(term frequency/inverse document frequency 词频/逆向文档频率)评分机制
+
+### 索引的建立和搜索
+
+``` mermaid
+sequenceDiagram
+	participant c as Client;
+	participant n1 as Node1;
+	participant n2 as Node2;
+	participant n3 as Node3;
+	c ->> n1: 新建/修改/删除一个文档;
+	n1 ->> n1: 通过 唯一标志符 计算出 文档应使用的分片和所处的节点;
+	n1 ->> n2: 转发给目标节点;
+	n2 ->> n2: 执行相应的操作;
+	n2 ->> n1: 操作的结果;
+	n1 ->> c: 操作的结果;
+	c ->> n1: 查询 使用了能确定持有文档分片和节点的条件;
+	n1 ->> n1: 分析 得知文档在 Node2 上
+	n1 ->> n2: 查询;
+	n2 ->> n1: 结果;
+	n1 ->> c: 结果;
+	c ->> n1: 查询 无法确定文档的位置;
+	n1 ->> n2: 查询 发散阶段 scatter phase;
+	n1 ->> n3: 查询 发散阶段 scatter phase;
+	n2 ->> n1: 发散阶段结果 查询的文档的最少信息;
+	n3 ->> n1: 发散阶段结果 查询的文档的最少信息;
+	n1 ->> n1: 作为 聚合节点 排序
+	n1 ->> n2: 查询 收集阶段 gather phase;
+	n1 ->> n3: 查询 收集阶段 gather phase;
+	n2 ->> n1: 收集阶段结果 文档所有需要的信息;
+	n3 ->> n1: 收集阶段结果 文档所有需要的信息;
+	n1 ->> c: 查询结果;
+```
+
+
+
 ## 参考
 
 - [Elasticsearch 6.3 official document](https://www.elastic.co/guide/en/elasticsearch/reference/6.4/index.html)
+- [《Elasticsearch服务器开发 第二版》](http://e.jd.com/30334773.html)
 - [《深入理解Elasticsearch 第二版》](http://item.jd.com/12203786.html)
 - [Understanding Segments in Elasticsearch](https://stackoverflow.com/questions/15426441/understanding-segments-in-elasticsearch)
