@@ -85,7 +85,7 @@ curl -XDELETE http://es:9200/indexName
               }
           }
       } // 在 索引indexName 中，关闭了 字段类型猜测。
-  }' // 意味着 在 索引indexName 类型typeName中插入文档，除了在properties中出现过的字段 其他字段都会被忽略
+  }' // 意味着 在 索引indexName 类型typeName 中插入文档，除了在properties中出现过的字段 其他字段都会被忽略
   ```
 
 ### 索引结构映射
