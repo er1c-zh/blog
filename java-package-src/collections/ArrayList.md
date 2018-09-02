@@ -1,3 +1,8 @@
+---
+categories:
+  - java-package-src
+  - collections
+---
 # ArrayList
 
 *jdk 1.8*

@@ -1,0 +1,5 @@
+---
+categories:
+  - database
+  - redis
+---

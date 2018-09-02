@@ -1,3 +1,7 @@
+---
+categories:
+  - elasticsearch-and-lucene
+---
 # ES接口
 
 *Elasticsearch 6.3*

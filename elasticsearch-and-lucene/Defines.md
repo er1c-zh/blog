@@ -1,3 +1,7 @@
+---
+categories:
+  - elasticsearch-and-lucene
+---
 # 简介
 
 *Elasticsearch 6.3*

@@ -1,3 +1,7 @@
+---
+categories:
+  - elasticsearch-and-lucene
+---
 # ES 搜索
 
 [TOC]
