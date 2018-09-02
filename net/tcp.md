@@ -8,8 +8,6 @@ categories:
 - 传输层协议
 - 提供一种面向连接的、可靠的 **字节流服务**
 
-[TOC]
-
 ## 协议提供的服务
 
 ## 协议的实现
@@ -190,8 +188,9 @@ sequenceDiagram
        
        	return 0;
        }
-       ```
 
+
+       ```
        
 
      - **一定要开启tcp_timestamps**
