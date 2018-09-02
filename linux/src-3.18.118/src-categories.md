@@ -1,15 +1,11 @@
 ---
+title: LINUX KERNEL 源码结构
 categories:
   - linux
   - src-3.18.118
 ---
-# LINUX KERNEL 源码结构
 
 - 3.18.118 without patch
-
-[TOC]
-
-
 
 ## arch 平台目录
 

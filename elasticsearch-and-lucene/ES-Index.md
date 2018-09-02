@@ -1,10 +1,8 @@
 ---
+title: ES 索引
 categories:
   - elasticsearch-and-lucene
 ---
-# ES 索引
-
-[TOC]
 
 ## 索引
 

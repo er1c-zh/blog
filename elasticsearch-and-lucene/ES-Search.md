@@ -1,10 +1,8 @@
 ---
+title: ES 搜索
 categories:
   - elasticsearch-and-lucene
 ---
-# ES 搜索
-
-[TOC]
 
 ## 查询
 

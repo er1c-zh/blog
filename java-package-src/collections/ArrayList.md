@@ -1,13 +1,11 @@
 ---
+title: ArrayList
 categories:
   - java-package-src
   - collections
 ---
-# ArrayList
 
 *jdk 1.8*
-
-[TOC]
 
 ## 包 java.util
 

@@ -1,10 +1,8 @@
 ---
+title: Query DSL
 categories:
   - elasticsearch-and-lucene
 ---
-# Query DSL
-
-[TOC]
 
 ## 引入
 

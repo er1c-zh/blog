@@ -1,10 +1,8 @@
 ---
+title: tcp in linux
 categories:
   - net
 ---
-# tcp in linux
-
-[TOC]
 
 ## 实现
 

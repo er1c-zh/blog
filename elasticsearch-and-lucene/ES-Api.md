@@ -1,12 +1,10 @@
 ---
+title: ES接口
 categories:
   - elasticsearch-and-lucene
 ---
-# ES接口
 
 *Elasticsearch 6.3*
-
-[TOC]
 
 ## Document APIs
 

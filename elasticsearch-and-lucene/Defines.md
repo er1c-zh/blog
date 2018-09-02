@@ -1,12 +1,10 @@
 ---
+title: Elasticsearch简介
 categories:
   - elasticsearch-and-lucene
 ---
-# 简介
 
 *Elasticsearch 6.3*
-
-[TOC]
 
 ## Elasticsearch
 

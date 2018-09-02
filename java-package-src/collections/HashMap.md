@@ -1,13 +1,11 @@
 ---
+title: HashMap
 categories:
   - java-package-src
   - collections
 ---
-# HashMap
 
 *jdk 1.8*
-
-[TOC]
 
 ## 包 java.util
 
