@@ -1,11 +1,9 @@
 ---
+title: redis底层数据结构
 categories:
   - database
   - redis
 ---
-# redis底层数据结构
-
-[TOC]
 
 ## 简单动态字符串
 
