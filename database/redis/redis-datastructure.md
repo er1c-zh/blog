@@ -1,3 +1,8 @@
+---
+categories:
+  - database
+  - redis
+---
 # redis底层数据结构
 
 [TOC]

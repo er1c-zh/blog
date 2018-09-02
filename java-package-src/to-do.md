@@ -1,3 +1,7 @@
+---
+categories:
+  - java-package-src
+---
 # todo
 
 - java.util.Objects

@@ -1,3 +1,7 @@
+---
+categories:
+  - elasticsearch-and-lucene
+---
 # Query DSL
 
 [TOC]

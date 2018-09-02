@@ -1,3 +1,7 @@
+---
+categories:
+  - design-pattern
+---
 # 关于设计模式
 
 > 这是我最喜欢的哲学

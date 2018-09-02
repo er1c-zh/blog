@@ -1,3 +1,8 @@
+---
+categories:
+  - java-package-src
+  - collections
+---
 # HashMap
 
 *jdk 1.8*
