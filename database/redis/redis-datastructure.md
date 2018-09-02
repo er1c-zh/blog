@@ -25,7 +25,7 @@ typedef char *sds;
 
 /*
  * ******************************************
- * ** 5个sds struct定义                    **
+ * ** 5个sds struct的定义                   **
  * ** LSB Least Significant Bit 最低有效位  **
  * ** MSB Most Significant Bit 最高有效位   **
  * ******************************************
@@ -38,27 +38,27 @@ struct __attribute__ ((__packed__)) sdshdr5 {
     char buf[];
 };
 struct __attribute__ ((__packed__)) sdshdr8 {
-    uint8_t len; /* used */
-    uint8_t alloc; /* excluding the header and null terminator */
-    unsigned char flags; /* 3 lsb of type, 5 unused bits */
+    uint8_t len; /* 使用的长度 */
+    uint8_t alloc; /* 分配的长度 不包含头和终结符 */
+    unsigned char flags; /* 最低三位标志type, 五位没有使用 */
     char buf[];
 };
 struct __attribute__ ((__packed__)) sdshdr16 {
-    uint16_t len; /* used */
-    uint16_t alloc; /* excluding the header and null terminator */
-    unsigned char flags; /* 3 lsb of type, 5 unused bits */
+    uint16_t len; /* 使用的长度 */
+    uint16_t alloc; /* 分配的长度 不包含头和终结符 */
+    unsigned char flags; /* 最低三位标志type, 五位没有使用 */
     char buf[];
 };
 struct __attribute__ ((__packed__)) sdshdr32 {
-    uint32_t len; /* used */
-    uint32_t alloc; /* excluding the header and null terminator */
-    unsigned char flags; /* 3 lsb of type, 5 unused bits */
+    uint32_t len; /* 使用的长度 */
+    uint32_t alloc; /* 分配的长度 不包含头和终结符 */
+    unsigned char flags; /* 最低三位标志type, 五位没有使用 */
     char buf[];
 };
 struct __attribute__ ((__packed__)) sdshdr64 {
-    uint64_t len; /* used */
-    uint64_t alloc; /* excluding the header and null terminator */
-    unsigned char flags; /* 3 lsb of type, 5 unused bits */
+    uint64_t len; /* 使用的长度 */
+    uint64_t alloc; /* 分配的长度 不包含头和终结符 */
+    unsigned char flags; /* 最低三位标志type, 五位没有使用 */
     char buf[];
 };
 
@@ -74,12 +74,12 @@ struct __attribute__ ((__packed__)) sdshdr64 {
 #define SDS_TYPE_5_LEN(f) ((f)>>SDS_TYPE_BITS)
 
 static inline size_t sdslen(const sds s) {
-    unsigned char flags = s[-1];
-    switch(flags&SDS_TYPE_MASK) {
+    unsigned char flags = s[-1]; // 获取flags
+    switch(flags&SDS_TYPE_MASK) { // flags & 111b
         case SDS_TYPE_5:
-            return SDS_TYPE_5_LEN(flags);
+            return SDS_TYPE_5_LEN(flags); // sdshdr5 flags高5位是长度
         case SDS_TYPE_8:
-            return SDS_HDR(8,s)->len;
+            return SDS_HDR(8,s)->len; // 其他的长度都需要取struct中的len字段
         case SDS_TYPE_16:
             return SDS_HDR(16,s)->len;
         case SDS_TYPE_32:
@@ -90,7 +90,7 @@ static inline size_t sdslen(const sds s) {
     return 0;
 }
 
-static inline size_t sdsavail(const sds s) {
+static inline size_t sdsavail(const sds s) { // 返回可用的长度
     unsigned char flags = s[-1];
     switch(flags&SDS_TYPE_MASK) {
         case SDS_TYPE_5: {
@@ -116,9 +116,9 @@ static inline size_t sdsavail(const sds s) {
     return 0;
 }
 
-static inline void sdssetlen(sds s, size_t newlen) {
+static inline void sdssetlen(sds s, size_t newlen) { // 设定使用了的长度
     unsigned char flags = s[-1];
-    switch(flags&SDS_TYPE_MASK) {
+    switch(flags&SDS_TYPE_MASK) { // 
         case SDS_TYPE_5:
             {
                 unsigned char *fp = ((unsigned char*)s)-1;
@@ -140,7 +140,7 @@ static inline void sdssetlen(sds s, size_t newlen) {
     }
 }
 
-static inline void sdsinclen(sds s, size_t inc) {
+static inline void sdsinclen(sds s, size_t inc) { // len++
     unsigned char flags = s[-1];
     switch(flags&SDS_TYPE_MASK) {
         case SDS_TYPE_5:
@@ -166,7 +166,7 @@ static inline void sdsinclen(sds s, size_t inc) {
 }
 
 /* sdsalloc() = sdsavail() + sdslen() */
-static inline size_t sdsalloc(const sds s) {
+static inline size_t sdsalloc(const sds s) { // 获取分配的大小
     unsigned char flags = s[-1];
     switch(flags&SDS_TYPE_MASK) {
         case SDS_TYPE_5:
@@ -183,7 +183,7 @@ static inline size_t sdsalloc(const sds s) {
     return 0;
 }
 
-static inline void sdssetalloc(sds s, size_t newlen) {
+static inline void sdssetalloc(sds s, size_t newlen) { // 设置分配的长度
     unsigned char flags = s[-1];
     switch(flags&SDS_TYPE_MASK) {
         case SDS_TYPE_5:
