@@ -4,8 +4,10 @@ categories:
   - java-package-src
 ---
 
-- java.util.Objects
+- ~~java.util.Objects~~
+- java.util.Arrays
 - java.util.BitSet
-- java.util.function.Consumer
-- java.util.function.Predicate
-- java.util.function.UnaryOperator
+- java.util.function.*
+  - java.util.function.Consumer
+  - java.util.function.Predicate
+  - java.util.function.UnaryOperator
