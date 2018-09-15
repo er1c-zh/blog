@@ -264,3 +264,58 @@ public static native void arraycopy(Object src,  int  srcPos,
                                     int length);
 ```
 
+## 性能测试
+
+测试围绕 **数组大小** 和 **复制重复次数** 两个维度进行测试
+
+### 结果
+
+| 数组大小 \ 总时间 ms \ 复制次数 | 1000             | 10000               | 100000              |
+| ------------------------------- | ---------------- | ------------------- | ------------------- |
+| 100                             | 1 / 0 = NaN      | 4 / 1 = 4           | 24 / 7 = 3.42       |
+| 10000                           | 27 / 6 = 4.5     | 265 / 71 = 3.73     | 1841 / 362 = 5.0856 |
+| 100000                          | 362 / 121 = 2.99 | 2290 / 617 = 3.7115 | 15557 / 5892 = 2.64 |
+
+> 总时间是指复制次数消耗的总时间，格式为 Arrays.copyOf / System.arraycopy 的消耗时间
+>
+> 多次重复测试时，数据的离散度很大，包括绝对时间和时间的比例，取的是中位数
+
+#### 结论
+
+显然，直接调用 `System.arraycopy(src, srcPos, dest, destPos, length)` 的成本要低一些
+
+### 测试用的代码
+
+```java
+import java.util.Arrays;
+import java.util.Random;
+
+public class Main {
+    public static void main(String[] args) {
+        Random random = new Random(System.currentTimeMillis());
+        int cnt = 10000;
+        int repeatTime = 2000;
+        long[] nums = new long[cnt];
+        for(int i = 0; i < cnt; i++) {
+            nums[i] = random.nextLong();
+        }
+        long total = 0;
+        for(int i = 0; i < repeatTime; i++) {
+            long start = System.currentTimeMillis();
+            Arrays.copyOf(nums, cnt);
+            total += System.currentTimeMillis() - start;
+        }
+        System.out.println(String.format("Arrays.copyOf %d times use %d ms", repeatTime, total));
+
+        total = 0;
+        for(int i = 0; i < repeatTime; i++) {
+            long[] target = new long[cnt];
+            long start = System.currentTimeMillis();
+            System.arraycopy(nums, 0, target, 0, cnt);
+            total += System.currentTimeMillis() - start;
+        }
+        System.out.println(String.format("System.arraycopy %d times use %d ms", repeatTime, total));
+    }
+}
+```
+
