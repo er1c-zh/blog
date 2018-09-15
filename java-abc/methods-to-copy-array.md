@@ -270,19 +270,21 @@ public static native void arraycopy(Object src,  int  srcPos,
 
 ### 结果
 
-| 数组大小 \ 总时间 ms \ 复制次数 | 1000             | 10000               | 100000              |
-| ------------------------------- | ---------------- | ------------------- | ------------------- |
-| 100                             | 1 / 0 = NaN      | 4 / 1 = 4           | 24 / 7 = 3.42       |
-| 10000                           | 27 / 6 = 4.5     | 265 / 71 = 3.73     | 1841 / 362 = 5.0856 |
-| 100000                          | 362 / 121 = 2.99 | 2290 / 617 = 3.7115 | 15557 / 5892 = 2.64 |
+| 数组大小 \ 总时间 ms \ 复制次数 | 1000                | 10000                | 100000              |
+| ------------------------------- | ------------------- | -------------------- | ------------------- |
+| 100                             | 1 / 0 = NaN         | 比例趋近1，大小不定  | 比例趋近1，大小不定 |
+| 10000                           | 29 / 27 = 1.07      | 268 / 235 = 1.1404   | 1822 / 866 = 2.1039 |
+| 100000                          | 比例趋近1，大小不定 | 2534 / 1822 = 1.3907 | 比例趋近1，大小不定 |
 
 > 总时间是指复制次数消耗的总时间，格式为 Arrays.copyOf / System.arraycopy 的消耗时间
 >
-> 多次重复测试时，数据的离散度很大，包括绝对时间和时间的比例，取的是中位数
+> 调用System.arraycopy的测试中， **包含了开数组的开销**
 
 #### 结论
 
-显然，直接调用 `System.arraycopy(src, srcPos, dest, destPos, length)` 的成本要低一些
+**(System.arraycopy包含了开数组的开销)** ，发现除了某几个case出现稳定 `Arrays.copyOf` 耗时大于 `System.arraycopy` 的情况，其他测试用例耗时比例都趋近于1。
+
+特别是数组大小10000，重复100000的情况，几十次重复耗时比例都趋近于2。
 
 ### 测试用的代码
 
@@ -309,8 +311,8 @@ public class Main {
 
         total = 0;
         for(int i = 0; i < repeatTime; i++) {
-            long[] target = new long[cnt];
             long start = System.currentTimeMillis();
+            long[] target = new long[cnt];
             System.arraycopy(nums, 0, target, 0, cnt);
             total += System.currentTimeMillis() - start;
         }
