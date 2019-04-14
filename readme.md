@@ -9,6 +9,9 @@ categories: []
 
 ## to-do list
 
+- unicode && utf-8
+- md5 sha-1 and other crypto utils
+
 ### books wait read
 
 - hackers delight
