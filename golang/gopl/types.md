@@ -227,3 +227,16 @@ FlagMulticast == 10000b
 4. 结构体嵌入和匿名成员
 
    - 匿名成员不被导出
+
+## 类型断言
+
+```go
+aInterfaceValue.(aType)
+```
+
+1. 如果aType是一个具体类型，将会判断接口值的动态类型与aType是否相同
+   1. 如果成功，返回aInterfaceValue的值（，作为具体类型而不是接口值）
+   2. 如果失败，产生一个panic
+2. 如果aType是一个接口类型，将会检查接口值的动态类型是否满足aType
+   1. 如果成功，返回值将会是一个接口值，接口值的动态类型为aType，动态值为aInterfaceValue的动态值
+   2. 如果失败，产生一个panic
