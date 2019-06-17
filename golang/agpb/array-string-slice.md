@@ -34,3 +34,4 @@ type SliceHeader struct {
   - **小心对大数据的slice引用导致gc失效**
   - **如果底层数组引用了指针，从slice移除了引用，但是底层数组仍然持有引用，导致memory leak**
   - 可以通过先设置nil来help gc
+
