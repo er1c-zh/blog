@@ -15,3 +15,4 @@ categories: []
 ### books wait read
 
 - hackers delight
+- <https://swtch.com/~rsc/regexp/regexp1.html>
