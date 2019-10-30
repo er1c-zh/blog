@@ -137,6 +137,36 @@ key的数据类型是一个 **字符串**。具有以下特点
 
 ### 集合 sets
 
+#### 对集合元素操作
+
+- SCARD key
+  - Set_CARDinality
+  - 获得集合中元素的数量
+- SADD key member [member …] 增加
+- SREM key member [member …] 删除
+- SPOP key [count] 随机弹出count个元素
+- SISMEMBER key member
+  - Set_IS_MEMBER
+  - 检查member是否在key中
+- SMEMBERS key 获得key中所有的元素
+- SMOVE source destination member 把member从src移到dest中
+- SRANDMEMBER key [count] 随机获得count个元素
+- SSCAN key cursor [MATCH pattern] [COUNT count]
+  - 迭代扫描集合
+
+#### 集合间运算
+
+- SDIFF/SDIFFSTORE
+  - SDIFF key1 [key …] 返回只有key1中存在的元素
+  - SDIFFSTORE destination key1 [key …] 返回的结果存在dest中
+- SINTER/SINTERSTORE 获得多个集合的交集
+  - Set_INTERsection
+  - SINTER key [key ...]
+  - SINTERSTORE destination key [key …] 返回的结果存在dest中
+- SUNION/SUNIONSTORE 获得多个结合的并集
+  - SUNION key [key ...]
+  - SUNIONSTORE destination key [key …] 返回的结果存在dest中
+
 ### 有序集合 sorted sets
 
 ### 哈希 hashes
