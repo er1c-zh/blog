@@ -27,27 +27,7 @@ todo
 
 与要存储的的文档相关的字段与属性的列表
 
-## 字段的数据类型
-
-每个字段都有固定的类型，有如下类型：
-
-- 简单类型
-    - text
-    - keyword
-    - date
-    - long
-    - double
-    - boolean
-    - ip
-- 类json类型的数据
-- 特殊类型的数据
-    - 地理位置相关类型
-    - 复数
-    - etc
-
-### multi-fields 复合字段
-
-对于一个字段来说，经常会遇到一份数据，按照多种方式解析的情景。复合字段就是用来处理这种情况的。
+## 创建mapping要注意的点 / 创建mapping的最佳实践
 
 ### 避免mapping的过度膨胀
 
@@ -60,7 +40,11 @@ todo
 - `index.mapping.nested_fields.limit`
 - `index.mapping.nested_objects.limit`
 
-## 动态mapping与声明式 *(explicit)* mapping
+### mapping的字段一但定义便无法修改
+
+可以通过新建字段，并reindex来实现修改的目的。
+
+### 动态mapping与声明式 *(explicit)* mapping
 
 默认的，当插入新的文档时，如果有新的字段，将会自动在索引的mapping中，添加对应的字段。
 这种mapping称为动态mapping。
@@ -81,7 +65,78 @@ todo
         }
     ```
 
-## mapping的字段一但定义便无法修改
+## 字段的数据类型
 
-可以通过新建字段，并reindex来实现修改的目的。
+每个字段都有固定的类型，有如下分类：
+
+### 基础数据类型
+
+#### 字符串
+
+#### 数字
+
+#### 日期
+
+#### Date nanoseconds
+
+#### 布尔值
+
+#### 二进制
+
+#### range
+
+### 复合数据类型
+
+#### Object 单个Json对象
+
+#### Nested
+
+nested for arrays of JSON object
+
+### 地理位置数据类型
+
+#### 地理点 Geo-Point
+
+#### 地理区域 Geo-shape
+
+用于表示一个地理区域
+
+### 特殊用途的数据类型
+
+#### IP
+
+用于存储ip地址，支持ipv4和ipv6
+
+#### 自动补全
+
+用于提供自动补全支持的字段类型
+
+#### 词数统计
+
+用于统计一个字符串中有多少（经过分词之后产生的）词
+
+#### mapper-murmur3
+
+#### mapper-annotated-text
+
+#### percolator
+
+#### Join
+
+#### Alias 别名
+
+#### Rank feature
+
+#### Rank features
+
+#### Dense vector
+
+#### Sparse vector
+
+### 数组
+
+### multi-fields 复合字段
+
+对于一个字段来说，经常会遇到一份数据，按照多种方式解析的情景。复合字段就是用来处理这种情况的。
+
 
