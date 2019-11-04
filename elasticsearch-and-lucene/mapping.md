@@ -87,7 +87,70 @@ todo
 
 ### 复合数据类型
 
-#### Object 单个Json对象
+#### Object 对象
+
+对象类型可以看作是JSON对象。JSON格式的数据自身就是分层的。每个文档可能会包含一个JSON对象，如此递归下去。
+就像这样：
+
+```crul
+PUT my_index/_doc/1
+{
+  "region": "US",
+  "manager": {
+    "age":     30,
+    "name": {
+      "first": "John",
+      "last":  "Smith"
+    }
+  }
+}
+```
+文档自身就是一个JSON对象，其中的 `manager` 字段也是一个JSON对象，显然， `name` 也是一个JSON对象。
+
+在ES内部，整个文档会被存储为一个平铺的kv对列表，多层的对象会被转换为：
+
+```json
+{
+  "region":             "US",
+  "manager.age":        30,
+  "manager.name.first": "John",
+  "manager.name.last":  "Smith"
+}
+```
+
+##### 如何声明一个对象类型的字段
+
+```curl
+PUT my_index
+{
+  "mappings": {
+    "properties": {
+      "region": {
+        "type": "keyword"
+      },
+      "manager": {
+        "properties": {
+          "age":  { "type": "integer" },
+          "name": {
+            "properties": {
+              "first": { "type": "text" },
+              "last":  { "type": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+与其他字段类型不同，Object字段类型不需要显示的用 `type` 字段来声明。
+
+##### 参数
+
+- `dynamic` 是否允许动态的修改 `mapping` 的 `properties`
+- `enabled`
+- `properties`
 
 #### Nested
 
@@ -125,6 +188,15 @@ nested for arrays of JSON object
 
 #### Alias 别名
 
+用于给索引中的一个字段增加一个别名。
+
+- 一些限制
+    - 别名只能指向一个具体的字段，而不能是另一个别名
+    - 别名只能指向一个已经存在的字段
+    - todo 嵌套对象的别名
+- 写入接口均不支持别名
+    - 因为别名不会存储在文档的source中
+
 #### Rank feature
 
 #### Rank features
@@ -135,8 +207,39 @@ nested for arrays of JSON object
 
 ### 数组
 
+es中没有专门的数组类型，每一个字段都可被看作是一个数组。但一个数组中只能有一种类型的值。
+
+#### 对象数组
+
 ### multi-fields 复合字段
 
 对于一个字段来说，经常会遇到一份数据，按照多种方式解析的情景。复合字段就是用来处理这种情况的。
 
+## Mapping的字段类型的参数
+
+不同的字段类型，支持不同的参数。
+
+### dynamic
+
+用于控制索引或 `object` 是否允许动态的插入新的字段，以及不允许时，新增的字段会被如何处理。
+
+**特别的，`子Object` 会从 `父Object` 或 `mapping` 继承这个属性。**
+
+- `true` 默认值，在索引新的文档时，如果有新的字段，会自动的插入到 `mapping` 中。
+- `false` 忽略新增的字段，不会被索引，即无法被搜索。但是仍然会被存储，并在 `_source` 中返回。
+- `strict` 严格模式，如果有新的字段，会抛出异常。
+
+
+> 该属性可被修改
+
+### enabled
+
+用于控制字段是否需要被索引。**只有 `mapping` 或 `Object` 支持。**
+
+- `true` 会被索引
+- `false` 不会被索引，但仍然会被存储，可以在 `_source` 中查询到。
+
+### properties
+
+用于表明 `mapping` 和 `Object` 和 `nested` 下的字段。
 
