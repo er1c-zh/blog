@@ -152,9 +152,119 @@ PUT my_index
 - `enabled` [enabled](#enabled)
 - `properties` [properties](#enabled)
 
-#### Nested
+#### Nested 支持对Object数组中的每个Object进行独立搜索的字段类型
 
-nested for arrays of JSON object
+##### 什么是对每个Object进行独立的搜索？
+
+抽象的讲，就是对Object数组进行搜索，会根据Object的字段是否同属于一个Object实例进行搜索，就叫做独立的搜索。
+
+举个例子，mapping中有一个对象的数组，每个对象有两个字段 `foo` 和 `bar` ，我们希望能够搜索到数组中包含 `foo=1 and bar=2` 的对象的文档，这就叫独立的搜索。
+
+与之相对的，如果搜索到的是该对象数组中，由任意两个Object，一个满足 `foo=1` ，另一个满足 `bar=2` ，这就不是独立的搜索。
+
+##### Object为什么不支持独立的搜索？
+
+由于Lucene没有对象的概念，所以EX在索引Object的时候，会把Object的层级结构平摊成一个kv列表。
+而Object数组则会在平摊的过程中，失去 ××位于哪一个对象×× 的信息，这导致无法按照每个Object进行独立的搜索。
+
+举个例子， `user` 字段是一个Object数组：
+
+```curl
+PUT my_index/_doc/1
+{
+  "group" : "fans",
+  "user" : [
+    {
+      "first" : "John",
+      "last" :  "Smith"
+    },
+    {
+      "first" : "Alice",
+      "last" :  "White"
+    }
+  ]
+}
+```
+
+在ES内部会被平摊成这样：
+
+```json
+{
+  "group" :        "fans",
+  "user.first" : [ "alice", "john" ],
+  "user.last" :  [ "smith", "white" ]
+}
+```
+
+显然，被索引的信息，失去了 `alice` 和 `white` 是属于同一个Object这样的信息，这就导致了错误的查询结果：
+
+```curl
+GET my_index/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        { "match": { "user.first": "Alice" }},
+        { "match": { "user.last":  "Smith" }}
+      ]
+    }
+  }
+}
+```
+
+其实并没有一个叫 `Alice Smith` 的用户，结果却会返回对应的数据。
+
+##### nested原理与注意事项
+
+Nested类型，会将数组中的每个Object存储为一个独立的文档（假如数组由10个Object，将会有1个父文档和10个子文档），这将会带来一些性能上的风险。
+
+- `index.mapping.nested_fields.limit` 用来限制一个索引中，最多有多少个 `nested` 字段，默认为50个。
+- `index.mapping.nested_objects.limit` 用来限制每个 `nested` 字段中，有多少个Object，默认为10000个。
+
+##### 如何创建与使用
+
+创建时，需要显式的声明字段为 `nested` 类型。
+
+```curl
+PUT my_index
+{
+  "mappings": {
+    "properties": {
+      "user": {
+        "type": "nested"
+      }
+    }
+  }
+}
+```
+
+插入数据和搜索都与普通的搜索方法类似。
+
+这个搜索会返回，拥有一个同时满足 `first` 和 `last` 的 `user` 的文档。
+
+```curl
+GET my_index/_search
+{
+  "query": {
+    "nested": {
+      "path": "user",
+      "query": {
+        "bool": {
+          "must": [
+            { "match": { "user.first": "Alice" }},
+            { "match": { "user.last":  "Smith" }}
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+##### 参数
+
+- `dynamic` [dynamic](#dynamic)
+- `properties` [properties](#enabled)
 
 ### 地理位置数据类型
 
