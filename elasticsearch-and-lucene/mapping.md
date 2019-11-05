@@ -81,7 +81,16 @@ todo
 
 #### 布尔值
 
-#### 二进制
+#### binary data 二进制
+
+存储经过Base64编码的二进制数据，默认不会被索引，即不能被搜索。
+
+**存储的数据不能包含 `\n`**
+
+##### 参数
+
+- `doc_value`
+- `store` [store](#store)
 
 #### range
 
@@ -357,4 +366,28 @@ es中没有专门的数组类型，每一个字段都可被看作是一个数组
 用于表明 `mapping` 和 `Object` 和 `nested` 下的字段。
 
 在搜索或其他的接口中，使用 `obj1.obj2.target_field` 来指向目标字段。
+
+### store
+
+用来标记字段是否为 `stored`。
+
+大部分场景下， `_source` 字段和查询接口中的过滤器都能够实现 `store` 属性的功能。
+
+#### 用途
+
+1. 可以在查询接口中使用 `stored_fields` 字段来指定需要返回的数据。
+    ```curl
+        GET my_index/_search
+        {
+          "stored_fields": [ "title", "date" ] 
+        }
+    ```
+1. 可以用于没有 `_source` 存在的接口。
+
+### doc_value
+
+用来实现排序、聚合和在脚本中访问字段的值。
+
+倒排索引提供快速查询拥有某个或某些短语的文档。
+
 
