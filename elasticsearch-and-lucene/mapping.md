@@ -148,9 +148,9 @@ PUT my_index
 
 ##### 参数
 
-- `dynamic` 是否允许动态的修改 `mapping` 的 `properties`
-- `enabled`
-- `properties`
+- `dynamic` [dynamic](#dynamic)
+- `enabled` [enabled](#enabled)
+- `properties` [properties](#enabled)
 
 #### Nested
 
