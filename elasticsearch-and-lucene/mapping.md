@@ -79,7 +79,21 @@ todo
 
 #### Date nanoseconds
 
-#### 布尔值
+#### boolean 布尔值
+
+布尔值，接受 `true` 和 `false` 和 字符串 `"true"` 或 `"false"`。
+
+需要注意的点：
+- 聚合接口，使用 `0` 和 `1` 作为 `key` ， 使用 `"true"` 和 `"false"` 作为 `key_as_string`
+- 在脚本中时，被认为是数字 `0` 和 `1`
+
+##### 参数
+
+- `boost` [boost](#boost)
+- `doc_values` [doc_values](#doc_values)
+- `index` [index](#index)
+- `null_value` [null_value](#null_value)
+- `store` [store](#store)
 
 #### binary data 二进制
 
@@ -89,7 +103,7 @@ todo
 
 ##### 参数
 
-- `doc_value` [doc_value](#doc_value)
+- `doc_values` [doc_values](#doc_values)
 - `store` [store](#store)
 
 #### range
@@ -384,13 +398,35 @@ es中没有专门的数组类型，每一个字段都可被看作是一个数组
     ```
 1. 可以用于没有 `_source` 存在的接口。
 
-### doc_value
+### doc_values
 
 用来实现排序、聚合和在脚本中访问字段的值。
 
 使用倒排索引能够快速查询到拥有某个或某些短语的文档。但是对于聚合、排序和脚本中的访问的情形，还需要 **通过查找到文档，然后查看文档中的字段包含的短语** 的能力。
 
-将doc_value设置为true的字段，会在文档被索引的时候，同时构建一份与 `_source` 内容相同的 `Doc values` 。 `Doc values` 是存储在硬盘上的数据结构，提供了这种能力。与倒排索引不同的是， `Doc values` 是以按列的方式进行存储的。这种存储方式能够更加高效的进行排序和聚合。
+将doc_values设置为true的字段，会在文档被索引的时候，同时构建一份与 `_source` 内容相同的 `Doc values` 。 `Doc values` 是存储在硬盘上的数据结构，提供了这种能力。与倒排索引不同的是， `Doc values` 是以按列的方式进行存储的。这种存储方式能够更加高效的进行排序和聚合。
 
-大部分字段类型都支持 `doc_value` ，需要特别指出的是， `analyzed string` 字段类型不支持。
+大部分字段类型都支持 `doc_values` ，需要特别指出的是， `analyzed string` 字段类型不支持。
+
+### null_value
+
+提供让null值可以被搜索的能力。
+
+默认的，空值在插入文档时不会被索引，即不能被搜索。
+
+为了能够搜索到某个字段为空的文档，可以将该字段的 `null_value` 设为一个特定的值，作为空值的具体表现。
+特定的值必须与字段的类型一致。比如一个 `long` 类型的字段的 `null_value` 就不能设置成字符串。
+设定好特定的值后，就可以在搜索接口，通过传递这种值作为NULL的代指来搜索该字段为空的文档。
+
+**如果一个文档的此字段的值被设置为了 `null_value` ，那么这个会被认为是空而不是这个值。**
+
+设置了 `null_value` 只意味着创建了一个“别名”，而不会将 `null_value` 存储到 `_source` 中。
+
+### boost
+
+字段的权重值。浮点数，默认为1.0。
+
+只有 `term` 查询有效。
+
+**不建议在索引中设置boost，作为替代品，使用查询时设置boost**
 
