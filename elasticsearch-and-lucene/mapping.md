@@ -75,7 +75,33 @@ todo
 
 #### 数字
 
-#### 日期
+#### Date 日期
+
+用来存储日期，毫秒精度。
+
+在ES中，使用如下格式表示日期：
+- 格式化的字符串
+- `long` 毫秒时间戳
+- `integer` 秒时间戳
+
+在ES内部，一切时间都会被转换为UTC时间，并存储为 `long` 格式的毫秒时间戳。对于时间的查询将会被转换为 `long` 的范围查询。
+查询或聚合的结果会被转换为字段对应类型的字符串。
+
+日期字段的格式可以自定义，默认值取 `"strict_date_optional_time||epoch_millis"` 。
+
+> strict_date_optional_time指的是日期必选时间可选的ISO时间格式， yyyyMMddTHHmmssZ。
+> epoch_millis指的是毫秒时间戳。
+
+##### 参数
+
+- `boost` [boost](#boost)
+- `doc_values` [doc_values](#doc_values)
+- `format` [format](#format)
+- `local` 用于解析日期，默认值为 `ROOT locale` 。
+- `ignore_malformed`
+- `index` [index](#index)
+- `null_value` [null_value](#null_value)
+- `store` [store](#store)
 
 #### Date nanoseconds
 
@@ -429,4 +455,25 @@ es中没有专门的数组类型，每一个字段都可被看作是一个数组
 只有 `term` 查询有效。
 
 **不建议在索引中设置boost，作为替代品，使用查询时设置boost**
+
+### format
+
+ES有一些内置的 [时间格式](https://www.elastic.co/guide/en/elasticsearch/reference/7.1/mapping-date-format.html#built-in-date-formats) 
+，也可用 `yyyy-MM-dd HH:mm:ss` 这种形式自定义时间的格式。
+
+```curl
+PUT my_index
+{
+  "mappings": {
+    "properties": {
+      "a_date": {
+        "type": "date",
+        "formate": "yyyy-MM-dd"
+      }
+    }
+  }
+}
+```
+
+### ignore_malformed
 
