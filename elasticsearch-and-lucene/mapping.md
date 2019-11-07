@@ -98,7 +98,7 @@ todo
 - `doc_values` [doc_values](#doc_values)
 - `format` [format](#format)
 - `local` 用于解析日期，默认值为 `ROOT locale` 。
-- `ignore_malformed`
+- `ignore_malformed` [ignore_malformed](#ignore_malformed)
 - `index` [index](#index)
 - `null_value` [null_value](#null_value)
 - `store` [store](#store)
@@ -428,7 +428,8 @@ es中没有专门的数组类型，每一个字段都可被看作是一个数组
 
 用来实现排序、聚合和在脚本中访问字段的值。
 
-使用倒排索引能够快速查询到拥有某个或某些短语的文档。但是对于聚合、排序和脚本中的访问的情形，还需要 **通过查找到文档，然后查看文档中的字段包含的短语** 的能力。
+使用倒排索引能够快速查询到拥有某个或某些短语的文档。
+但是对于聚合、排序和脚本中的访问的情形，还需要 **通过查找到文档，然后查看文档中的字段包含的短语** 的能力。
 
 将doc_values设置为true的字段，会在文档被索引的时候，同时构建一份与 `_source` 内容相同的 `Doc values` 。 `Doc values` 是存储在硬盘上的数据结构，提供了这种能力。与倒排索引不同的是， `Doc values` 是以按列的方式进行存储的。这种存储方式能够更加高效的进行排序和聚合。
 
@@ -476,4 +477,10 @@ PUT my_index
 ```
 
 ### ignore_malformed
+
+提供配置处理异常输入的策略。
+该字段设为 `true` 时，新的文档被插入时，如果该字段的格式与设定不同，将会跳过该字段，不会被索引，文档的其他字段会正常插入。
+默认的，该属性被设置为 `false` ，遇到错误的格式，将会抛出异常，整个文档会被拒绝插入。
+
+特别的，该属性对于 `nested, object, range` 无效。
 
