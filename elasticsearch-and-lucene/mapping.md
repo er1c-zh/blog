@@ -105,6 +105,8 @@ todo
 
 #### Date nanoseconds
 
+纳秒精度的日期。
+
 #### boolean 布尔值
 
 布尔值，接受 `true` 和 `false` 和 字符串 `"true"` 或 `"false"`。
@@ -318,6 +320,8 @@ GET my_index/_search
 ### 地理位置数据类型
 
 #### 地理点 Geo-Point
+
+用于存储经纬度，用来表示地理位置。
 
 #### 地理区域 Geo-shape
 
