@@ -322,6 +322,23 @@ GET my_index/_search
 #### 地理点 Geo-Point
 
 用于存储经纬度，用来表示地理位置。
+可以用来：
+- 寻找在指定多边形的中的点或寻找距某个点特定距离内的点
+- 在地理上和距离上进行聚合
+- 将地理上的距离与文档的得分关联起来
+- 根据距离排列文档
+
+接受如下格式的数据：
+- 一个对象，有 ```lat``` 和 ```lon``` 两个字段
+- 一个字符串，逗号分割的经纬度
+- 字符串，geo hash
+- 两个浮点数的数组
+
+##### 浮点数
+
+- `ignore_malformed` [ignore_malformed](#ignore_malformed)
+- `ignore_z_value` （默认为）true时，接受第三个元素作为z轴，但不检索。如果为 `false` ，如果有除了两个元素之外的元素，会返回异常。
+- `null_value` [null_value](#null_value)
 
 #### 地理区域 Geo-shape
 
