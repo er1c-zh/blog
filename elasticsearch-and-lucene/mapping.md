@@ -348,7 +348,28 @@ GET my_index/_search
 
 #### IP
 
-用于存储ip地址，支持ipv4和ipv6
+用于存储ip地址，支持ipv4和ipv6。
+
+可以用 [CIDR notation](https://www.baidu.com/s?wd=CIDR%20notation) 格式来进行查询。
+
+```curl
+GET my_index/_search
+{
+  "query": {
+    "term": {
+      "ip_addr": "192.168.0.0/16"
+    }
+  }
+}
+```
+
+##### 参数
+
+- `boost` (boost](#boost)
+- `doc_values` (doc_values)[#doc_values]
+- `index` (index)[#index]
+- `null_value` (null_value)[#null_value]
+- `store` (store)[#store]
 
 #### 自动补全
 
