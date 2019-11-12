@@ -387,6 +387,110 @@ GET my_index/_search
 
 #### Join
 
+`Join` 类型是特别用来在一个索引中建立文档之间的父子关系。
+
+##### 定义
+
+在定义mapping时，预定义若干个父子关系。如：
+
+```curl
+PUT my_index
+{
+  "mappings": {
+    "properties": {
+      "my_join_field": {
+        "type": "join",
+        "relations": {
+          "question": "answer"
+        }
+      }
+    }
+  }
+}
+```
+
+##### 插入文档
+
+1. 插入父文档
+    
+    ```curl
+    PUT my_index/_doc/1?refresh
+    {
+      "text": "This is a question",
+      "my_join_field": {
+        "name": "question"
+      }
+    }
+    
+    PUT my_index/_doc/2?refresh
+    {
+      "text": "This is another question",
+      "my_join_field": "question"
+    }
+    ```
+    
+    作为父文档，插入时在 `join` 类型的字段，传递 `name` 字段来体现是哪个父子关系。
+
+1. 插入子文档
+
+    ```curl
+    PUT my_index/_doc/3?routing=1&refresh
+    {
+      "text": "This is an answer",
+      "my_join_field": {
+        "name": "answer",
+        "parent": "1"
+      }
+    }
+    
+    PUT my_index/_doc/4?routing=1&refresh
+    {
+      "text": "This is another answer",
+      "my_join_field": {
+        "name": "answer",
+        "parent": "1"
+      }
+    }
+    ```
+    
+    插入子文档时，需要同时指明所属的父子关系，和所属的父文档的id。
+
+    **特别的，子文档必须要与父文档存储在同一个分片上，故 `routing` 参数是必须指定的。**
+
+一些限制
+
+1. 一个索引只能有一个 `join` 类型的字段。
+1. 父子文档必须要被存储在同一个分片上。
+1. 每个元素能有多个子文档，但只能有一个父文档。
+1. 可以向一个 `join` 字段增加新的父子关系。
+1. 可以向一个父文档追加子文档。
+
+##### 一些特别的
+
+1. 使用 `{join_field_name}#{join_parent_name}` 来筛选特定的 `join` 字段。
+
+1. 可以定义多级 `join` 字段。
+
+1. 一个父类型可以有多个子类型。
+
+    ```curl
+    PUT my_index
+    {
+      "mappings": {
+        "properties": {
+          "my_join_field": {
+            "type": "join",
+            "relations": {
+              "question": ["answer", "comment"]
+            }
+          }
+        }
+      }
+    }
+    ```
+
+1. 有特殊的查询和聚合方法，如： `has_child query` 和 `has_parent query` 等。
+
 #### Alias 别名
 
 用于给索引中的一个字段增加一个别名。
