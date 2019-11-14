@@ -630,3 +630,7 @@ PUT my_index
 
 特别的，该属性对于 `nested, object, range` 无效。
 
+### index
+
+该属性用来配置字段是否会被索引，代表着是否可以被搜索。
+
