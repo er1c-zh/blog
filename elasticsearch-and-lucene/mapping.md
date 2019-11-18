@@ -71,7 +71,26 @@ todo
 
 ### 基础数据类型
 
-#### 字符串
+#### 字符串 `text` 
+
+#### 字符串 `keyword`
+
+`keyword` 类型的字段用于存储用来 **精确** 匹配的数据。
+
+##### 参数
+
+- `boost` [boost](#boost)
+- `doc_values` [doc_values](#doc_values)
+- `eager_gloabl_ordinals` [eager_gloabl_ordinals](#eager_gloabl_ordinals)
+- `fields` [fields](#fields)
+- `ignore_above` [ignore_above](#ignore_above)
+- `index` [index](#index)
+- `index_options` [index_options](#index_options)
+- `norms` [norms](#norms)
+- `null_value` [null_value](#null_value)
+- `store` [store](#store)
+- `similarity` [similarity](#similarity)
+- `normalizer` [normalizer](#normalizer)
 
 #### 数字
 
@@ -633,4 +652,127 @@ PUT my_index
 ### index
 
 该属性用来配置字段是否会被索引，代表着是否可以被搜索。
+
+### eager_gloabl_ordinals
+
+用于控制什么时候建立 `全局序列` 。
+
+#### 全局序列
+
+为了支持聚合和其他需要按照文档级别进行搜索的操作，ES使用了 (doc_values)[#doc_values) 来存储了文档。
+类似于 `keyword` 等基于短语搜索的字段，使用 `有序图(ordianl mapping)` 实现压缩率更高的方式存储相应的文档。
+`有序图` 通过给每个短语指定一个单调增长的id或根据字符顺序作为相应的顺序。
+
+### fields
+
+用于定义 `multi-fields` 。用于：
+
+1. 对于一个字段，可以有多种存储的格式，来满足不同的查询需求。
+1. 另外，可以用于使用不同的分词器来对同一个字段进行分析，满足多种查询需求。
+
+#### 例子
+
+1. 一个有多个存储格式的字段
+
+    1. 创建一个 `multi-fields` 字段 `city` ，该字段有两个存储格式，分别为 `text` 和 `keyword` 。可以分别进行全文搜索和精确搜索。
+    
+        ```curl
+        PUT my_index
+        {
+          "mappings": {
+            "properties": {
+              "city": {
+                "type": "text",
+                "fields": {
+                  "raw": {
+                    "type":  "keyword"
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        PUT my_index/_doc/1
+        {
+          "city": "New York"
+        }
+        ```
+    
+    1. 利用两种存储格式分别进行了全文搜索、排序和聚合。
+    
+        ```curl
+        GET my_index/_search
+        {
+          "query": {
+            "match": {
+              "city": "york"
+            }
+          },
+          "sort": {
+            "city.raw": "asc"
+          },
+          "aggs": {
+            "Cities": {
+              "terms": {
+                "field": "city.raw"
+              }
+            }
+          }
+        }
+        ```
+
+1. 一个字段有多个分词器
+    
+    1. 创建mapping
+
+    ```curl
+    PUT my_index
+    {
+      "mappings": {
+        "properties": {
+          "text": {
+            "type": "text",
+            "fields": {
+              "english": {
+                "type":     "text",
+                "analyzer": "english"
+              }
+            }
+          }
+        }
+      }
+    }
+
+    PUT my_index/_doc/1
+    { "text": "quick brown fox" }
+    ```
+
+    1. 查询
+
+    ```curl
+    GET my_index/_search
+    {
+      "query": {
+        "multi_match": {
+          "query": "quick brown foxes",
+          "fields": [
+            "text",
+            "text.english"
+          ],
+          "type": "most_fields"
+        }
+      }
+    }
+    ```
+
+### ignore\_above
+
+用于忽略超过某个长度之后的数据。超过的数据会被忽略，即不会被索引也不会被额外存储，但是会被存储在\_source中。
+
+**特别的，对于数组来说，会对每个元素进行检查。**
+
+**传递的值是按照字节进行计算的，utf8等格式的字符需要自行变换**
+
+
 
