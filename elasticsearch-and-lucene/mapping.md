@@ -91,6 +91,7 @@ todo
 - `store` [store](#store)
 - `similarity` [similarity](#similarity)
 - `normalizer` [normalizer](#normalizer)
+- `split_queries_on_whitespace` 是否需要在查询这个字段的时候，按照空白字符来分割。默认 ```false``` 。
 
 #### 数字
 
@@ -774,7 +775,7 @@ PUT my_index
 
 **传递的值是按照字节进行计算的，utf8等格式的字符需要自行变换**
 
-### index_options
+### index\_options
 
 用于控制什么信息需要被存储到倒排索引中，用于搜索和高亮。
 
@@ -786,4 +787,24 @@ PUT my_index
 1. `offsets`  文档id、频率、短语所在位置和起止字符的偏移量，提供将短语映射到原数据的能力，用于加速高亮和 ```unifiedhighlighter``` 。
 
 ### norms
+
+用于控制字段内容的长度是否会影响文档的得分。接受 ```true``` 和 ```false``` (default)作为参数。
+
+开启该功能，会增加磁盘占用，如果不需要该功能的话，可以将该功能关闭。
+
+### similarity
+
+用于设置使用什么相似度算法或相似度，默认为 ```BM25``` 。
+
+自带的相似度算法：
+
+1. ```BM25``` 
+1. ```classic```
+1. ```boolean``` 简单的二极区分，匹配或未匹配。
+
+### normalizer
+
+用于在应用分词器之前，用于保证生成归一化的token。
+
+
 
