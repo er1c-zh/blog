@@ -774,5 +774,16 @@ PUT my_index
 
 **传递的值是按照字节进行计算的，utf8等格式的字符需要自行变换**
 
+### index_options
 
+用于控制什么信息需要被存储到倒排索引中，用于搜索和高亮。
+
+接受以下的参数：
+
+1. `docs` 只存储对应的文档的id，用来满足“有哪些文档包含这个短语”。 *其他字段默认*
+1. `freqs` 存储文档id和短语（在文档中）出现的频率，文档的得分与短语的频率成正相关。
+1. `positions` 文档id、频率和短语所在的位置。位置用于 ```proximity or phrase queries``` 。 *analyzed string默认*
+1. `offsets`  文档id、频率、短语所在位置和起止字符的偏移量，提供将短语映射到原数据的能力，用于加速高亮和 ```unifiedhighlighter``` 。
+
+### norms
 
