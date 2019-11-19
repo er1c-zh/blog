@@ -73,6 +73,30 @@ todo
 
 #### 字符串 `text` 
 
+用于存储全文索引的数据。
+
+该类型字段的数据在被索引进倒排索引之前，会被 `analyzer` 进行分词。该类型字段不支持排序或聚合。
+
+##### 参数
+
+- `analyzer` [analyzer](#analyzer)
+- `boost` [boost](#boost)
+- `eager_gloabl_ordinals` [eager\_gloabl\_ordinals](#eager_gloabl_ordinals)
+- `fielddata` [fielddata](#fielddata)
+- `fielddata_frequency_filter` [fielddata\_frequency\_filter](#fielddata_frequency_filter)
+- `fields` [fields](#fields)
+- `index` [index](#index)
+- `index_options` [index\_options](#index_options)
+- `index_prefixes` [index\_prefixes](#index_prefixes)
+- `index_phrases` [index\_phrases](#index_phrases)
+- `norms` [norms](#norms)
+- `position_increment_gap` [position\_increment\_gap](#position_increment_gap)
+- `store` [store](#store)
+- `search_analyzer` [search\_analyzer](#search_analyzer)
+- `search_quote_analyzer` [search\_quote\_analyzer](#search_quote_analyzer)
+- `similarity` [similarity](#similarity)
+- `term_vector` [term\_vector](#term_vector)
+
 #### 字符串 `keyword`
 
 `keyword` 类型的字段用于存储用来 **精确** 匹配的数据。
@@ -80,20 +104,22 @@ todo
 ##### 参数
 
 - `boost` [boost](#boost)
-- `doc_values` [doc_values](#doc_values)
-- `eager_gloabl_ordinals` [eager_gloabl_ordinals](#eager_gloabl_ordinals)
+- `doc_values` [doc\_values](#doc_values)
+- `eager_gloabl_ordinals` [eager\_gloabl\_ordinals](#eager_gloabl_ordinals)
 - `fields` [fields](#fields)
-- `ignore_above` [ignore_above](#ignore_above)
+- `ignore_above` [ignore\_above](#ignore_above)
 - `index` [index](#index)
-- `index_options` [index_options](#index_options)
+- `index_options` [index\_options](#index_options)
 - `norms` [norms](#norms)
-- `null_value` [null_value](#null_value)
+- `null_value` [null\_value](#null_value)
 - `store` [store](#store)
 - `similarity` [similarity](#similarity)
 - `normalizer` [normalizer](#normalizer)
 - `split_queries_on_whitespace` 是否需要在查询这个字段的时候，按照空白字符来分割。默认 ```false``` 。
 
 #### 数字
+
+todo
 
 #### Date 日期
 
@@ -155,6 +181,8 @@ todo
 - `store` [store](#store)
 
 #### range
+
+todo
 
 ### 复合数据类型
 
@@ -401,9 +429,15 @@ GET my_index/_search
 
 #### mapper-murmur3
 
+todo
+
 #### mapper-annotated-text
 
+todo
+
 #### percolator
+
+todo
 
 #### Join
 
@@ -527,11 +561,19 @@ PUT my_index
 
 #### Rank feature
 
+todo
+
 #### Rank features
+
+todo
 
 #### Dense vector
 
+todo
+
 #### Sparse vector
+
+todo
 
 ### 数组
 
@@ -806,5 +848,10 @@ PUT my_index
 
 用于在应用分词器之前，用于保证生成归一化的token。
 
+### analyzer
 
+用于配置字段的分析器。
+
+Elasticsearch提供了一些开箱即用的预定义分析器。
+也有一些字符过滤器( *character filters* )，分词器( *tokenizers* )和短语过滤器( *Token Filters* )，可以用来组成一系列自定义的分析器。
 
