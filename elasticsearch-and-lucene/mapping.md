@@ -857,7 +857,33 @@ Elasticsearch提供了一些开箱即用的预定义分析器。
 
 分析器可以在每次查询、每个字段或每个索引中被分别定义。
 
-#### 应用分析器的顺序
+#### 获取要应用的分析器的顺序
 
 - 索引一个文档时
+    1. 定义在该字段上的 `analyzer`
+    1. 定义在该索引上的 `default`
+    1. 标准分析器
+
+- 搜索时
+    1. 在全文搜索查询中配置的 `analyzer`
+    1. 在该字段中定义的 `search_analyzer`
+    1. 在该字段中定义的 `analyzer`
+    1. 在该索引上的 `default_search`
+    1. 在该索引上的 `default`
+    1. 标准分析器
+
+#### `search_quote_analyzer`
+
+todo
+
+### fielddata
+
+`fielddata` 是一个内存数据结构，用于给 `text` 字段增加根据文档标志查找文章的字段有什么内容的能力。
+
+`fielddata` 会在该字段第一次被用于聚合、排序或脚本访问时构建。构建是通过遍历每个段的全部倒排索引，然后存储在JAVA堆上。
+
+**默认的，因为构建的耗费很大和暂用内存多且时间长，fielddata是false状态。**
+
+#### `fielddata_frequency_filter`
+
 
