@@ -855,3 +855,9 @@ PUT my_index
 Elasticsearch提供了一些开箱即用的预定义分析器。
 也有一些字符过滤器( *character filters* )，分词器( *tokenizers* )和短语过滤器( *Token Filters* )，可以用来组成一系列自定义的分析器。
 
+分析器可以在每次查询、每个字段或每个索引中被分别定义。
+
+#### 应用分析器的顺序
+
+- 索引一个文档时
+
