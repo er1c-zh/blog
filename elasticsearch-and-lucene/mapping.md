@@ -21,7 +21,22 @@ mapping用于定义一个文档和其中的字段是如何存储和被索引的�
 
 #### Meta-fields 元数据
 
-todo 
+每个文档都包含一些相关的元数据。
+
+1. 用于鉴别类型的
+    1. \_index 所属的索引
+    1. \_type deprecated type
+    1. \_id 文档的id
+1. 源文档的信息
+    1. \_source 原文档
+    1. \_size `_source` 占用的字节数
+1. 索引相关
+    1. \_field_names 所有非null的字段的名称
+    1. \_ignored 因格式不正确所以被忽略的字段
+1. 路由相关
+    1. \_routing 自定义的路由值，用于指定存储的分片
+1. 其他的
+    1. \_meta 应用自定义的字段
 
 #### Fields or properties 字段与属性
 
@@ -119,7 +134,54 @@ todo
 
 #### 数字
 
-todo
+用于存储数字。
+
+|支持的类型|范围&介绍|
+|----------|---------|
+|long|有符号，64位|
+|integer|signed, 32-bit|
+|short|signed, 16-bit|
+|byte|signed, 8-bit|
+|double|双精度浮点数，64位，IEEE定义|
+|float|单精度浮点数，32位，IEEE定义|
+|half_float|半精度浮点数，16位，IEEE定义|
+|scaled_float|浮点数，可伸缩的|
+
+e.g.
+
+```curl
+PUT my_index
+{
+  "mappings": {
+    "properties": {
+      "number_of_bytes": {
+        "type": "integer"
+      },
+      "time_in_seconds": {
+        "type": "float"
+      },
+      "price": {
+        "type": "scaled_float",
+        "scaling_factor": 100
+      }
+    }
+  }
+}
+```
+
+##### 参数
+
+- `coerce` 是否尝试进行转换
+- `boost` [boost](#boost)
+- `doc_values` [doc_values](#doc_values)
+- `ignore_malformed` [ignore_malformed](#ignore_malformed)
+- `index` [index](#index)
+- `null_value` [null_value](#null_value)
+- `store` [store](#store)
+
+**scaled_float专用的参数**
+
+`scaling_factor` 用于编码数据。
 
 #### Date 日期
 
@@ -182,7 +244,56 @@ todo
 
 #### range
 
-todo
+用于存储一个范围。
+支持整数、浮点数、long、双精度浮点数、日期和ip。
+
+- `interger_range`
+- `float_range`
+- `long_range`
+- `double_range`
+- `date_range`
+- `ip_range`
+
+e.g. 创建一个包含日期范围的字段的mapping，并插入一个文档。
+
+```curl
+PUT range_index
+{
+  "settings": {
+    "number_of_shards": 2
+  },
+  "mappings": {
+    "properties": {
+      "expected_attendees": {
+        "type": "integer_range"
+      },
+      "time_frame": {
+        "type": "date_range", 
+        "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
+      }
+    }
+  }
+}
+
+PUT range_index/_doc/1?refresh
+{
+  "expected_attendees" : { 
+    "gte" : 10,
+    "lte" : 20
+  },
+  "time_frame" : { 
+    "gte" : "2015-10-31 12:00:00", 
+    "lte" : "2015-11-01"
+  }
+}
+```
+
+#### 参数
+
+- `coerce` 是否尝试进行转换
+- `boost` [boost](#boost)
+- `index` [index](#index)
+- `store` [store](#store)
 
 ### 复合数据类型
 
@@ -885,5 +996,48 @@ todo
 **默认的，因为构建的耗费很大和暂用内存多且时间长，fielddata是false状态。**
 
 #### `fielddata_frequency_filter`
+
+用于控制什么数据会被加载到 `fielddata` 中。
+
+### index_prefixes
+
+用于控制是否将前缀存储在另外的字段中以加速前缀搜索。
+
+### index_phrases
+
+用于控制是否将短语存储到另外的字段中，用于加速短语搜索。
+
+### position_increment_gap
+
+todo
+
+### search_analyzer
+
+用于指定搜索用的分析器。
+
+### search_quote_analyzer
+
+todo
+
+### term_vector
+
+用于指定 `analyzed` 字段的什么额外的分词信息需要被存储。
+
+|可以指定的值|含义|
+|----------|-----------|
+|no|默认值，不需要存储。|
+|yes|经过分词的词汇|
+|with_positions|词汇和位置|
+|with_offsets|词汇和词汇的偏移量|
+|with_positions_offsets|词汇、位置、偏移量|
+|with_positions_payloads|词汇、位置、payloads|
+|with_positions_offsets_payloads|词汇、位置、偏移量、payloads|
+
+
+1. 位置，指的多个词汇在一个数据中的顺序。
+1. payloads，自定义的权重值。
+
+
+
 
 
