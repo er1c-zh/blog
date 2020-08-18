@@ -1,0 +1,8 @@
+baseURL = "https://blog.er1c.dev/"
+languageCode = "zh-cn"
+title = "blog"
+theme = "purehugo"
+
+[params]
+    githubName = "er1c-zh"
+
