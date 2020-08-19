@@ -38,7 +38,7 @@ jobs:
     - name: Copy static page to docs
       run: |
         rm -r ./docs/*
-        cp -r ./site/public/* ./docs
+        cp -r ./site/public/* ./docs/
         echo "blog.er1c.dev" > docs/CNAME
         
     - name: Commit files
