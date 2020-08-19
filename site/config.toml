@@ -1,6 +1,6 @@
 baseURL = "https://blog.er1c.dev/"
 languageCode = "zh-cn"
-defaultContentLanguage = "zh-cn
+defaultContentLanguage = "zh-cn"
 title = "blog"
 preserveTaxonomyNames = true
 enableRobotsTXT = true
