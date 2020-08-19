@@ -1,5 +1,5 @@
 ---
-title: "nc and pv"
+title: "get-data-from-product-instance"
 date: 2020-08-18T22:34:28+08:00
 draft: true
 tags:
@@ -24,13 +24,30 @@ tags:
 在线上机器执行，会监听1220端口，并把数据发送到该链接上。
 
 ```shell
-echo data_file | nc -l 1220
+cat data_file | nc -N -l 1220
 ```
 
 在本地上执行，连接到线上机器，并把数据写入到local_data_file。
 
 ```shell
-nc ip_or_hostname 1220 > local_data_file
+nc -d ip_or_hostname 1220 > local_data_file
+```
+
+### 1. 如何让双方在数据发送完成后都退出？
+
+1. 发送方使用`-N`选项，表示如果读入`EOF`就关闭链接，这样就可以在文件全写入之后退出。
+1. 接受方使用`-d`选项，表示忽略`stdin`，所以如果链接关闭，就会退出。
+
+有其他实现方式的讨论，参见`参考`。
+
+### 2. 如何控制流量，避免线上机器的网卡、带宽被打满？
+
+这个问题可以转化为“如何控制管道中的数据传输速度？”，那么考虑使用`pv`指令。
+
+*`pv`可能需要安装,如 `apt install pv`*
+
+```shell
+pv -L 1k data_file | nc -N -l 1220 # 限制传输速度1KB/s
 ```
 
 ## nc
@@ -82,3 +99,28 @@ printf "GET / HTTP/1.0\r\n\r\n" | nc blog.er1c.dev 80 # say hello to my blog
 ```shell
 nc -zv host.to.scan 20-30 # 扫描 host.to.scan 端口20-30
 ```
+
+## pv
+
+指令用于管理流经管道的数据。可以展示消耗的时间、传输进度（进度条）、当前传输速率、传输的数据总量和预计完成时间(ETA estimated time of arrival).
+
+### usage
+
+```shell
+# 1. 可以直接读文件
+pv [option] file
+# 2. 桥接管道
+... | pv [option] | ...
+```
+
+### 选项
+
+选项主要分为三个部分：展示、输出、数据控制。这里记录下数据控制部分的一些参数。
+
+1. `-L`用来控制传输速率，byte/s为单位，接受`K` `M` `G` `T`来修饰。
+
+# 参考
+
+1. man手册
+1. [BSD nc (netcat) does not terminate on EOF](https://serverfault.com/questions/783169/bsd-nc-netcat-does-not-terminate-on-eof)
+1. [How to rate-limit a pipe under linux?](https://superuser.com/questions/239893/how-to-rate-limit-a-pipe-under-linux)
