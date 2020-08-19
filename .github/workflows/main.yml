@@ -34,12 +34,13 @@ jobs:
       working-directory: ./site
       run: hugo -D
 
+    - run: ls -a ./site/public
+
     # Runs a set of commands using the runners shell
     - name: Copy static page to docs
-      run: |
-        rm -r ./docs/*
-        cp -r ./site/public/* ./docs/
-        echo "blog.er1c.dev" > docs/CNAME
+      run: cp -r ./site/public/* ./docs/
+
+    - run: ls -a ./docs/
         
     - name: Commit files
       run: |

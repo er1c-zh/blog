@@ -1,2 +1,0 @@
-User-agent: *
-Sitemap: https://blog.er1c.dev/sitemap.xml
