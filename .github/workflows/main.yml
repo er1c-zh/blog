@@ -6,7 +6,7 @@ name: auto_pub_blog
 # events but only for the master branch
 on:
   push:
-    branches-ignore: [ auto_release ]
+    branches: [ master ]
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -33,7 +33,7 @@ jobs:
     - name: Copy static page to docs
       run: |
         rm -r ./docs/*
-        cp -r ./sites/public/* ./docs
+        cp -r ./site/public/* ./docs
         
     - name: Commit files
       run: |
