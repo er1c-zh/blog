@@ -1,5 +1,5 @@
 ---
-title: "get-data-from-product-instance"
+title: "如何从线上机器拉取数据"
 date: 2020-08-18T22:34:28+08:00
 draft: true
 tags:
