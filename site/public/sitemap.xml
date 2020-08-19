@@ -9,11 +9,21 @@
   
   <url>
     <loc>https://blog.er1c.dev/</loc>
-    <lastmod>2020-08-18T22:34:28+08:00</lastmod>
+    <lastmod>2020-08-18T22:35:15+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://blog.er1c.dev/linux/</loc>
+    <loc>https://blog.er1c.dev/tags/dairy/</loc>
+    <lastmod>2020-08-18T22:35:15+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://blog.er1c.dev/tags/</loc>
+    <lastmod>2020-08-18T22:35:15+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://blog.er1c.dev/tags/command/</loc>
     <lastmod>2020-08-18T22:34:28+08:00</lastmod>
   </url>
   
@@ -23,11 +33,22 @@
   </url>
   
   <url>
-    <loc>https://blog.er1c.dev/categories/</loc>
+    <loc>https://blog.er1c.dev/tags/how-to/</loc>
+    <lastmod>2020-08-18T22:34:28+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://blog.er1c.dev/tags/</loc>
+    <loc>https://blog.er1c.dev/tags/linux/</loc>
+    <lastmod>2020-08-18T22:34:28+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://blog.er1c.dev/linux/</loc>
+    <lastmod>2020-08-18T22:34:28+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://blog.er1c.dev/categories/</loc>
   </url>
   
 </urlset>
