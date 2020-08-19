@@ -41,6 +41,8 @@ jobs:
       run: cp -r ./site/public/* ./docs/
 
     - run: ls -a ./docs/
+
+    - run: git add .
         
     - name: Commit files
       run: |
