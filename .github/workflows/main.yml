@@ -6,7 +6,6 @@ name: auto_pub_blog
 # events but only for the master branch
 on:
   push:
-    branches: [ daily_write ]
     branches-ignore: [ auto_release ]
   workflow_dispatch:
 
