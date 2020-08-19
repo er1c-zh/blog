@@ -1,0 +1,50 @@
+# This is a basic workflow to help you get started with Actions
+
+name: auto_pub_blog
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ daily_write ]
+    branches-ignore: [ auto_release ]
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-18.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    - name: Install Hugo
+      run: brew install hugo
+      
+    # Runs a single command using the runners shell
+    - name: Build static page
+      working-directory: $GITHUB_WORKSPACE/sites
+      run: hugo -D
+
+    # Runs a set of commands using the runners shell
+    - name: Copy static page to docs
+      run: |
+        rm -r ./docs/*
+        cp -r ./sites/public/* ./docs
+        
+    - name: Commit files
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git commit -m "auto_pub" -a
+        
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: auto_release
+        
