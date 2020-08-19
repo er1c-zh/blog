@@ -24,6 +24,11 @@ jobs:
     - name: Install Hugo
       run: brew install hugo
       
+    - name: Get theme
+      run: |
+        git submodule init
+        git submodule update
+      
     # Runs a single command using the runners shell
     - name: Build static page
       working-directory: ./site
@@ -37,8 +42,8 @@ jobs:
         
     - name: Commit files
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git config --local user.email "auto_pub@github.com"
+        git config --local user.name "auto_pub"
         git commit -m "auto_pub" -a
         
     - name: Push changes
