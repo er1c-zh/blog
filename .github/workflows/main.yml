@@ -51,4 +51,5 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: auto_release
+        force: true
         
