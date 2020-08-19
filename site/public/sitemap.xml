@@ -1,0 +1,73 @@
+<?xml-stylesheet type="text/xsl" href="https://blog.er1c.dev/sitemap.xsl"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <url>
+    <loc>https://blog.er1c.dev/about-me/</loc>
+    <lastmod>2020-08-18T22:35:15+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.er1c.dev/</loc>
+    <lastmod>2020-08-18T22:35:15+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.er1c.dev/tags/dairy/</loc>
+    <lastmod>2020-08-18T22:35:15+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.er1c.dev/tags/</loc>
+    <lastmod>2020-08-18T22:35:15+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.er1c.dev/tags/command/</loc>
+    <lastmod>2020-08-18T22:34:28+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.er1c.dev/linux/nc_and_pv/</loc>
+    <lastmod>2020-08-18T22:34:28+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.er1c.dev/tags/how-to/</loc>
+    <lastmod>2020-08-18T22:34:28+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.er1c.dev/tags/linux/</loc>
+    <lastmod>2020-08-18T22:34:28+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.er1c.dev/linux/</loc>
+    <lastmod>2020-08-18T22:34:28+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.er1c.dev/categories/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+</urlset>
