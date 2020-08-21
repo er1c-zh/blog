@@ -2,6 +2,9 @@
 title: "正则表达式速查"
 date: 2020-08-21T20:31:59+08:00
 draft: false
+tags:
+    - memo
+    - regex
 ---
 
 # 正则表达式速查
