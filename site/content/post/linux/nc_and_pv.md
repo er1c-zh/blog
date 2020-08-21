@@ -13,7 +13,7 @@ tags:
 最近遇到了一些线上问题，希望能够把线上抓到的信息拉到本地处理。
 实现的方式有很多，比如利用python开启一个http server等。
 
-但是我还是偏好使用更原生<del>装逼</del>的方法。
+但是我还是偏好使用更原生 ~~装逼~~ 的方法。
 
 辗转中了解到`nc`指令以及可以用来限流的`pv`指令，两者结合，可以满足绝大部分网络拷贝的场景。
 
@@ -86,7 +86,7 @@ nc [-46bCDdFhklNnrStUuvZz] [-I length] [-i interval] [-M ttl] [-m minttl] [-O le
 1. 传输数据
 
     nc指令接受管道传输数据。
-    
+
     ```shell
     cat data_to_transfer.dat | nc host.to.transfer 1220 # 传输数据到 host.to.transfer 1220
     printf "GET / HTTP/1.0\r\n\r\n" | nc blog.er1c.dev 80 # say hello to my blog
