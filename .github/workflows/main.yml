@@ -32,7 +32,7 @@ jobs:
     # Runs a single command using the runners shell
     - name: Build static page
       working-directory: ./site
-      run: hugo -D
+      run: hugo
 
     - run: ls -a ./site/public
 
