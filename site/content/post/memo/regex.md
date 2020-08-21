@@ -118,4 +118,4 @@ grep -P "^(?:(?!abc).)*$" ./file_to_check
 ```
 
 
-![](https://i.ibb.co/k46fZBK/regex-do-not-have-a-string.png)
+![regex-do-not-have-a-string](https://dwbjpa.dm.files.1drv.com/y4mhcUtoiMm1qQzxKK-ICdtDGJkTJSdyEgQHS5IRT74YTK2Oeo-sxGw7kcs-fjpodTkIftW4Fuleq8Drc5DEsHYHm-FFfoj_Qy4MT8nt6-zF_faoNo_z-JAskH3zCUZcVp3ugjjO1L4ADyiTx7AaUtSR-U9Z9QoyDidr-rC_tZF2AWEfs718ByXv9K-w2N6H5t0YeG0DloWV7IL1D0A8p_ONQ?width=352&height=64&cropmode=none)
