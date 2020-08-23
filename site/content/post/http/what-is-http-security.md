@@ -1,13 +1,13 @@
 ---
 title: "HTTP的安全机制"
 date: 2020-08-21T23:17:27+08:00
-draft: true
+draft: false
 tags:
     - what
     - why
     - HTTP
     - CORS
-    - 
+    - HTTPS
 ---
 
 最近在遇到了一个跨域问题，所以看了一些HTTP安全相关的资料。
