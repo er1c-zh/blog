@@ -146,6 +146,39 @@ HTTPS解决了除服务端对客户端的要求之外的问题。
     如此，可以保证只有在服务端知道的情况下，才能跨域访问相应的接口来获取数据或者执行操作。
 
     ```plantuml
+    @startuml cors-origin request
+
+    == 简单请求 == 
+
+    actor 脚本 as script
+    participant 浏览器 as browser
+    participant 一个没有支持该源跨域访问的服务端 as server
+
+    script -> browser: 一个请求其他域的简单请求
+    activate browser
+    browser -> server: 发送请求
+    activate server
+    note right: 请求会真实到达服务器
+    server -> browser: 响应报文，携带的CORS配置不支持该源的请求
+    deactivate server
+    browser -> script: 错误：禁止跨域
+    deactivate browser
+    note right: 只是结果会被拦截
+
+    == 非简单请求 ==
+
+
+    script -> browser: 一个请求其他域的非简单请求
+    activate browser
+    browser -> server: 发送一个option请求
+    activate server
+    note right: 浏览器会先发送一个\noption请求来查询\n服务器的跨域配置，\n真实的请求不会被发送到服务器
+    server -> browser: 返回结果，携带的CORS配置不支持该源的请求
+    deactivate server
+    browser -> script: 错误：禁止跨域
+    deactivate browser
+
+    @enduml
     ```
 
 1. 浏览器会阻止一个页面上的脚本访问非同源的localStorage/indexedDB或非同父域且非同源的Cookie
