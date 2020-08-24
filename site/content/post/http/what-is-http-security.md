@@ -141,7 +141,7 @@ HTTPS解决了除服务端对客户端的要求之外的问题。
 1. 浏览器通常会将发送请求分为**简单请求**和**需要预检的请求**来处理
 
     1. 简单请求会直接发送，如果返回的结果不包含符合预期的CORS头，那么会阻止脚本获得结果。
-    1. 需要预检的请求会先发送一个`OPTION`请求，来获取CORS的配置，避免在不允许访问的时候，对数据产生影响。
+    1. 需要预检的请求会先发送一个`OPTIONS`请求，来获取CORS的配置，避免在不允许访问的时候，对数据产生影响。
 
     如此，可以保证只有在服务端知道的情况下，才能跨域访问相应的接口来获取数据或者执行操作。
 
@@ -170,9 +170,9 @@ HTTPS解决了除服务端对客户端的要求之外的问题。
 
     script -> browser: 一个请求其他域的非简单请求
     activate browser
-    browser -> server: 发送一个option请求
+    browser -> server: 发送一个options请求
     activate server
-    note right: 浏览器会先发送一个\noption请求来查询\n服务器的跨域配置，\n真实的请求不会被发送到服务器
+    note right: 浏览器会先发送一个\noptions请求来查询\n服务器的跨域配置，\n真实的请求不会被发送到服务器
     server -> browser: 返回结果，携带的CORS配置不支持该源的请求
     deactivate server
     browser -> script: 错误：禁止跨域
