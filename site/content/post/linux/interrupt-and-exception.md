@@ -50,8 +50,13 @@ hardware circuits both inside and outside the CPU chip.
 @startmindmap
 * 中断
 ** 中断（异步中断）
-*** 不可屏蔽中断 一个中断是否是不可屏蔽的由CPU决定
-*** 可屏蔽中断
+*** 按是否能屏蔽
+**** 不可屏蔽中断 一个中断是否是不可屏蔽的由CPU决定
+**** 可屏蔽中断
+*** 按中断产生方式
+**** I/O中断
+**** 时钟中断
+**** 处理器间中断
 ** 异常（同步中断）
 *** 处理器探测异常
 ****: 故障 fault
@@ -81,3 +86,4 @@ hardware circuits both inside and outside the CPU chip.
 
 @enduml
 ```
+
