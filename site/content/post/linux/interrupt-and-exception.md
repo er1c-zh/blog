@@ -81,9 +81,86 @@ hardware circuits both inside and outside the CPU chip.
 
 # Linux上的处理
 
+## 异常处理
+
 ```plantuml
 @startuml
+title 异常的处理
 
+start
+:把大部分寄存器的数据保存到内核堆栈;
+if (发生在用户态还是内核态？) then (用户态)
+else (内核态)
+    if (是因为系统调用的参数不合法吗？) then (不合法)
+    else (合法)
+        :是内核bug导致的问题，进行kernel oops，终结进程;
+        stop
+    endif
+endif
+:具体的处理异常的函数;
+:通过ret_from_exception()从流程中退出;
+stop
 @enduml
 ```
 
+## 中断处理
+
+### I/O中断处理
+
+Linux根据响应中断要执行的操作分为三种：
+
+- 紧急的 critical
+- 非紧急的 noncritical
+- 非紧急可延迟的 noncritical deferrable
+
+```plantuml
+@startuml
+title I/O中断的处理
+
+start
+partition common_interrupt {
+    partition 在内核堆栈中保存IRQ的值和寄存器的数据 {
+        :SAVE_ALL 具体保存寄存器;
+    }
+    :movl %esp, %eax 保存栈顶地址到eax;
+    partition "do_IRQ() 调用具体的处理函数" {
+        if (sizeof(thread_union) == 4KB) then (Yes)
+            :切换到硬中断请求栈;
+        endif
+        partition "__do_IRQ()" {
+            :获取对应IRQ描述符的自旋锁;
+            :调用PIC对象的ack方法;
+            :设置相应的IRQ描述符的标志位:\n设置IRQ_PENDING\n清除IRQ_REPLAY IRQ_WAITING;
+            if (IRQ描述符的状态 not in (IRQ_DISABLED, IRQ_INPROGRESS, 无中断服务例程)) then (需要处理中断)
+                :设置IRQ描述符状态 IRQ_INPROGRESS;
+                while (如果IRQ描述符状态有IRQ_PENDING) 
+                    note right
+                        如果重新出现IRQ_PENDING，
+                        那么意味着在调用中断服务例程的时候，
+                        发生了至少一次新中断。
+                    end note
+                    :清除IRQ_PENDING;
+                    :释放锁;
+                    :调用handle_IRQ_event处理中断;
+                    :加锁;
+                endwhile
+                :清除IRQ描述符状态 IRQ_INPROGRESS;
+            endif
+            :调用PIC对象的end方法;
+            :释放锁;
+        }
+        if (sizeof(thread_union) == 4KB && 之前切换到了新的堆栈) then (Yes)
+            :切换回之前的堆栈;
+        endif
+        :ireq_exit();
+    }
+    partition 从中断返回 {
+        :jmp ret_from_intr;
+    }
+}
+:给PIC回应，来允许PIC发出接下里的中断;
+:执行共享该IRQ的所有设备的中断服务例程;
+:通过ret_from_intr()从流程中退出;
+stop
+@enduml
+```
