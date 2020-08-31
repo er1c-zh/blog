@@ -16,6 +16,10 @@ tags:
 
 其实在不同的资料里，各个名词的含义可能是不同的，特别是**中断**。
 
+本文用ULK代指《深入理解Linux内核》。
+
+~~ULK的翻译错误是真的有点多~~
+
 ## 什么是中断？
 
 先介绍一下广义上的中断。
@@ -57,6 +61,9 @@ hardware circuits both inside and outside the CPU chip.
 **** I/O中断
 **** 时钟中断
 **** 处理器间中断
+***** CALL_FUNCTION_VECTOR 强制其他CPU执行一个函数
+***** RESCHEDULE_VECTOR ? todo
+***** INVALIDATE_TLB_VECTOR 用于刷新TLB表项
 ** 异常（同步中断）
 *** 处理器探测异常
 ****: 故障 fault
@@ -79,7 +86,7 @@ hardware circuits both inside and outside the CPU chip.
 1. 可编程中断控制器 Programmable Interrupt Controller
 1. I/O Advanced Programmable Interrupt Controller
 
-# Linux上的处理
+# Linux上的处理流程
 
 ## 异常处理
 
@@ -105,13 +112,7 @@ stop
 
 ## 中断处理
 
-### I/O中断处理
-
-Linux根据响应中断要执行的操作分为三种：
-
-- 紧急的 critical
-- 非紧急的 noncritical
-- 非紧急可延迟的 noncritical deferrable
+### I/O中断
 
 ```plantuml
 @startuml
@@ -152,7 +153,7 @@ partition common_interrupt {
         if (sizeof(thread_union) == 4KB && 之前切换到了新的堆栈) then (Yes)
             :切换回之前的堆栈;
         endif
-        :ireq_exit();
+        :irq_exit();
     }
     partition 从中断返回 {
         :jmp ret_from_intr;
@@ -164,3 +165,147 @@ partition common_interrupt {
 stop
 @enduml
 ```
+
+### 时钟中断
+
+todo
+
+### 处理器间中断
+
+类似于I/O中断的处理流程：
+
+1. 保存寄存器
+1. 压入向量号-256
+1. 调用对应的高级C函数处理中断
+
+# 提高中断与异常的响应速度
+
+Linux根据响应中断要执行的操作的紧急程度分为三种：
+
+- 紧急的 critical
+- 非紧急的 noncritical
+- 非紧急可延迟的 noncritical deferrable
+
+Linux利用`可延迟函数`和`工作队列`来尽可能的减少中断服务例程中的耗时来实现提高响应速度的目的。
+
+中断服务例程使用可延迟函数来执行`非紧急可延迟的操作`。
+
+## 可延迟函数：软中断与tasklet
+
+首先注意概念与名词的混淆：
+
+1. **软中断有的时候表达的其实是可延迟函数**
+1. **软中断有的时候表达的是编程异常**
+
+**本文中的软中断都特指可延迟函数中的软中断。**
+
+可延迟函数是一种预定义好的、用于处理特定中断的对象。
+
+可延迟函数有如下的几个接口可以被调用：
+
+- 初始化
+
+    初始化该可延迟函数的结构。
+
+- 激活
+
+    标记该可延迟函数为`pending`，这意味着在下次可延迟函数的调度中需要被执行。
+
+    *《深入理解Linux内核》翻译的是挂起，可能会和 `suspend` 产生混淆。*
+
+- 屏蔽
+
+    禁止一个可延迟函数的执行。
+
+- 执行
+
+    执行所有同类型的可延迟函数。
+
+### 软中断
+
+软中断目前有六种，优先级由高到低排列：
+
+1. HI_SOFTIRQ
+
+    执行高优先级的`tasklet`。
+
+1. TIMER_SOFTIRQ
+1. NET_TX_SOFTIRQ
+1. NET_RX_SOFTIRQ
+1. SCSI_SOFTIRQ
+
+    SCSI(small computer system interface)命令的后台中断处理。
+
+1. TASKLET_SOFTIREQ
+
+#### 相关的数据结构
+
+1. 我称为`软中断概念描述符`的`softirq_action`，定义了一个可延迟函数。
+
+1. 当前进程或内核线程的`thread_info.preempt_count`字段，
+标记了禁用内核抢占的次数、可延迟函数的禁用次数、本地CPU上的中断嵌套层数。
+
+1. 每个CPU都会维护一个掩码，用于保存当前有多少挂起（即待执行）的软中断。
+
+#### 相关的流程
+
+```plantuml
+start
+partition 触发软中断执行的时机 {
+    fork
+        :local_bh_enable();
+    fork again
+        :1. do_IRQ()结束，调用irq_exit()时。
+        ULK的翻译有点问题，不是或。
+        2. smp_apic_timer_interrupt()完成本地定时器中断时。
+        3. 完成CALL_FUNCTION_VECTOR处理器间中断时。;
+    fork again
+        :ksoftirqd/n线程执行时\nkernel soft interrupt request daemon;
+    end fork
+}
+partition do_softirq() {
+    if (调用`in_interrupt()`检查是否在中断上下文中或是否禁用软中断) then (No)
+        :保存IF标志，禁用中断;
+        :如果thread_union大小为4KB，切换为软中断栈;
+        partition __do_softirq() {
+            :保存本地CPU有哪些软中断需要执行;
+            :通过preempt_count中的软中断计数器加一，禁用软中断;
+            while (循环次数小于固定值 && 有需要执行的软中断) is (true)
+                :清除软中断掩码，以便可以激活新的软中断;
+                :开中断;
+                :根据保存下来的pending的软中断，依次执行对应的action;
+                :关中断;
+                :保存本地CPU有哪些软中断需要执行;
+            endwhile
+            if (还有需要执行的软中断？) then (yes)
+                :通过wakeup_softirqd()调度内核线程来执行待执行的软中断;
+            endif
+            :premmpt_count中的软中断计数器减一;
+        }
+        :如果切换了栈，那么切换回去;
+        :重载之前保存的IF标志;
+    endif
+}
+stop
+```
+
+## 为低响应延迟做的trade-off
+
+不管是中断的响应还是用户态程序，我们都希望能够尽快的被执行。
+
+这个目标需要考虑以下几个要素：
+
+1. 不论是中断的发生还是等待执行的用户态程序数量都可能突然的增多。
+1. 中断会在任意时刻发生，包括中断被处理的时候。
+1. 更多的情况下，希望的是稳定的延迟；如果可能，应该尽量避免延迟突增的情况。
+
+为了解决以上的问题，通过引入任务优先级(Critical,Noncritical, Noncritical deferrable)和限流（限制每次调度，执行可延迟函数循环的次数和引入ksoftirqd内核线程）做到了平衡。
+
+通过拆分任务的优先级，可以将一些操作延后操作，提高短时间的中断吞吐。
+
+通过限制每次执行有限次数的可延迟函数循环，处理可延迟函数时再激活的可延迟函数的情况。
+
+1. 如果不执行处理可延迟函数时激活的可延迟函数，那么可延迟函数的延迟就会增加。
+1. 如果执行完直到没有挂起的可延迟函数，那么其他进程的延迟就会增加。
+
+通过增加限制循环的次数，在两者间做了合适的平衡。
