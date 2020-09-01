@@ -1,7 +1,7 @@
 ---
 title: "中断与异常"
 date: 2020-08-29T10:44:52+08:00
-draft: true
+draft: false
 tags:
     - what
     - linux
@@ -88,6 +88,51 @@ hardware circuits both inside and outside the CPU chip.
 
 # Linux上的处理流程
 
+## 硬件上，中断与异常的处理流程是一样的
+
+```plantuml
+@startuml
+start
+:PIC模块向CPU发送中断信号;
+while (没关机)
+    if (是否发生了异常或中断) then (Yes)
+        :根据中断向量查找到handler的描述符;
+        :检查权限，并在需要的时候切换堆栈;
+        :保存eflags cs eip;
+        :跳转到对应的处理程序;
+        :处理程序调用iret指令返回;
+        :恢复之前保存的eflags cs eip;
+        if (之前切换了堆栈) then (Yes) 
+            :切换回之前的堆栈;
+            :清除非不同权限的段寄存器;
+        endif
+    endif
+    :执行下一个指令;
+endwhile
+stop
+@enduml
+```
+
+
+
+
+
+## 中断上下文与为什么中断服务例程不能发生进程切换。
+
+中断与异常的处理函数（以下简称处理函数）运行在`中断上下文(interrupt context)`中，相较于进程上下文，更轻量，且没有进程的概念。
+
+这意味着在处理函数中进行进程切换是无意义的，因为没有可以调度的进程。
+
+在ISR中不能进行进程切换，我理解是一种**设计思路**，这样的设计会让ISR的实现简洁清晰。
+如果需要的话，我认为是可以实现一种在ISR中进行进程切换的OS的（在接收到ISR的时候开一个进程就好啦，当然细节很复杂）。
+不过允许在ISR中进行进程切换是一件没有太大意义的设计，所以绝大多数操作系统都是不允许切换的。
+至于通过工作队列实现进程切换算不算是ISR就是个人选择的问题了。
+
+参考
+
+- [[Quora]Why can't you sleep in an interrupt handler in the Linux kernel? Is this true of all OS kernels?](https://www.quora.com/Why-cant-you-sleep-in-an-interrupt-handler-in-the-Linux-kernel-Is-this-true-of-all-OS-kernels)
+- [[Stackoverflow]Why kernel code/thread executing in interrupt context cannot sleep?](https://stackoverflow.com/questions/1053572/why-kernel-code-thread-executing-in-interrupt-context-cannot-sleep)
+
 ## 异常处理
 
 ```plantuml
@@ -112,6 +157,8 @@ stop
 
 ## 中断处理
 
+中断的处理与异常最大的不同是，中断会在任意时刻发生的，这个时候运行的进程和这个中断并无特别的联系，而异常一定是上一个指令产生的，这个时候一定是current这个进程造成的。
+
 ### I/O中断
 
 ```plantuml
@@ -121,7 +168,7 @@ title I/O中断的处理
 start
 partition common_interrupt {
     partition 在内核堆栈中保存IRQ的值和寄存器的数据 {
-        :SAVE_ALL 具体保存寄存器;
+        :SAVE_ALL 具体保存寄存器，关闭本地中断;
     }
     :movl %esp, %eax 保存栈顶地址到eax;
     partition "do_IRQ() 调用具体的处理函数" {
@@ -142,7 +189,11 @@ partition common_interrupt {
                     end note
                     :清除IRQ_PENDING;
                     :释放锁;
-                    :调用handle_IRQ_event处理中断;
+                    partition "调用handle_IRQ_event处理中断" {
+                        :如果ISR不需要关中断的情况下执行，那么开启本地中断;
+                        :依次执行action **这里本地中断可能是打开的**;
+                        :使用cli禁止本地中断;
+                    }
                     :加锁;
                 endwhile
                 :清除IRQ描述符状态 IRQ_INPROGRESS;
@@ -159,9 +210,6 @@ partition common_interrupt {
         :jmp ret_from_intr;
     }
 }
-:给PIC回应，来允许PIC发出接下里的中断;
-:执行共享该IRQ的所有设备的中断服务例程;
-:通过ret_from_intr()从流程中退出;
 stop
 @enduml
 ```
@@ -178,6 +226,10 @@ todo
 1. 压入向量号-256
 1. 调用对应的高级C函数处理中断
 
+## 从中断和异常中返回
+
+从内核路径中返回到之前的运行环境，需要考虑内核抢占、是否返回到用户态、调试等情况。
+
 # 提高中断与异常的响应速度
 
 Linux根据响应中断要执行的操作的紧急程度分为三种：
@@ -186,7 +238,7 @@ Linux根据响应中断要执行的操作的紧急程度分为三种：
 - 非紧急的 noncritical
 - 非紧急可延迟的 noncritical deferrable
 
-Linux利用`可延迟函数`和`工作队列`来尽可能的减少中断服务例程中的耗时来实现提高响应速度的目的。
+中断服务例程将可延迟的工作交给`可延迟函数`和`工作队列`执行来尽可能的减少中断服务例程中的耗时来实现提高响应速度的目的。
 
 中断服务例程使用可延迟函数来执行`非紧急可延迟的操作`。
 
@@ -236,11 +288,11 @@ Linux利用`可延迟函数`和`工作队列`来尽可能的减少中断服务�
 
     SCSI(small computer system interface)命令的后台中断处理。
 
-1. TASKLET_SOFTIREQ
+1. TASKLET_SOFTIRQ
 
 #### 相关的数据结构
 
-1. 我称为`软中断概念描述符`的`softirq_action`，定义了一个可延迟函数。
+1. 我称为`软中断描述符`的`softirq_action`，定义了一个可延迟函数。
 
 1. 当前进程或内核线程的`thread_info.preempt_count`字段，
 标记了禁用内核抢占的次数、可延迟函数的禁用次数、本地CPU上的中断嵌套层数。
@@ -289,6 +341,36 @@ partition do_softirq() {
 stop
 ```
 
+### tasklet
+
+tasklet基于`HI_SOFTIRQ`/`TASKLET_SOFTIRQ`两种软中断实现。
+
+tasklet的处理流程类似软中断，主要的不同在于，同类型的tasklet同时只会运行一个。
+
+## 工作队列:
+
+工作队列是另一种执行可延迟工作的工具。
+
+调用方向工作队列提交任务，随后，任务由叫做`工作者线程`的内核线程执行。
+
+与可延迟函数最大的不同在于，工作队列中的函数运行在`进程上下文`中，这意味着，工作队列中的函数可以执行阻塞进程的操作，如访问磁盘。
+
+### 创建工作队列
+
+使用`create_workqueue(queue_name)`创建一个有CPU个数工作者线程的工作队列。
+
+使用`create_singlethread_workqueue(queue_name)`创建只有一个工作者线程的工作队列。
+
+### 向工作队列加入任务
+
+加入流程比较简单，检查是否在队列中后，append到任务链表，尝试唤醒等待新任务的工作者线程。
+
+又有函数可以延迟一定tick数后将任务append到队列中。
+
+### 通常使用系统预定义的`events`队列
+
+### 要注意的是，工作队列中的函数时串行执行的，尽量不要让任务阻塞太长时间
+
 ## 为低响应延迟做的trade-off
 
 不管是中断的响应还是用户态程序，我们都希望能够尽快的被执行。
@@ -303,9 +385,9 @@ stop
 
 通过拆分任务的优先级，可以将一些操作延后操作，提高短时间的中断吞吐。
 
-通过限制每次执行有限次数的可延迟函数循环，处理可延迟函数时再激活的可延迟函数的情况。
+通过限制每次执行有限次数的可延迟函数循环和较低优先级的内核线程，处理可延迟函数时再激活的可延迟函数的情况。
 
 1. 如果不执行处理可延迟函数时激活的可延迟函数，那么可延迟函数的延迟就会增加。
 1. 如果执行完直到没有挂起的可延迟函数，那么其他进程的延迟就会增加。
 
-通过增加限制循环的次数，在两者间做了合适的平衡。
+只处理有限次保证了可延迟函数不会出现长时间阻塞其他进程的情况。通过较低优先级的内核线程继续处理，可以实现：负载较高的情况下，不阻塞用户程序；负载较低的情况下，快速执行。
