@@ -12,3 +12,8 @@ draft: false
 - [图书](https://b-ok.global)
 - [MDN](https://developer.mozilla.org/zh-CN/)
 - [PlantUML](https://plantuml.com/zh/)
+- [Linux源码在线查看](https://elixir.bootlin.com/linux/latest/source)
+
+# Linux
+
+- [syscalls.h](https://elixir.bootlin.com/linux/v2.6.24/source/include/linux/syscalls.h)
