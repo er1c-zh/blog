@@ -43,6 +43,14 @@
     code.parentNode.insertBefore(image, code);
     code.style.display = 'none';
   });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; // Lazy loading
+    image.src = 'http://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
 })();
 </script>
 {{ end }}
