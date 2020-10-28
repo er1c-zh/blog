@@ -2,6 +2,8 @@
 title: "备忘录"
 date: 2020-08-21T22:31:07+08:00
 draft: false
+tags:
+  - memo
 ---
 
 # 网站

@@ -1,9 +1,9 @@
 ---
-title: "mysql相关操作备忘录"
+title: "MySQL相关操作备忘录"
 date: 2020-10-28T19:02:37+08:00
 draft: false
 tags:
-    - mysql
+    - MySQL
     - memo
     - how-to
 ---
