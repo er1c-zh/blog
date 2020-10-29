@@ -137,7 +137,9 @@ Next-Key锁是一个记录锁和锁定该记录前的间隙的间隙锁的组合
 以下试验如无特殊说明，均在RR隔离级别下，数据库版本5.7。
 
 有的试验不得不改动表结构才能得出结论，所以有的试验数据不太符合。
+
 表结构：
+
 ```mysql
 CREATE TABLE `t1` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -145,10 +147,12 @@ CREATE TABLE `t1` (
   `str` varchar(128) NOT NULL DEFAULT '',
   `no_idx_val` int(11) NOT NULL DEFAULT '0',
   `uni_val` int(11) NOT NULL DEFAULT '0',
+  `val_with_idx_2` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uni_uni_val` (`uni_val`),
-  KEY `idx_val` (`val`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+  KEY `idx_val` (`val`),
+  KEY `idx_val2` (`val_with_idx_2`)
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8
 ```
 
 ## 1. 自增主键，并发插入
@@ -159,46 +163,48 @@ CREATE TABLE `t1` (
 
 1. 分别开启两个事务先后执行
 
-  ```mysql
-  # transactionA
-  insert into t1 (val, str, no_idx_val, uni_val) values (8, 'record8', 8, 8);
-  # transactionB
-  insert into t1 (val, str, no_idx_val, uni_val) values (10, 'record8', 10, 10);
-  ```
+    ```mysql
+    # transactionA
+    insert into t1 (val, str, no_idx_val, uni_val) values (8, 'record8', 8, 8);
+    # transactionB
+    insert into t1 (val, str, no_idx_val, uni_val) values (10, 'record8', 10, 10);
 
 1. 在提交之前的`show engine innodb status`
 
-  ```
-  ------------
-  TRANSACTIONS
-  ------------
-  Trx id counter 2966
-  Purge done for trx's n:o < 2963 undo n:o < 0 state: running but idle
-  History list length 34
-  LIST OF TRANSACTIONS FOR EACH SESSION:
-  ---TRANSACTION 422034519421440, not started
-  0 lock struct(s), heap size 1136, 0 row lock(s)
-  ---TRANSACTION 422034519418704, not started
-  0 lock struct(s), heap size 1136, 0 row lock(s)
-  ---TRANSACTION 2965, ACTIVE 21 sec
-  1 lock struct(s), heap size 1136, 0 row lock(s), undo log entries 1
-  MySQL thread id 11, OS thread handle 140559053973248, query id 430 localhost root
-  ---TRANSACTION 2963, ACTIVE 94 sec
-  1 lock struct(s), heap size 1136, 0 row lock(s), undo log entries 1
-  MySQL thread id 4, OS thread handle 140559054243584, query id 425 localhost root
-  ```
+    ```text
+    ------------
+    TRANSACTIONS
+    ------------
+    Trx id counter 2966
+    Purge done for trx's n:o < 2963 undo n:o < 0 state: running but idle
+    History list length 34
+    LIST OF TRANSACTIONS FOR EACH SESSION:
+    ---TRANSACTION 422034519421440, not started
+    0 lock struct(s), heap size 1136, 0 row lock(s)
+    ---TRANSACTION 422034519418704, not started
+    0 lock struct(s), heap size 1136, 0 row lock(s)
+    ---TRANSACTION 2965, ACTIVE 21 sec
+    1 lock struct(s), heap size 1136, 0 row lock(s), undo log entries 1
+    MySQL thread id 11, OS thread handle 140559053973248, query id 430 localhost root
+    ---TRANSACTION 2963, ACTIVE 94 sec
+    1 lock struct(s), heap size 1136, 0 row lock(s), undo log entries 1
+    MySQL thread id 4, OS thread handle 140559054243584, query id 425 localhost root
+    ```
 
 1. 先提交后写入语句的事务，发现较小的id由先写入命令的事务获得。
-  ```
-  +----+--------+----------+------------+---------+
-  | id | val    | str      | no_idx_val | uni_val |
-  +----+--------+----------+------------+---------+
-  ...
-  | 10 |      8 | record8  |          8 |       8 |
-  | 12 |     10 | record10 |         10 |      10 |
-  +----+--------+----------+------------+---------+
 
-  ```
+    ```ditaa
+    @startuml
+    ditaa
+    +----+--------+----------+------------+---------+
+    | id | val    | str      | no_idx_val | uni_val |
+    +----+--------+----------+------------+---------+
+    | .. | ...... | ........ | .......... | ....... |
+    | 10 |      8 | record8  |          8 |       8 |
+    | 12 |     10 | record10 |         10 |      10 |
+    +----+--------+----------+------------+---------+
+    @enduml
+    ```
 
 ## 2. 在非主键索引上获取排他锁，会发生什么？
 
@@ -207,10 +213,9 @@ CREATE TABLE `t1` (
     结论：
 
       1. 会为符合条件的记录在主键记录上行锁排他。
-      1. 会为符合条件的记录在唯一索引记录上行锁排他。
       1. 会在该非唯一索引上加一个间隙锁，范围是该值的前后两个值，均为开区间。
           1. 即假设数据有333,4444,55555，那么间隙锁的范围是(334,55554)。
-      1. 因为状态展示提示有5个行被锁了，可能是非唯一索引上的该值的记录有一个排他行锁。
+      1. 非唯一索引上的该值的记录有一个排他行锁。
 
     数据：
 
@@ -237,6 +242,7 @@ CREATE TABLE `t1` (
     ```
 
     过程：
+
     ```mysql
     # 1. transaction A
     update t1 set val=998 where val=9999;
@@ -258,19 +264,41 @@ CREATE TABLE `t1` (
 
 1. 非主键唯一索引相等搜索
 
-todo
+    结论：
+
+    1. 会为符合条件的记录在主键记录上行锁排他。
+    1. 会为符合条件的记录在该唯一索引记录上行锁排他，**没有间隙锁**。
+    1. 因为状态展示提示有5个行被锁了，可能是非唯一索引上的该值的记录有一个排他行锁。
 
 1. 非主键非唯一索引范围搜索
 
-todo
+    结论：
+
+      1. 会把符合条件的记录的主键加一个排他行锁
+      1. 会在非唯一索引的符合条件的记录上加一个行锁
+      1. 会加一个间隙锁，范围类似上述的非唯一索引相等的情况
+          1. 即假设数据有333,4444,55555，搜索条件是2000~5000，那么间隙锁的范围是(334,55554)。
 
 1. 非主键唯一索引范围搜索
 
-todo
+    结论：
 
-## 3. 在无索引列上进行范围查询或更新。
+      1. 会把符合条件的记录的主键加一个排他行锁
+      1. 会在唯一索引的符合条件的记录上加一个行锁
 
-todo
+## 3. 在无索引列上进行一行的排他操作和范围的排他操作。
+
+**会锁所有的行和[-inf, +inf]区间。**
+
+操作：
+
+```mysql
+select * from t1 where no_idx_val = 4 for update;
+```
+
+所以说，根据无索引的条件进行筛选，是一个比较危险的操作。
+
+简单来说，如果不锁全表，就无法通过锁来控制符合条件的并发修改，看起来也是合理的。
 
 # 参考
 
