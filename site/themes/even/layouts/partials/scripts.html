@@ -39,7 +39,7 @@
   Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
     let image = document.createElement("IMG");
     image.loading = 'lazy'; // Lazy loading
-    image.src = 'http://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
     code.parentNode.insertBefore(image, code);
     code.style.display = 'none';
   });
@@ -47,7 +47,7 @@
   Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
     let image = document.createElement("IMG");
     image.loading = 'lazy'; // Lazy loading
-    image.src = 'http://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
     code.parentNode.insertBefore(image, code);
     code.style.display = 'none';
   });
