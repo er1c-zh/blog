@@ -457,7 +457,7 @@ type g struct {
 	// scan work. We track this in bytes to make it fast to update
 	// and check for debt in the malloc hot path. The assist ratio
 	// determines how this corresponds to scan work debt.
-	gcAssistBytes int64
+	gcAssistBytes int64 // 当前goroutine已经帮助gc的字节数
 }
 
 // 一个m实例表示一个操作系统线程
