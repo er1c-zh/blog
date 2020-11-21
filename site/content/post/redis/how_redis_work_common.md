@@ -1,14 +1,20 @@
 ---
 title: "redis指令的实现-基础接口"
 date: 2020-11-11T20:21:00+08:00
-draft: true
+draft: false
 tags:
     - redis
     - what
     - how-redis-work
+order: 0
 ---
 
+
 这里主要用来放置数据库接口等基础接口的简单分析。
+
+<!--more--> 
+
+{{% serial_index how-redis-work %}}
 
 # 获取key对应的对象
 

@@ -1,0 +1,20 @@
+{{ $_hugo_config := `{ "version": 1 }` }}
+<!--more-->
+{{ $tag := .Get 0 }}
+{{ range .Site.AllPages }}
+    {{ if eq .Type "tags" }}
+        {{ if eq .Title $tag }}
+            {{ if .Data.Pages }}
+                <div class="serial-index">
+                    <p>系列列表</p>
+                    <ul>
+                    {{ range sort .Data.Pages ".Params.Order" "asc" }}
+                        <li><a herf="{{ .Permalink }}">{{ .Title }}</a></li>
+                    {{ end }}
+                    </ul>
+                </div>
+            {{ end }}
+        {{ end }}
+    {{ end }}
+{{ end }}
+
