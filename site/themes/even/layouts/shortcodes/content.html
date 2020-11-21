@@ -1,0 +1,6 @@
+{{ $_hugo_config := `{ "version": 1 }` }}
+{{ $path := .Get 0 }}
+{{ $page := .Site.GetPage $path }}
+{{ $data := $page.RawContent }}
+{{ $data | .Page.RenderString }}
+

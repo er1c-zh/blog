@@ -157,6 +157,33 @@ struct redisCommand redisCommandTable[] = {
 }
 ```
 
+## `redisComand`
+
+每个指令都有一个`redisCommand`实例，来表明如何执行该指令。
+
+```c
+// src/server.h#1500
+struct redisCommand {
+    char *name; // 指令的名称
+    redisCommandProc *proc; // 具体的执行函数
+    int arity; // 参数个数
+    char *sflags;   /* 字符串形式的标记 */
+    uint64_t flags; /* 由sflags计算来的数字形式的标记 */
+    /* Use a function to determine keys arguments in a command line.
+     * Used for Redis Cluster redirect. */
+    redisGetKeysProc *getkeys_proc; // 用于从指令中提取出所有的键，用于集群的转发
+                                    // 只有当下面三个参数无法确定键时才会被使用
+    /* What keys should be loaded in background when calling this command? */
+    // 那些键值对需要在后台加载
+    int firstkey; /* 第一个作为key的参数的位置 */
+    int lastkey;  /* 最后一个作为key的参数的位置 */
+    int keystep;  /* 每个key之间的间隔 */
+    long long microseconds, calls; // microseconds 执行这个指令所耗费的总时间
+                                   // calls 统计数据，对这个指令调用的次数
+    int id;     /* 指令的id 用于ACL检查或其他因素 */
+};
+```
+
 # 返回结果
 
 对于不同的执行路径，最终都使用类似`addReply`的方法添加结果到输出缓冲区。

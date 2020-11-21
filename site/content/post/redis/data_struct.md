@@ -39,7 +39,7 @@ redis在底层实现了若干数据结构：
 typedef struct redisObject {
     unsigned type:4; // 类型
     unsigned encoding:4; // 编码
-    unsigned lru:LRU_BITS; /* LRU time (relative to global lru_clock) or
+    unsigned lru:LRU_BITS; /* 内存逐出策略非LFU时，存储的是用来执行LRU的最后访问时间
                             * LFU data (least significant 8 bits frequency
                             * and most significant 16 bits access time). */
     int refcount; // 引用计数
