@@ -166,7 +166,7 @@ struct redisCommand redisCommandTable[] = {
 struct redisCommand {
     char *name; // 指令的名称
     redisCommandProc *proc; // 具体的执行函数
-    int arity; // 参数个数
+    int arity; // 参数个数 负数表示不少于对应的个数
     char *sflags;   /* 字符串形式的标记 */
     uint64_t flags; /* 由sflags计算来的数字形式的标记 */
     /* Use a function to determine keys arguments in a command line.

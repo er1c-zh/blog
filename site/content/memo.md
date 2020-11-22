@@ -8,7 +8,6 @@ tags:
 
 # 网站
 
-- [正则表达式速查](/post/memo/regex/)
 - [正则表达式在线检查](https://regex101.com)
 - [Nginx在线检查](https://nginx.viraptor.info)
 - [图书](https://b-ok.global)
@@ -19,3 +18,9 @@ tags:
 # Linux
 
 - [syscalls.h](https://elixir.bootlin.com/linux/v2.6.24/source/include/linux/syscalls.h)
+
+# 各种备忘集合
+
+- [正则表达式速查]({{< relref "/post/memo/regex.md" >}})
+- [缩写]({{< relref "post/memo/abbr.md" >}})
+- [基础知识]({{< relref "post/memo/abc.md" >}})
