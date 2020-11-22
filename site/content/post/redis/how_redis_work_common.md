@@ -3,9 +3,9 @@ title: "redis指令的实现-基础接口"
 date: 2020-11-11T20:21:00+08:00
 draft: false
 tags:
-    - redis
-    - what
-    - how-redis-work
+  - redis
+  - what
+  - how-redis-work
 order: 0
 ---
 
@@ -15,6 +15,18 @@ order: 0
 <!--more--> 
 
 {{% serial_index how-redis-work %}}
+
+# 基础的参数格式
+
+对于每个`client`中有两个变量来存储参数的个数和具体的值：
+
+```c
+  // ...
+  // server.h#800
+    int argc;               /* 当前命令的参数的个数 */
+    robj **argv;            /* 参数的数组，0是指令名（如get），后续依次递增 */
+  // ...
+```
 
 # 获取key对应的对象
 
