@@ -114,7 +114,7 @@ robj *createObject(int type, void *ptr) {
 *** 简单动态字符串实现
 ** OBJ_LIST
 *** 快列表
-*** 压缩列表
+*** 压缩列表 （按照ENCODING列表来看，\n是有用到的，但是具体实现感觉没有）
 *** 普通链表 不再使用
 ** OBJ_SET
 *** 哈希表
