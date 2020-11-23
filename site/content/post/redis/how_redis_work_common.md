@@ -171,11 +171,27 @@ int prepareClientToWrite(client *c) {
 }
 ```
 
-具体命令的实现是使用下述的几个更高级别的函数。
+下述的三个更高级别的函数利用上述的两个基础函数完成写入：
 
 - `addReply(client *c, robj *obj)` 将字符串对象`obj`(字符串和数字)尝试写入`buffer`，如果失败，则尝试写入`reply`链表。
 - `addReplySds(client *c, sds s)` 将`s`写入回复，并释放。
-- etc
+- `addReplyProto(client *c, const char *s, size_t len)` 相较于其他的方法更加的高效。
+
+其他的方法均基于上述的三个方法实现，业务使用这些包装方法来实现业务。
+这些包装的方法与协议息息相关，我认为可以看作是协议返回相关的具体实现。
+
+选择一个方法作为例子，简单介绍下：
+
+`addReplyBulk`写入bulk类型的数据
+
+```c
+void addReplyBulk(client *c, robj *obj) {
+  addReplyBulkLen(c,obj); // 会先写入协议中要求的$字符和长度
+  addReply(c,obj); // 写入结果
+  addReply(c,shared.crlf); // 写入结尾的CRLF
+}
+```
+
 
 # 操作数据库的键值对
 
@@ -202,7 +218,47 @@ redis通过将有过期时间的键作为键、将过期时间的绝对时间戳
 
 系统还提供了检查键是否过期的`keyIsExpired`和用来检查并处理已经过期的键的`expireIfNeeded`。
 
-`expireIfNeeded`通常在键被访问的地方调用，函数中首先判断是否过期。
+对于过期的键的剔除有两种途径：被动删除与主动删除。
+
+对于主动删除，redis会每秒十次的尝试清理过期键。
+通过后台的定时循环调用`activeExpireCycle`实现。
+
+```c
+void activeExpireCycle(int type) {
+  // ...
+  for (j = 0; j < dbs_per_call && timelimit_exit == 0; j++) {
+    // 迭代适当数量的数据库
+    // ...
+    redisDb *db = server.db+(current_db % server.dbnum); // 选择出要执行的数据库
+    // ...
+
+    // 如果每次循环检查，有超过一定比例的键过期，那么就再次查找
+    do {
+      // 如果没有设置了过期事件的键、hash表过于稀疏，停止检查
+      // ...
+      // 开始抽样检查
+      // ...
+      while (sampled < num && checked_buckets < max_buckets) {
+        // ...
+                  // 检查是否过期并处理
+                  ttl = dictGetSignedIntegerVal(e)-now;
+                  if (activeExpireCycleTryExpire(db,e,now)) expired++;
+        // ...
+      }
+      // ...
+      if ((iteration & 0xf) == 0) { /* check once every 16 iterations. */
+        // 如果消耗过长时间就放弃
+        // ...
+      }
+    } while (sampled == 0 || /* 如果每次循环检查，有超过一定比例的键过期，那么就再次查找 */
+             (expired*100/sampled) > config_cycle_acceptable_stale);
+  }
+  // ...
+}
+```
+
+被动删除通过`expireIfNeeded`通常在键被访问的地方调用来实现。
+函数中首先判断是否过期，
 如果过期了，对于从实例，会直接返回结果；
 对于主实例，会：
   1. 更新统计数据
@@ -216,4 +272,7 @@ redis通过将有过期时间的键作为键、将过期时间的绝对时间戳
 对于过期的键值对的处理同时需要应用在AOF和从实例上，这个功能由`propagateExpire`来实现。
 两者的操作相似，通过生成一个`DEL`或`UNLINK`命令来实现标记对应的键为过期的目的。
 
+# 参考
 
+- [how-redis-expires-keys](https://redis.io/commands/expire#how-redis-expires-keys)
+- [redis protocol](https://redis.io/topics/protocol)

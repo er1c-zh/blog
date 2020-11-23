@@ -9,7 +9,7 @@
                     <p>系列列表</p>
                     <ul>
                     {{ range sort .Data.Pages ".Params.Order" "asc" }}
-                        <li><a herf="{{ .Permalink }}">{{ .Title }}</a></li>
+                        <li><a href="{{ .Permalink }}">{{ .Title }}</a></li>
                     {{ end }}
                     </ul>
                 </div>
