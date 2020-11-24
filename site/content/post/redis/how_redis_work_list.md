@@ -133,10 +133,78 @@ entry->zi = ziplistIndex(entry->node->zl, entry->offset);
 
 # `LRANGE`
 
+利用迭代器去遍历，这个过程没有什么特别的。
+
+利用`listTypeInitIterator`生成从指定位置开始迭代的迭代器。
+最终落到快速列表的`quicklistGetIteratorAtIdx`上：
+
+```c
+quicklistIter *quicklistGetIteratorAtIdx(const quicklist *quicklist,
+                                         const int direction,
+                                         const long long idx) {
+    quicklistEntry entry;
+
+    if (quicklistIndex(quicklist, idx, &entry)) { // 确定具体的节点
+        // 构建迭代器
+        quicklistIter *base = quicklistGetIterator(quicklist, direction);
+        base->zi = NULL;
+        base->current = entry.node;
+        base->offset = entry.offset;
+        return base;
+    } else {
+        return NULL;
+    }
+}
+```
+
 # `LTRIM`
+
+核心是利用快速列表的`quicklistDelRange`接口移除前后的其他数据。
 
 # `LPOS`
 
+```redis
+LPOS key element [RANK rank] [COUNT num-matches] [MAXLEN len]
+```
+
+- 返回element的位置
+- 返回第rank个匹配的位置
+- 返回num-matches个答案
+- 扫描最多len个元素，0扫全表
+
+实现显然可以简单的通过迭代器来完成。
+
 # `LREM`
 
+实现显然可以简单的通过迭代器来查找目标对象，
+随后调用`listTypeDelete`移除。
+
 # `SORT`
+
+**O(N+Mlog(M))** N是列表中的元素数量，M是要返回的数量。
+
+```redis
+SORT key [BY pattern] [LIMIT offset count] [GET pattern [GET pattern ...]] [ASC|DESC] [ALPHA] [STORE destination]
+```
+
+- ALPHA 按照字典序排序
+- LIMIT offset count 类似SQL，表示从offset开始，查询count个
+- BY pattern 指令按照pattern和列表中元素的值，生成key，然后按照这个key存储的值作为排序的依据进行排序
+- GET pattern 指令会返回按照pattern和列表中元素的值，生成key，然后按照排序的结果依序返回生成的key对应的值
+
+首先解析请求参数。
+
+随后按照不同的类型（列表/集合/有续集合），读取出容器中的数据。这部分有一些不需要排序情况下的fast-path，暂且略过。
+
+获取容器中的数据后，按照不同的参数，去获取用来排序的值：
+- 设置了`BY pattern`，使用`lookupKeyByPattern`来构建键并查找对应的值。
+
+然后就是排序，对于要全部排序的采用`qsort`；对于部分排序使用redis自己实现的`pqsort`。
+
+最后是返回结果。
+没有制定`GET`的话，直接将排序值返回即可；
+否则需要利用`lookupKeyByPattern`来查找需要的值。
+
+## 参考
+
+- [redis sort](https://redis.io/commands/sort)
