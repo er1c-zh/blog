@@ -272,6 +272,105 @@ void activeExpireCycle(int type) {
 对于过期的键值对的处理同时需要应用在AOF和从实例上，这个功能由`propagateExpire`来实现。
 两者的操作相似，通过生成一个`DEL`或`UNLINK`命令来实现标记对应的键为过期的目的。
 
+# 阻塞指令的实现
+
+比如`BLPOP`这种指令，在没有数据的情况下，会阻塞直到有数据可以返回。
+
+具体的实现上，区分了有无数据的情况：
+
+- 对于有数据的情况，会转而执行指令的非阻塞版本，返回结果。
+- 队伍无数据的情况，会将客户端放到`db.blocking_keys`要等待的键的链表上。
+  随后会等待插入的指令来唤醒阻塞的客户端。
+
+简单看下阻塞的实现：
+```c
+void blockForKeys(client *c, int btype, robj **keys, int numkeys, mstime_t timeout, robj *target, streamID *ids) {
+  dictEntry *de;
+  list *l;
+  int j;
+
+  c->bpop.timeout = timeout; // 要等待到该时间戳
+  c->bpop.target = target; // 需要接收到数据的键
+
+  if (target != NULL) incrRefCount(target);
+
+  for (j = 0; j < numkeys; j++) { // 依次遍历要等待的key
+    bkinfo *bki = zmalloc(sizeof(*bki)); // 构建一个阻塞信息节点对象
+    if (btype == BLOCKED_STREAM)
+      bki->stream_id = ids[j]; // 对于阻塞在流上，记录id
+
+    if (dictAdd(c->bpop.keys,keys[j],bki) != DICT_OK) {
+      zfree(bki);
+      continue; // 如果目标key已经存在，忽略
+    }
+    incrRefCount(keys[j]);
+
+    de = dictFind(c->db->blocking_keys,keys[j]); // 查找要等待的key的等待列表
+    if (de == NULL) { // 如果不存在，那么新建一个列表
+      int retval;
+
+      l = listCreate();
+      retval = dictAdd(c->db->blocking_keys,keys[j],l);
+      incrRefCount(keys[j]);
+      serverAssertWithInfo(c,keys[j],retval == DICT_OK);
+    } else {
+      l = dictGetVal(de); // 如果存在，直接获取对应的列表
+    }
+    listAddNodeTail(l,c); // 将等待信息追加到尾部
+    bki->listnode = listLast(l); // 在阻塞信息记录放置的节点
+  }
+  blockClient(c,btype); // 主要是设置了客户端的阻塞标志，
+                        // 并加入到超时检查表中server.clients_timeout_table
+                        // 其实现是一个基数树 radix tree，能够快速的查找到长整数
+}
+```
+
+随后阻塞会被`handleClientsBlockedOnKeys`唤醒。
+这个函数在两个场景会被调用：
+
+- 每个指令执行结束且有处于就绪状态的键
+- 每个主循环的`beforeSleep`方法会执行一次
+
+```c
+void handleClientsBlockedOnKeys(void) {
+    while(listLength(server.ready_keys) != 0) {
+        // ...
+        // 存下就绪的key
+        l = server.ready_keys;
+        server.ready_keys = listCreate();
+        // ...
+
+        while(listLength(l) != 0) { // 遍历每个就绪的键
+            listNode *ln = listFirst(l);
+            readyList *rl = ln->value;
+
+            dictDelete(rl->db->ready_keys,rl->key); // 移除每个db中的就绪key
+
+            robj *o = lookupKeyWrite(rl->db,rl->key); // 获取数据
+
+            if (o != NULL) {
+                // 根据类型唤醒对应的阻塞的客户端
+                // 方法内部按照FIFO唤醒阻塞的客户端
+                if (o->type == OBJ_LIST)
+                    serveClientsBlockedOnListKey(o,rl);
+                else if (o->type == OBJ_ZSET)
+                    serveClientsBlockedOnSortedSetKey(o,rl);
+                else if (o->type == OBJ_STREAM)
+                    serveClientsBlockedOnStreamKey(o,rl);
+            }
+            // ...
+        }
+        // ...
+    }
+}
+```
+
+最后简单介绍下超时的实现。
+redis会在每次`beforeSleep`中调用`handleBlockedClientsTimeout`来处理阻塞超时的客户端。
+其核心是利用`server.clients_timeout_table`的迭代器，遍历等待客户端，
+直到当前时间戳为止。
+
+
 # 参考
 
 - [how-redis-expires-keys](https://redis.io/commands/expire#how-redis-expires-keys)
