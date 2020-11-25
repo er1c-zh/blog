@@ -1,7 +1,7 @@
 ---
 title: "列表相关的实现"
 date: 2020-11-22T23:26:48+08:00
-draft: true
+draft: false
 tags:
   - redis
   - what
@@ -199,7 +199,9 @@ SORT key [BY pattern] [LIMIT offset count] [GET pattern [GET pattern ...]] [ASC|
 获取容器中的数据后，按照不同的参数，去获取用来排序的值：
 - 设置了`BY pattern`，使用`lookupKeyByPattern`来构建键并查找对应的值。
 
-然后就是排序，对于要全部排序的采用`qsort`；对于部分排序使用redis自己实现的`pqsort`。
+然后就是排序，对于要全部排序的采用`qsort`；
+对于部分排序使用redis自己实现的`pqsort`
+(可以看[另一篇文章]({{< relref "redis_pqsort.md" >}})简单分析了具体的实现)。
 
 最后是返回结果。
 没有制定`GET`的话，直接将排序值返回即可；

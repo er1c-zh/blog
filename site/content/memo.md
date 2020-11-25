@@ -21,6 +21,6 @@ tags:
 
 # 各种备忘集合
 
-- [正则表达式速查]({{< relref "/post/memo/regex.md" >}})
+- [正则表达式速查]({{< relref "post/memo/regex.md" >}})
 - [缩写]({{< relref "post/memo/abbr.md" >}})
 - [基础知识]({{< relref "post/memo/abc.md" >}})
