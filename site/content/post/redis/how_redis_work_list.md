@@ -15,7 +15,7 @@ redis列表相关指令的具体实现。
 
 {{% serial_index how-redis-work %}}
 
-分类按照命令表的flag来确定，字符串类的是包含`@list`标签的指令。
+分类按照命令表的flag来确定，列表的是包含`@list`标签的指令。
 
 *基于redis 6.0*
 
