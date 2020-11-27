@@ -1,7 +1,7 @@
 ---
 title: "集合的实现"
 date: 2020-11-26T01:34:30+08:00
-draft: true
+draft: false
 tags:
   - redis
   - what
@@ -74,3 +74,79 @@ robj *setTypeCreate(sds value) {
 然后利用`intsetRemove`或`setTypeRemove`来移除。
 
 随机依赖标准库的`random`(哈希表)或`rand`(整数集合)来实现。
+
+# ```SRANDMEMBER```
+
+如果没有指定数量，那么利用`setTypeRandomElement`来返回一个随机的元素**（但不删除）**。
+
+对于要返回多个的情况，使用的是`srandmemberWithCountCommand`，处理了正负参数的不同情况。
+如果是返回相同的元素（`count`是负数），通过多次调用`setTypeRandomElement`来实现；
+反之（`count`是正数），分为了三种情况来进行处理。
+简单看下`srandmemberWithCountCommand`的部分代码：
+```plantuml
+@startuml
+start
+if (可以返回重复的元素？) then (yes)
+  :调用相应次数的\nsetTypeRandomElement\n返回对应的元素;
+else (no)
+  if (集合的元素数量\n少于需要的数量？) then (yes)
+    :返回整个集合的元素;
+  else (no)
+    if (要返回的数量超过了\n集合数量的三分之一？) then(yes)
+      :通过迭代器将集合复制到\n辅助hash表中（顺便完成了去重）;
+      :通过dictGetRandomKey\n不断选取随机的元素删除，\n直到满足数量要求。;
+    else (no)
+      :随机选择值增加到\n辅助hash表中（去重），\n直到满足数量要求。;
+    endif
+  endif
+endif
+end
+@enduml
+```
+
+可以看到，为了减少随机函数的调用，
+在获取的数量占集合元素的数量比例较大时，
+会用移除代替增加来达到优化的效果。
+特别的，三分之一是因为，随机到的元素不会被移除，
+继续获取下一个时，会重复。
+
+# `SINTER`/`SINTERSTORE`/`SMEMBERS`
+
+取交集，或者取一个集合的交集（`SMEMBERS`）。
+最后都是落到`sinterGenericCommand`实现的。
+
+有几个比较有意思的优化：
+
+- 先根据集合的大小进行排序，先处理数量较小的集合。
+- 取交集的方法是遍历最小的集合的元素，不断的和后续的集合进行比较，
+  所有的集合都有这个元素时，增加到结果中。
+
+# `SUNION`/`SUNIONSTORE`
+
+并集，由`sunionDiffGenericCommand`实现。
+
+遍历所有的集合，平平无奇。
+
+# `SDIFF`/`SDIFFSTORE`
+
+返回只在第一个集合中出现的元素，由`sunionDiffGenericCommand`实现。
+
+diff有两种算法来实现，复杂度分别为：
+1. 第一个集合的长度 * 集合的数量
+1. 所有集合的元素
+
+所以实现中首先估计了两种算法的成本，然后就是算法的具体实现。
+
+算法一遍历首个集合的元素，依次与其他集合进行比较，如果都不存在，就加入结果。
+算法二将首个集合的元素都加入到辅助hash表，然后遍历后续的集合，
+将出现过的元素都尝试从辅助hash表中移除。
+
+# `SSCAN`
+
+最终落到`scanGenericCommand`上来完成。
+可以看下这篇文章[scan相关的实现]({{< relref "how_redis_work_common.md#scan相关的实现" >}})。
+
+# `SORT`
+
+与列表的实现类似。可以参考[列表的`SORT`接口实现]({{< relref "how_redis_work_list.md#sort" >}})
+

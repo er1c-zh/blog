@@ -370,6 +370,123 @@ redis会在每次`beforeSleep`中调用`handleBlockedClientsTimeout`来处理阻
 其核心是利用`server.clients_timeout_table`的迭代器，遍历等待客户端，
 直到当前时间戳为止。
 
+# scan相关的实现
+
+`SCAN`,`HSCAN`,`SSCAN`和`ZSCAN`四个scan命令最终都由`scanGenericCommand`实现。
+
+实现中，对于数据量可控的情况，采取了直接返回全部数据的方式，降低了复杂度，提高了性能。
+数据量大的情况均为hash表承载，由hash表的接口`dictScan`实现功能。
+
+```c
+// o 是要扫描的哈希表/集合/有序集合
+void scanGenericCommand(client *c, robj *o, unsigned long cursor) {
+    // ...
+
+    // 首先解析了参数，分别存到count/pat,use_pattern/type中
+    // ...
+
+    // 检查是否是hash表作为存储底层，如果是将ht指向对应的hash表。
+    ht = NULL;
+    if (o == NULL) {
+        // 如果传入的o为空，那么选择整个数据库
+        ht = c->db->dict;
+    } else if (o->type == OBJ_SET && o->encoding == OBJ_ENCODING_HT) {
+        // 由hash表表示的set
+        ht = o->ptr;
+    } else if (o->type == OBJ_HASH && o->encoding == OBJ_ENCODING_HT) {
+        // 由hash表表示的哈希表
+        ht = o->ptr;
+        count *= 2; /* We return key / value for this type. */
+    } else if (o->type == OBJ_ZSET && o->encoding == OBJ_ENCODING_SKIPLIST) {
+        // 由hash表表示的zset
+        zset *zs = o->ptr;
+        ht = zs->dict;
+        count *= 2; /* We return key / value for this type. */
+    }
+
+    if (ht) {
+        // ...
+        long maxiterations = count*10; // 设置迭代次数的上限，避免过长时间阻塞
+        do {
+            // 依赖hash表的接口来扫描
+            cursor = dictScan(ht, cursor, scanCallback, NULL, privdata);
+        } while (cursor &&
+              maxiterations-- &&
+              listLength(keys) < (unsigned long)count);
+    } else if (o->type == OBJ_SET) {
+        int pos = 0;
+        int64_t ll;
+
+        // 非hash表的实现数据量比较小
+        // 遍历全部，全部取出是可控的
+        while(intsetGet(o->ptr,pos++,&ll)) 
+            listAddNodeTail(keys,createStringObjectFromLongLong(ll));
+        cursor = 0;
+    } else if (o->type == OBJ_HASH || o->type == OBJ_ZSET) {
+        unsigned char *p = ziplistIndex(o->ptr,0);
+        unsigned char *vstr;
+        unsigned int vlen;
+        long long vll;
+
+        // 非hash表的实现数据量比较小
+        // 遍历全部，全部取出是可控的
+        while(p) {
+            ziplistGet(p,&vstr,&vlen,&vll);
+            listAddNodeTail(keys,
+                (vstr != NULL) ? createStringObject((char*)vstr,vlen) :
+                                 createStringObjectFromLongLong(vll));
+            p = ziplistNext(o->ptr,p);
+        }
+        cursor = 0;
+    } else {
+        serverPanic("Not handled encoding in SCAN.");
+    }
+
+    node = listFirst(keys);
+    while (node) {
+        robj *kobj = listNodeValue(node);
+        nextnode = listNextNode(node);
+        int filter = 0;
+
+        // 过滤pattern规定的格式 
+        // 过滤type
+        // 过滤过期键
+        // 具体实现不是重点
+        // ...
+
+        if (filter) {
+            decrRefCount(kobj);
+            // 如果不符合预期，那么从答案列表中移除
+            listDelNode(keys, node);
+        }
+
+        if (o && (o->type == OBJ_ZSET || o->type == OBJ_HASH)) {
+            // 对于要返回键值对的情况，那么值也要清除
+            node = nextnode;
+            nextnode = listNextNode(node);
+            if (filter) {
+                kobj = listNodeValue(node);
+                decrRefCount(kobj);
+                listDelNode(keys, node);
+            }
+        }
+        node = nextnode;
+    }
+
+    // 返回结果
+    // ...
+    addReplyBulkLongLong(c,cursor); // 新的游标
+    // ...
+    while ((node = listFirst(keys)) != NULL) {
+        // 返回结果
+        // ...
+    }
+
+cleanup:
+    // 清理资源
+    // ...
+}
+```
 
 # 参考
 
