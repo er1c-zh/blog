@@ -120,7 +120,7 @@ robj *createObject(int type, void *ptr) {
 *** 哈希表
 *** 整数集合
 ** OBJ_ZSET
-*** 跳表
+*** 有序列表使用的专用跳表 + 哈希表
 *** 压缩列表
 ** OBJ_HASH
 *** 压缩列表
@@ -279,16 +279,166 @@ typedef struct zskiplistNode {
     struct zskiplistNode *backward;
     struct zskiplistLevel {
         struct zskiplistNode *forward;
-        unsigned long span;
+        unsigned long span; // 当前层，距离下个节点之间的元素数量
     } level[];
 } zskiplistNode;
 
+// 跳表实例结构
 typedef struct zskiplist {
     struct zskiplistNode *header, *tail;
     unsigned long length;
     int level;
 } zskiplist;
 ```
+
+首先看下创建：
+
+```c
+zskiplist *zslCreate(void) {
+    int j;
+    zskiplist *zsl;
+
+    zsl = zmalloc(sizeof(*zsl)); // 分配内存
+    zsl->level = 1; // 初始化级别
+    zsl->length = 0; // 表中元素数量？
+    // 初始化一个节点
+    // 最大分层，内容为空，分数为0
+    zsl->header = zslCreateNode(/*level*/ZSKIPLIST_MAXLEVEL,/*score*/0,/*sds*/NULL);
+    for (j = 0; j < ZSKIPLIST_MAXLEVEL; j++) {
+        // 初始化各个level的值
+        zsl->header->level[j].forward = NULL;
+        zsl->header->level[j].span = 0;
+    }
+    zsl->header->backward = NULL;
+    zsl->tail = NULL;
+    return zsl;
+}
+```
+
+创建好了就该插入，由`zslInsert`完成。
+特别的，函数假定要插入的数据不在表中。
+
+首先看下简单的原理示例图，演示了向[11,23,35,40,44]中插入28的过程。
+插入从`zsl.header`开始，从左到右从上到下的检测插入的位置，
+遍历了位置红黄蓝粉，最后定位到虚线标记的地方：
+1. 首先从头节点开始（红色）。
+1. 从最大的level2开始检查，下一个节点的值23（黄色），小于28。继续找下一个节点发现为空，那么向下开始查找level1（蓝色）。
+1. level1查找下一个节点发现值40大于28，那么继续向下一层，到level0（绿色）。
+1. 继续向后查找，直到发现35，且没有下一层，那么就应该在这里插入。
+
+```ditaa
+@startuml
+ditaa
+   zsl.header                                               
++--------------+                                                 
+|  level_max   |                        update[2]                         |<---- span2 ---->|       
++--------------+                        update[1]                         :                 :  
+| level_max-1  |                            |                           position            |   
++--------------+                            |                         to insert 28          |     
+| level_max-2  |                            |                             :|                |      
++--------------+                            v                             :|                |     
+| ............ |                        data node         update[0]       :|                |     
++--------------+                     +--------------+         |           vv                |     
+|cREDlevel2    +-------forward------>+cYELlevel2    |         |         +=-----+            v       
++--------------+                     +--------------+         v         :      :           +------+            
+|    level1    +-------forward------>+cBLUlevel1    +------------------------------------->|level1|         
++--------------+           +------+  +--------------+  +--------------+ :      : +------+  +------+  +------+
+|    level0    +---------->|level0+->+    level0    +->|cPNKlevel0    +--------->|level0+->|level0+->|level0|
++--------------+  forward  +------+  +--------------+  +--------------+ |      | +------+  +------+  +------+
+                           |  11  |  |     23       |  |      26      | :      : |  35  |  |  40  |  |  44  |
+                           +------+  +---+----------+  +--------------+ +=-----+ +------+  +------+  +------+  
+                              ^          |     |<--------- span1 --------->|
+                              | backward |                 
+                              +----------+                 other backward one by one        
+@enduml
+```
+
+最后简单看下具体实现：
+
+```c
+zskiplistNode *zslInsert(zskiplist *zsl, double score, sds ele) {
+    zskiplistNode *update[ZSKIPLIST_MAXLEVEL]; // 每一层要插入的位置前面第一个节点，即带颜色的节点
+    zskiplistNode *x; // 遍历到的节点
+    unsigned int rank[ZSKIPLIST_MAXLEVEL]; // 每一层update存储的节点之前有多少元素
+    int i; // 当前level
+    int level; // 要插入的节点需要有level层
+
+    x = zsl->header; // 当前遍历到的节点
+    // 遍历每个level
+    for (i = zsl->level-1; i >= 0; i--) {
+        // 继承上一层的元素数量
+        rank[i] = i == (zsl->level-1) ? 0 : rank[i+1];
+        // 遍历level中的节点，直到找到要插入的位置
+        while (x->level[i].forward && // 当前level有下一个节点
+                // 且下一个节点的分数小于当前要插入的节点的分数
+                // （或分数相同且内容的字典序更小）
+                (x->level[i].forward->score < score ||
+                    (x->level[i].forward->score == score &&
+                    sdscmp(x->level[i].forward->ele,ele) < 0)))
+        {
+            rank[i] += x->level[i].span; // 增加rank
+            x = x->level[i].forward; // 下一个节点
+        }
+        update[i] = x; // 保存在i层上在在要插入位置前面的第一个节点，即图中带颜色的节点
+    }
+    // 随机获得一个这次插入的节点的level
+    // 更高的level有更小的几率
+    level = zslRandomLevel();
+    if (level > zsl->level) { // 如果这次的层数之前表里没有
+        // 填充之前level的rank和update信息
+        for (i = zsl->level; i < level; i++) {
+            // 都指向头节点
+            rank[i] = 0;
+            update[i] = zsl->header;
+            update[i]->level[i].span = zsl->length;
+        }
+        zsl->level = level;
+    }
+    // 创建新的节点
+    x = zslCreateNode(level,score,ele);
+    for (i = 0; i < level; i++) { // 依次填充新节点各层的数据
+        // 链入链表
+        x->level[i].forward = update[i]->level[i].forward;
+        update[i]->level[i].forward = x;
+
+        // 更新span
+        // rank[0]是要插入的位置之前的元素的数量
+        // 这里保证新节点一定有这个level
+        // 如新节点的level1的span更新为图中span2
+        x->level[i].span = update[i]->level[i].span - (rank[0] - rank[i]);
+        // 如紫色level的span更新为图中span1
+        update[i]->level[i].span = (rank[0] - rank[i]) + 1;
+    }
+
+    for (i = level; i < zsl->level; i++) {
+        // 更新更高的节点span
+        // 其实就是在更高level的节点后面加了一个节点，
+        // 简单加一即可
+        update[i]->level[i].span++;
+    }
+
+    // 更新插入节点的前一个节点
+    // 如果插入节点是插入在头上，
+    // 那么backward设置为空，
+    // 否则设置为对应的值
+    x->backward = (update[0] == zsl->header) ? NULL : update[0];
+    if (x->level[0].forward)
+        // 更新后一个节点的backward
+        x->level[0].forward->backward = x;
+    else
+        // 如果新插入的节点是最后一个，那么更新列表的tail字段
+        zsl->tail = x;
+    zsl->length++; // 更新列表的长度
+    return x;
+}
+```
+
+删除类似增加的逆操作，现在看来就比较清晰了。
+实现在`zslDelete`和`zslDeleteNode`中。
+首先类似增加的定位操作，维护`update`；
+移除之后，依次更新各个level的span和指针，
+基本都是实现的细节，
+就不赘述了。
 
 ## 整数集合
 

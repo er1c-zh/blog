@@ -9,7 +9,7 @@ tags:
 order: 4
 ---
 
-redis列表相关指令的具体实现。
+redis集合相关指令的具体实现。
 
 <!--more-->
 
@@ -48,8 +48,33 @@ robj *setTypeCreate(sds value) {
 
 `SADD`向集合中增加一个值，通过`setTypeAdd`来实现。
 特别的，如果对应的集合是空，那么初始化一个。
+初始化时会根据第一个参数是否是数字来决定使用整数集合或哈希表作为底层结构。
+另外，向底层是整数集合的集合插入非整数类型的值或集合中的元素数量过多时，
+会调用`setTypeConvert`来将底层的数据结构转换成哈希表。
+
+```c
+// src/t_set.c#setTypeAdd
+if (isSdsRepresentableAsLongLong(value,&llval) == C_OK) {
+  uint8_t success = 0;
+  subject->ptr = intsetAdd(subject->ptr,llval,&success);
+  if (success) {
+    // 检查集合的大小是否过大，并尝试转换
+    if (intsetLen(subject->ptr) > server.set_max_intset_entries)
+      setTypeConvert(subject,OBJ_ENCODING_HT);
+    return 1;
+  }
+} else {
+  // 如果是整数集合且要插入不是整数，那么尝试转换
+  setTypeConvert(subject,OBJ_ENCODING_HT);
+
+  serverAssert(dictAdd(subject->ptr,sdsdup(value),NULL) == DICT_OK); // 插入
+  return 1;
+}
+```
 
 `SREM`利用`setTypeRemove`从集合中移除一个特定的元素。
+对于哈希表承载的情况，移除后会检查哈希表的负载，
+如果需要的话，调用`dictResize`来收缩。
 特别的，如果删除后集合为空，那么将该键删除。
 
 # ```SMOVE```
