@@ -149,7 +149,7 @@ struct __attribute__ ((__packed__)) sdshdr64 {
 };
 ```
 
-## 压缩列表 ZIPLIST
+## 压缩列表
 
 *src/ziplist.c*
 
@@ -158,6 +158,32 @@ struct __attribute__ ((__packed__)) sdshdr64 {
 可以存储字符串和整数。
 
 其存储格式如下：
+
+```ditaa
+@startuml
+ditaa(-E)
+                +---------+----------+-------------------+
+                |         |          |                   |
+                | prevlen | encoding |     entry_data    |
+                |         |          |                   |
+                +---------+----------+-------------------+
+                ^                                        ^    
+                |                                        |    
+                +-----------------+       +--------------+              
+                                  :       :                             
++------------+------------+-------+-------+-------------+-------+
+|            |            |       |                     |       |
+|            |            |       |       |     |       |       |
+|   zlbytes  |   zltail   | zllen | entry : ... : entry | zlend |
+|            |            |       |       |     |       |       |
+|            |            |       |                     |       |
++------------+------------+-------+---------------------+-------+
+|   uint32   |   uint32   | uint16|        entry        | uint8 |
++------------+------------+-------+---------------------+-------+
+
+
+@enduml
+```
 
 1. zlbytes： 一个无符号整数存储压缩列表占用的字节数（包括这个无符号整数）。
 
@@ -328,14 +354,14 @@ zskiplist *zslCreate(void) {
 
 ```ditaa
 @startuml
-ditaa
+ditaa(-E)
    zsl.header                                               
 +--------------+                                                 
 |  level_max   |                        update[2]                         |<---- span2 ---->|       
 +--------------+                        update[1]                         :                 :  
-| level_max-1  |                            |                           position            |   
+| level_max - 1|                            |                           position            |   
 +--------------+                            |                         to insert 28          |     
-| level_max-2  |                            |                             :|                |      
+| level_max - 2|                            |                             :|                |      
 +--------------+                            v                             :|                |     
 | ............ |                        data node         update[0]       :|                |     
 +--------------+                     +--------------+         |           vv                |     
