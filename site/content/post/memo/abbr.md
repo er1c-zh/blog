@@ -11,3 +11,7 @@ tags:
 
   Most Significant Bit 最高位
 
+- WAL
+
+  Write Ahead Log 预写日志
+
