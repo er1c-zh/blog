@@ -14,13 +14,14 @@ tags:
 
 # websocket是什么
 
+首先给出一个简单的结论：websocket是一个由HTTP启动、基于TCP、支持全双工通信的以帧为传输单位的通信协议。
+
 HTTP/2及之前的协议，都没有提供服务端与客户端双向通信的支持。
 当然可以通过SSE(Server-Sent Events 服务器推送事件)来完成从服务端到客户端的推送
 和正常的HTTP请求完成从客户端到服务端的传输来实现双向通信的需求，
 但这实在看起来有点奇怪。
 为了解决双向通信的需求，增加了websocket这个协议。
 
-所以简单来说，websocket是一个基于HTTP、支持全双工通信的协议。
 
 # websocket是如何运作的呢？
 
@@ -90,7 +91,7 @@ Sec-WebSocket-Version: 13
 除此之外，还有三个header用于websocket的配置：
 - `Sec-WebSocket-Key` 用于区分websocket链接
 - `Sec-WebSocket-Protocol` 客户端支持的子协议
-- `Sec-WebSocket-Version`
+- `Sec-WebSocket-Version` 必须为13
 - `Sec-WebSocket-Extensions`表明客户端支持的websocket的扩展类型
 
 接下来是服务器端的工作。
@@ -119,7 +120,7 @@ Sec-WebSocket-Protocol: chat
 特别的，`Sec-WebSocket-Key`和`Sec-WebSocket-Accept`结合起来用于确认服务端支持了websocket协议且服务端确实接受了链接。
 两者的计算方式如下：
 
-1. 客户端发起链接的时候，随机产生一个字符串`nonce`。
+1. 客户端发起链接的时候，随机产生一个16字节的字符串`nonce`。
 1. 将`Sec-WebSocket-Key`设置为base64(nonce)`，发送请求。
 1. 服务端接收到`Sec-WebSocket-Key`，将其与一个固定的UUID(258EAFA5-E914-47DA-95CA-C5AB0DC85B11)拼接，随后进行sha1运算，然后进行base64计算。
 1. 将`Sec-WebSocket-Accept`设置为上一步计算的值，返回给客户端。
@@ -128,9 +129,66 @@ Sec-WebSocket-Protocol: chat
 
 至此，websocket握手完成。
 
+## 传输数据
+
+按前述，websocket协议用一系列帧来传输数据。
+
+首先看下帧的基础格式：
+
+```ditaa
+@startuml
+skinparam defaultFontName Microsoft YaHei
+ditaa(-E --no-shadows -e utf8)
++--+-+-+-+-------+-+-------------+------------------------------+
+|F |R|R|R| opcode|M| Payload len |   Extended payload length    |
+|I |S|S|S|  (4)  |A|     (7)     |            (16/64)           |
+|N |V|V|V|       |S|             |  (if payload len==126/127)   |
+|  |1|2|3|       |K|             |                              |
++--+-+-+-+-------+-+-------------+- - - - - - - - - - - - - - - +
+|     Extended payload length continued, if payload len eq 127  |
++ - - - - - - - - - - - - - - - +-------------------------------+
+|                               |Masking key, if MASK set to 1  |
++-------------------------------+-------------------------------+
+| Masking key (continued)       |          Payload Data         |
++-------------------------------+ - - - - - - - - - - - - - - - +
+|                                                               |
+                                                                 
+|                     Payload Data continued ...                |
+                                                                 
+|                                                               |
++ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
+|                                                               |
+                                                                 
+|                     Payload Data continued ...                |
+                                                                 
+|                                                               |
++---------------------------------------------------------------+
+@enduml
+```
+
 ## 断开链接
 
+为了让通信的中间组件能更好的处理websocket的关闭，协议被设计为断开也需要进行协商。
 
+```plantuml
+@startuml
+participant 关闭发起者 as u1
+participant 被动关闭 as u2
+
+== 开始关闭 ==
+u1 -> u2: 含有关闭链接信息的控制帧
+== 两者都进入CLOSEING状态 ==
+u2 -> u1: 含有关闭链接信息的控制帧
+u1 <-> u2: 开始关闭TCP链接，两边都有可能发起关闭
+...TCP关闭完成...
+== 关闭完成 CLOSED ==
+
+
+@enduml
+```
+
+要断开链接的一端，发送一个控制帧，内容为状态码和关闭原因。
+当一端发送并接受到了关闭链接的控制帧后，意味着websocket链接断开，程序就应该开始关闭底层的TCP链接。
 
 
 
