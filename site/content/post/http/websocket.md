@@ -133,7 +133,7 @@ Sec-WebSocket-Protocol: chat
 
 按前述，websocket协议用一系列帧来传输数据。
 
-首先看下帧的基础格式：
+首先看下帧的格式：
 
 ```ditaa
 @startuml
@@ -149,22 +149,47 @@ ditaa(-E --no-shadows -e utf8)
 + - - - - - - - - - - - - - - - +-------------------------------+
 |                               |Masking key, if MASK set to 1  |
 +-------------------------------+-------------------------------+
-| Masking key (continued)       |          Payload Data         |
-+-------------------------------+ - - - - - - - - - - - - - - - +
+| Masking key (continued)       |                               |
++-------------------------------+                                
 |                                                               |
                                                                  
-|                     Payload Data continued ...                |
+|                     Payload Data (Extension data)             |
                                                                  
 |                                                               |
 + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
 |                                                               |
                                                                  
-|                     Payload Data continued ...                |
+|                     Payload Data (Application data)           |
                                                                  
 |                                                               |
 +---------------------------------------------------------------+
 @enduml
 ```
+
+- FIN 标记是否是一个`message`的最后一个帧。
+- RSV1/RSV2/RSV3 用于协商好的扩展使用
+- Opcode 表明帧存储的数据是什么类型的
+  - 0x0 continuation frame?
+  - 0x1 文本帧
+  - 0x2 二进制帧
+  - 0x8 关闭链接
+  - 0x9 ping
+  - 0xA pong
+- Mask 用于标记载荷是否经过mask
+- Payload len 用于标记载荷的长度
+  - 长度小于126时，使用7bit
+  - 长度大于126时
+    - 设置原有的7bit为126，表明使用后续的32位表示长度
+    - 设置为127，表明用后续的64位表示长度
+- Masking key 用于进行mask的key，如果有，那么占用4字节
+- Payload Data 载荷数据
+  - Extension data 协商好的扩展使用的数据
+  - Application data 数据
+
+格式中不太直观的有两个点，一个是mask，另一个是Opcode。
+
+### Mask
+
 
 ## 断开链接
 
