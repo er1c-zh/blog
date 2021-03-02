@@ -39,7 +39,7 @@ int rdbSaveBackground(char *filename, rdbSaveInfo *rsi)
 RDB的核心逻辑在`rdbSave`函数中实现，
 `rdbSave`接受两个参数：
 1. 一个字符串`filename`
-1. 一个`rdbSaveInfo`的指针`rsi`
+1. 一个`rdbSaveInfo`的指针`rsi`，用于传递一些附加功能的参数
 
 首先会尝试创建一个名为`temp-{{pid}}.rdb`的临时文件。
 
@@ -96,3 +96,106 @@ RDB的核心逻辑在`rdbSave`函数中实现，
 这相当于子线程创建了一个执行`fork`时的一个快照。
 
 这样通过利用系统的机制来解决了并发与复制的问题，十分巧妙。
+
+## 如何设计一个存储数据的格式
+
+或者说，设计一个序列化数据的格式。
+不光是简单的存储，比如经常使用的thrift和protobuf也是类似的。
+
+首先是扩展性。在业务和功能不断扩展的情况下，很难说能够一次性设计好需要的格式。
+扩展性包括向前兼容和向后兼容，分别指旧的程序支持后续生成的数据（向前兼容 Forwards Compatibility）
+和新的程序支持旧的数据（向后兼容 Backwards Compatibility），
+换句话说是（程序）向前/后兼容（数据）。
+
+向后兼容是通常要做也可以做到的，而向前兼容
+
+## RDB文件格式
+
+可以通过分析读取RDB的函数来分析RDB文件的格式。
+
+加载RDB文件由`rdbLoadRio`完成。
+
+首先会读取9个字节，检查是否是`REDIS{{version}}`并判断version是否是本实例支持的版本。
+
+随后就进入一个大循环，在这个大循环中完成了每一条记录的读取。
+
+对于每一条记录，首先调用`rdbLoadType`来读取一个字节，
+解释为无符号整数，业务含义是“类型”，标记接下来的数据的格式。
+
+类型分为两大类分别是`RDB_OPCODE_*`存储非kv对的信息，和`RDB_TYPE_*`，存储kv对的数据。
+
+一个巨大的if首先来判断是否是`OPCODE`型的记录，如果不是那么就认为是kv对数据。
+
+### KV对数据
+
+通过`rdbGenericLoadStringObject`读取字符串作为key，
+通过`rdbLoadObject`读取对应的对象。
+
+1. 读取key
+
+    `rdbGenericLoadStringObject`会解析rdb中的数据，并按照入参解析成普通字符串、压缩字符串或数字。
+
+    字符串存储先是一个变长的字节序列标记字符串的长度，`rdbLoadLenByRef`负责处理长度的读取。
+    首先读取高2bit来判断表示长度的字节序列有多长，随后便按照对应格式来读取成长度。
+    除此之外，`rdbLoadLenByRef`还会解析出字符串是否是经过编码。
+
+    所谓的“编码”有数字和经过压缩的字符串两种情况，
+    分别由`rdbLoadIntegerObject`和`rdbLoadLzfStringObject`来接管。
+
+    数字的处理比较简单，就是读取、转换。
+
+    `LzfString`的存储分为三部分，压缩长度、解压后长度和数据。
+    首先读取两个长度，然后根据压缩长度读取数据，调用`lzf_decompress`来解压，最后根据flags来返回需要的对象。
+
+    对于无编码的情况，根据入参来读取数据直接返回或构建一个sds对象或string对象。
+
+1. 读取Object
+
+    一个大if来根据type处理对应的数据类型。
+
+    - RDB_TYPE_STRING
+
+        字符串类型的对象解析与key的解析用的是同一个函数，这里就不再重复分析了。
+
+    - RDB_TYPE_LIST
+
+        要加载的格式是`quick_list`。
+        首先是用过很多遍的`rdbLoadLen`读取到列表的长度。
+        随后根据读取到的长度来继续加载数据，并解析，最后追加到列表中。
+
+    - SET
+
+        和列表十分的类似，会读取长度，加载数据，朱家到数据结构中。
+        特别的，会根据长度来选择是用数字集合还是哈希表来承载。
+
+    - ZSET
+
+        特别的，除了读取值之外，还会调用`rdbLoadBinaryDoubleValue`或`rdbLoadDoubleValue`来读取分数。
+
+    - HASH
+
+        没有什么特别的，与其他的实现思路类似。
+
+    - LIST_QUICKLIST
+
+        与LIST类似，不同在于使用了压缩列表
+
+    - RDB_TYPE_HASH_ZIPMAP | RDB_TYPE_LIST_ZIPLIST | RDB_TYPE_SET_INTSET | RDB_TYPE_ZSET_ZIPLIST | RDB_TYPE_HASH_ZIPLIST
+
+        这几个类型与前述的区别在于，读取到的是压缩过的字符串，随后会被解析到对应的类型。
+
+### 指令
+
+这里只记录几个的含义。
+
+- `RDB_OPCODE_EXPIRETIME` `RDB_OPCODE_EXPIRETIME_MS`
+
+    通过`rdbLoadTime`或`rdbLoadMillisecondTime`读取4字节解释为整数。
+
+- `RDB_OPCODE_FREQ` `RDB_OPCODE_IDLE`
+
+    用于LRU和LFU的数据。
+
+- `RDB_OPCODE_EOF`
+
+    结束的标志。
