@@ -1,7 +1,7 @@
 ---
 title: "redis AOF的实现"
 date: 2021-03-02T23:39:28+08:00
-draft: true
+draft: false
 tags:
   - redis
   - how
@@ -148,3 +148,60 @@ sds catAppendOnlyGenericCommand(sds dst, int argc, robj **argv) {
 - `stopAppendOnly`
 
     停止AOF的时候刷盘。
+
+## 执行落盘的`flushAppendOnlyFile`
+
+`flushAppendOnlyFile`核心逻辑分为两部分：
+
+1. 调用`write`将`server.aof_buf`写入到文件。
+1. 根据条件选择是异步调用或者同步调用`fsync`保证数据刷到磁盘上。
+
+下面开始关注更加细节的实现。
+
+首先检查系统是否需要立即执行保存，如果不需要或者可以推迟的话，就直接返回。
+
+保存的第一步是调用`write`的包装函数`aofWrite`将数据写入文件。
+可以看到内部的实现是简洁清晰的。
+
+```c
+// flushAppendOnlyFile
+nwritten = aofWrite(server.aof_fd,server.aof_buf,sdslen(server.aof_buf));
+
+// aofWrite
+ssize_t aofWrite(int fd, const char *buf, size_t len) {
+    ssize_t nwritten = 0, totwritten = 0;
+
+    while(len) {
+        nwritten = write(fd, buf, len);
+
+        if (nwritten < 0) {
+            if (errno == EINTR) continue;
+            return totwritten ? totwritten : -1;
+        }
+
+        len -= nwritten;
+        buf += nwritten;
+        totwritten += nwritten;
+    }
+
+    return totwritten;
+}
+```
+
+写入后，检查是否写入成功。
+如果失败，会将已经写入的数据清除，避免后续重试时出现重复写入的情况。
+
+完成写入之后就会去完成刷盘的操作。
+
+根据配置，如果配置了`AOF_FSYNC_ALWAYS`，
+就同步的调用`redis_fsync`宏来完成刷盘，
+具体的工作是`fdatasync`完成的。
+
+反之，如果没有正在运行的异步刷盘人物，
+就会调用`aof_background_fsync`来创建一个异步`bio`任务 *(`bioCreateBackgroundJob`)* 来完成刷盘。
+
+# 学习到的
+
+1. 序列化的时候考虑将相对的时间转换成绝对时间，能够简化实现。
+1. 对于异常应该区分好临时异常，指可通过重试来避免的情况；和非临时异常。
+1. 对于有状态的任务，要做好中途失败后状态的清理。
