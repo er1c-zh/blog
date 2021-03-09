@@ -9,6 +9,8 @@ tags:
 
 上一篇学习了RDB相关的实现，接下来就轮到AOF了。
 
+<!--more-->
+
 # 是什么
 
 AOF是一种持久化方式，根据Append Only File，

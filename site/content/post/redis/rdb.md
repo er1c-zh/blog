@@ -9,9 +9,15 @@ tags:
 
 *基于redis 6.0版本*
 
+对于redis的两种持久化方法听说很久了，
+但一直没有认真的了解过，
+所以找机会来学习下。
+
 rdb是Redis Database Backup的缩写。
 
 Redis Database Backup File是用来保存快照式的redis的数据的文件。
+
+<!--more-->
 
 # 触发保存的时机
 
