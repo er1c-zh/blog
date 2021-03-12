@@ -55,7 +55,33 @@ RC中的实例拥有两个端口，分别是普通的、向客户端提供服务
 
 ### 分片
 
+采用hash槽的方式来进行分片。
+将key的CRC16模16384作为分片的id，
+特别的，可以使用相同的`hash tag`来令不同的key保存在同一个槽上。
+
+利用`hash tag`的特性，可以一定程度的支持操作多个key的指令。
+
+### 主从模式保证了可用性
+
+通过给每个hash槽配备主节点和若干副本来实现在主节点无法正常工作时提升从节点来保证可用。
+
+如果一个hash槽的所有实例都失效了，那么就无法正常工作。
+
+## RC一致性相关的信息
+
+RC不提供强一致性 *(strong consistency)* 保证。
+在某些场景下，即便服务器返回了写入的ACK，但数据还是会丢失。
+
+写入到集群的操作流程大概是：
+
+1. client向master写入数据，master返回ack
+1. master向从节点广播这个写入
+1. 从节点写入这个修改
+
+产生丢失的一个情况是：
+如果在 “master向从节点广播这个写入” 的时候，master发生了crash。
 
 # 参考
 
 - [Redis cluster tutorial](https://redis.io/topics/cluster-tutorial)
+- [Redis cluster specification](https://redis.io/topics/cluster-spec)
