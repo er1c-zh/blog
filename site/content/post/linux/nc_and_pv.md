@@ -5,7 +5,7 @@ draft: false
 tags:
     - linux
     - command
-    - how-to
+    - how
 ---
 
 # 如何从线上机器拉取数据
