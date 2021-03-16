@@ -1,3 +1,14 @@
+# “系列”的用法
+
+1. 在`tags`中增加系列的id。
+1. 在文章需要展示系列列表的地方增加
+    
+    ```hugo
+        {{% serial_index serial_id %}}
+    ```
+
+1. 通过在Front-Matter中增加`order`，整数，小的在前大的在后，来明确顺序，。
+
 # todo list
 
 - [x] unicode && utf-8

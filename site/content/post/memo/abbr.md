@@ -15,3 +15,6 @@ tags:
 
   Write Ahead Log 预写日志
 
+- MVP
+  
+  minimum viable product 最小可用产品。指一种产品版本，只实现必要的功能。
