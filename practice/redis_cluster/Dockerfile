@@ -25,11 +25,11 @@ CMD    ./redis/src/redis-server --protected-mode no --daemonize yes --port 7000 
     && ./redis/src/redis-server --protected-mode no --daemonize yes --port 7003 --cluster-enabled yes --cluster-config-file nodes3.conf --cluster-node-timeout 5000 --appendonly yes \
     && ./redis/src/redis-server --protected-mode no --daemonize yes --port 7004 --cluster-enabled yes --cluster-config-file nodes4.conf --cluster-node-timeout 5000 --appendonly yes \
     && ./redis/src/redis-server --protected-mode no --daemonize yes --port 7005 --cluster-enabled yes --cluster-config-file nodes5.conf --cluster-node-timeout 5000 --appendonly yes \
-    # && chmod +x ./create_cluster.exp \
-    # && ./create_cluster.exp \
-    # && ./redis/src/redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 \
-        # 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 \
-        # --cluster-replicas 1 \
+    && chmod +x ./create_cluster.exp \
+    && ./create_cluster.exp \
+    && ./redis/src/redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 \
+        127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 \
+        --cluster-replicas 1 \
     && echo "done" \
     && touch log.log \
     && tail -f ./log.log
