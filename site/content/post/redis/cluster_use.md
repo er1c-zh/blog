@@ -91,6 +91,8 @@ RC不提供强一致性 *(strong consistency)* 保证。
 
 # 启动一个测试用的Redis Cluster集群
 
+以一个三主三从的集群为例子。
+
 # 参考
 
 - [Redis cluster tutorial](https://redis.io/topics/cluster-tutorial)
