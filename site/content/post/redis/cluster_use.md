@@ -1,7 +1,7 @@
 ---
 title: "Redis Cluster练习"
 date: 2021-03-11T11:09:02+08:00
-draft: true
+draft: false
 tags:
   - redis
   - how
@@ -10,6 +10,8 @@ order: 1
 ---
 
 哇哦，终于可以学习、实践一下Redis Cluster了！
+
+这一篇主要是简单的概念与集群搭建与简单操作。
 
 <!--more-->
 
@@ -93,6 +95,219 @@ RC不提供强一致性 *(strong consistency)* 保证。
 
 以一个三主三从的集群为例子。
 
+我打包了一个docker镜像，可以直接使用。
+出于简化考虑，将所有实例放在一起了，避免处理多个容器互联的问题。
+
+```shell
+docker run -dp 7000-7005:7000-7005 --name redis_cluster er1cz/redis_cluster
+```
+
+镜像暴露了7000-7005六个端口，分别是六个实例的端口，然后在本机可以使用redis-cli正常操作。
+
+```shell
+redis-cli -c -p 7000
+127.0.0.1:7000> get key1
+-> Redirected to slot [9189] located at 127.0.0.1:7001
+(nil)
+127.0.0.1:7001> set key1 value1
+OK
+127.0.0.1:7001> get key1
+"value1"
+127.0.0.1:7001>
+```
+
+上述命令，`-c`指明客户端使用集群模式，连接7000端口的服务器。
+后续执行了读写操作，没有任何问题。
+
+## 执行reshard操作
+
+执行`redis-cli --cluster reshard 127.0.0.1:7000`开始重新分片。
+
+1. 首先会要求输入多少个hash槽，这里为了方便演示选择了一个。
+1. 然后需要输入哪个节点需要接受这些槽，这里输入了7000端口上的实例的id。
+1. 然后是从哪些节点移除槽，可以一个一个的输入节点id，随后输入done；
+也可以输入all选择所有节点来输出，这可以用在有新节点加入的情况。这里选择了7002端口的实例来提供槽。
+1. 最后redis会提供一个移动方案，输入yes来开始执行reshard操作。
+
+```shell
+redis-cli --cluster reshard 127.0.0.1:7000
+>>> Performing Cluster Check (using node 127.0.0.1:7000)
+M: 13c73f2de3d6a2ac4fd4d99d359a9bd3693a7e5f 127.0.0.1:7000
+   slots:[0-5460] (5461 slots) master
+   1 additional replica(s)
+S: 92dccaed8da01ceaea3e711e456ca76f78c0e55e 127.0.0.1:7005
+   slots: (0 slots) slave
+   replicates 080227d20bfb70af6603d68c4a94e3bd73050142
+S: b6c39a0699dd33247dc8d94f21030f5fecedac76 127.0.0.1:7003
+   slots: (0 slots) slave
+   replicates 977028968d051b051ddb094a87cf3f71d37b9b75
+M: 977028968d051b051ddb094a87cf3f71d37b9b75 127.0.0.1:7002
+   slots:[10923-16383] (5461 slots) master
+   1 additional replica(s)
+S: cbddaf7e40f2cc3651a9ec62493efe37aee85506 127.0.0.1:7004
+   slots: (0 slots) slave
+   replicates 13c73f2de3d6a2ac4fd4d99d359a9bd3693a7e5f
+M: 080227d20bfb70af6603d68c4a94e3bd73050142 127.0.0.1:7001
+   slots:[5461-10922] (5462 slots) master
+   1 additional replica(s)
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+How many slots do you want to move (from 1 to 16384)? 1
+What is the receiving node ID? 13c73f2de3d6a2ac4fd4d99d359a9bd3693a7e5f
+Please enter all the source node IDs.
+  Type 'all' to use all the nodes as source nodes for the hash slots.
+  Type 'done' once you entered all the source nodes IDs.
+Source node #1: 977028968d051b051ddb094a87cf3f71d37b9b75
+Source node #2: done
+
+Ready to move 1 slots.
+  Source nodes:
+    M: 977028968d051b051ddb094a87cf3f71d37b9b75 127.0.0.1:7002
+       slots:[10923-16383] (5461 slots) master
+       1 additional replica(s)
+  Destination node:
+    M: 13c73f2de3d6a2ac4fd4d99d359a9bd3693a7e5f 127.0.0.1:7000
+       slots:[0-5460] (5461 slots) master
+       1 additional replica(s)
+  Resharding plan:
+    Moving slot 10923 from 977028968d051b051ddb094a87cf3f71d37b9b75
+Do you want to proceed with the proposed reshard plan (yes/no)? yes
+Moving slot 10923 from 127.0.0.1:7002 to 127.0.0.1:7000:
+```
+
+然后执行`redis-cli --cluster check 127.0.0.1:7000`查看集群信息，
+可以看到7000端口的实例的槽从5461个变成了5462个，7002端口的实例则减少了一个。
+
+```shell
+redis-cli --cluster check 127.0.0.1:7000
+127.0.0.1:7000 (13c73f2d...) -> 0 keys | 5462 slots | 1 slaves.
+127.0.0.1:7002 (97702896...) -> 0 keys | 5460 slots | 1 slaves.
+127.0.0.1:7001 (080227d2...) -> 1 keys | 5462 slots | 1 slaves.
+[OK] 1 keys in 3 masters.
+0.00 keys per slot on average.
+>>> Performing Cluster Check (using node 127.0.0.1:7000)
+M: 13c73f2de3d6a2ac4fd4d99d359a9bd3693a7e5f 127.0.0.1:7000
+   slots:[0-5460],[10923] (5462 slots) master
+   1 additional replica(s)
+S: 92dccaed8da01ceaea3e711e456ca76f78c0e55e 127.0.0.1:7005
+   slots: (0 slots) slave
+   replicates 080227d20bfb70af6603d68c4a94e3bd73050142
+S: b6c39a0699dd33247dc8d94f21030f5fecedac76 127.0.0.1:7003
+   slots: (0 slots) slave
+   replicates 977028968d051b051ddb094a87cf3f71d37b9b75
+M: 977028968d051b051ddb094a87cf3f71d37b9b75 127.0.0.1:7002
+   slots:[10924-16383] (5460 slots) master
+   1 additional replica(s)
+S: cbddaf7e40f2cc3651a9ec62493efe37aee85506 127.0.0.1:7004
+   slots: (0 slots) slave
+   replicates 13c73f2de3d6a2ac4fd4d99d359a9bd3693a7e5f
+M: 080227d20bfb70af6603d68c4a94e3bd73050142 127.0.0.1:7001
+   slots:[5461-10922] (5462 slots) master
+   1 additional replica(s)
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+```
+
+## 测试节点失效
+
+我首先写入`key1`到集群中，发现被存储在7001实例上。
+
+```shell
+127.0.0.1:7000> get key1
+-> Redirected to slot [9189] located at 127.0.0.1:7001
+"value1"
+```
+
+查看拓扑结构，可以看到7005是7001的从节点。
+
+```shell
+redis-cli --cluster check 127.0.0.1:7000
+# ...
+127.0.0.1:7001 (080227d2...) -> 1 keys | 5462 slots | 1 slaves.
+[OK] 1 keys in 3 masters.
+0.00 keys per slot on average.
+S: 92dccaed8da01ceaea3e711e456ca76f78c0e55e 127.0.0.1:7005
+   slots: (0 slots) slave
+   replicates 080227d20bfb70af6603d68c4a94e3bd73050142
+# ...
+M: 080227d20bfb70af6603d68c4a94e3bd73050142 127.0.0.1:7001
+   slots:[5461-10922] (5462 slots) master
+   1 additional replica(s)
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+```
+
+接下来利用`redis-cli -p 7001 debug segfault`来模拟7001实例失效。
+
+```shell
+redis-cli -p 7001 debug segfault
+Error: Server closed the connection
+```
+
+然后在去查询`key1`，可以看到，现在是由7005实例来提供服务。
+
+```shell
+redis-cli -p 7000 -c
+127.0.0.1:7000> get key1
+-> Redirected to slot [9189] located at 127.0.0.1:7005
+"value1"
+127.0.0.1:7005>
+```
+
+这个时候如果启动7001实例，会看到实例自动接入到集群，并成为7005的从节点。
+
+```shell
+# 在容器中
+./redis/src/redis-server --protected-mode no --daemonize yes --port 7001 --cluster-enabled yes --cluster-config-file nodes1.conf --cluster-node-timeout 5000 --appendonly yes
+# 检查集群
+redis-cli --cluster check 127.0.0.1:7000
+
+# ...
+M: 92dccaed8da01ceaea3e711e456ca76f78c0e55e 127.0.0.1:7005
+   slots:[5461-10922] (5462 slots) master
+   1 additional replica(s)
+#...
+S: 080227d20bfb70af6603d68c4a94e3bd73050142 127.0.0.1:7001
+   slots: (0 slots) slave
+   replicates 92dccaed8da01ceaea3e711e456ca76f78c0e55e
+#...
+```
+
+## 添加新的节点到集群中
+
+添加节点到集群中可以用：
+
+```shell
+redis-cli --cluster add-node 127.0.0.1:7006 127.0.0.1:7000
+```
+
+默认的，会将新节点当作master节点，但没有分配槽，可以通过reshard来手动的分配。
+
+如果想将新节点作为从节点，那么可以增加参数：
+
+```shell
+redis-cli --cluster add-node 127.0.0.1:7006 127.0.0.1:7000 --cluster-slave
+```
+
+也可以在增加参数指定主节点：
+
+```shell
+redis-cli --cluster add-node 127.0.0.1:7006 127.0.0.1:7000 --cluster-slave --cluster-master-id $CLUSTER_MASTER_ID
+```
+
+## 移除节点
+
+```shell
+redis-cli --cluster del-node 127.0.0.1:7000 $CLUSTER_WAIT_REMOVE_ID
+```
+
+特别的，如果是主节点，那么需要清空后才可以移除掉。
 
 # 参考
 
