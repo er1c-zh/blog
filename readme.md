@@ -38,6 +38,7 @@
     - [ ] 了解一下rust
     - [ ] 简单研究nginx的设计思想
     - [ ] 简单了解innodb的实现
+    - [ ] gossip算法
 - [ ] 尝试为一些小的开源项目提供代码
 
 # books wait read
