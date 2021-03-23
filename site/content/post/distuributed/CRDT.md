@@ -8,13 +8,45 @@ tags:
     - what
 ---
 
-CRDT是一种数据结构，能够在AP的情况下，提供数据的最终一致性。
+CRDT *(Conflict-free Replicated Data Types)* 是一种数据结构，能够在AP的情况下，提供数据的最终一致性。
 
+对于CRDT有两种等价的描述，分别是基于状态(state-based)的和基于操作的(operation-based)。
 
+# CRDT论文笔记
 
-CRDT是Conflict-Free Replicated Data Types的缩写。
+## 概念与定义
+
+- 表示集群的集合与正确的
+
+    定义一个有限集合，其中的元素为无拜占庭问题的进程。
+    其中的进程会：
+    
+    1. 随机、无预警的崩溃(crash)
+    1. 永久的崩溃
+    1. 保留所有状态恢复
+
+    对于没有崩溃的元素称为 **正确的** (correct)。
+
+### 基于状态的描述
+
+设想我们维护一个CRDT的对象，
+在集群上，每个进程有一个这个对象的副本。
+
+这个对象被用来维护状态（就是业务上的值），
+具体的，对象是一个元组 $(S,s^0,q,u,m)$ 。
+
+每个进程 $p_i$ 有自己的对象，和自己的状态 $s_i \in S$，
+其中 $s_i$ 被称为 **载荷** (payload)。
+**载荷** 的初始值是 $s^0$ 。
+
+$q$ $u$ $m$ 是对象的**方法** (method)，
+对象的用户会用 query $q$ 来查询状态，
+用 update $u$ 来更新状态，
+merge $m$ 用来合并两个副本。
+
 
 
 # 参考资料
 
 - [Conflict-free Replicated Data Types](https://hal.inria.fr/hal-00932836/file/CRDTs_SSS-2011.pdf)
+
