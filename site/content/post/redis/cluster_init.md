@@ -75,7 +75,7 @@ redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 \
 1. 解析实例的地址，检查是否存活。
 1. 打散、重排实例，优化集群拓扑结构。
 1. 根据参数计算出主节点、从节点、拓扑关系和hash槽的分配情况。
-1. 为每个实例设置epoch、调用`MEET`命令。
+1. 为每个实例设置epoch、调用`MEET`命令，给新节点发送第一个节点的ip和端口。
 1. 一些清理和检查的工作。
 
 可以看到与服务端交互的操作有两个：
@@ -91,6 +91,7 @@ redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 \
 > "MEET <ip> <port> [bus-port] -- Connect nodes into a working cluster."
 
 该指令用于将节点联入集群中，接受的参数是实例的地址和端口。
+在组建集群的时候，是给新节点发送已经在集群中的节点的ip和端口。
 
 实现上首先解析了参数，然后调用`clusterStartHandshake`来继续后续的工作。
 
@@ -105,7 +106,7 @@ void clusterCommand(client *c) {
 
 1. 首先检查了ip地址和端口的合法性并格式化。
 1. 检查目标节点是否在握手中。
-1. 保存新节点的信息。
+1. 保存新节点的信息 *(`clusterNode`)*。
 
 ```c
 int clusterStartHandshake(char *ip, int port, int cport) {
@@ -139,7 +140,7 @@ int clusterStartHandshake(char *ip, int port, int cport) {
 redis除了接收到命令响应式的处理之外，还有时间驱动的事件，
 会不会是有定时任务来完成后续的工作呢？
 
-## 新节点加入集群的广播
+## 新节点加入集群
 
 果然，在`serverCron`中，如果实例是集群模式运行的，就会调用`clusterCron`。
 继续看下去，不出意外，有遍历`server.cluster->nodes`检查链接的循环。
@@ -165,18 +166,87 @@ void clusterCron(void) {
                 continue;
             }
             node->link = link;
-        }
-    }
     // ...
 }
 ```
 
 建立链接的回调由`clusterLinkConnectHandler`处理，
+是专门用来处理与其他节点建立链接的，
 工作比较简单：
 
-1. 注册读取信息的回调 `clusterReadHandler`，
+1. 首先，注册读取信息的回调 `clusterReadHandler`，
 和监听自身的控制端口的回调函数是同一个。
-1. 发起ping-pong `clusterSendPing(CLUSTER_TYPE_PONG)`
+
+    到目前为止，新节点已经保存了集群中的一个节点的信息，并向其发起握手；
+    但集群中的节点还没有得知有一个新节点加入到集群中。
+
+1. 随后发出`ping`请求，`clusterSendPing(CLUSTER_TYPE_PONG)`
+
+接收到`ping`请求由`clusterReadHandler`来处理。
+读取数据到缓冲区之后，控制权交给`clusterProcessPacket`。
+
+这个时候，集群中的节点是第一次接收到新节点发来的信息，
+首先会保存节点信息，随后返回一个`pong`。
+
+新节点接收到这个`pong`，会：
+
+1. 记录节点的名字（`clusterRenameNode` 之前新建的时候因为无法得知所以用来随机代替）。
+1. 修改节点的状态，去掉`CLUSTER_NODE_HANDSHAKE`。
+
+# 数据结构
+
+## `server.cluster->nodes`
+
+一个字典，key是节点的name，值是一个`clusterNode`指针。
+用于存储集群的所有节点。
+
+## `clusterNode`
+
+记录集群节点的信息。
+
+```c
+typedef struct clusterNode {
+    mstime_t ctime; /* Node object creation time. */
+    char name[CLUSTER_NAMELEN]; /* Node name, hex string, sha1-size */
+    int flags;      /* CLUSTER_NODE_... */
+    uint64_t configEpoch; /* Last configEpoch observed for this node */
+    unsigned char slots[CLUSTER_SLOTS/8]; /* slots handled by this node */
+    int numslots;   /* Number of slots handled by this node */
+    int numslaves;  /* Number of slave nodes, if this is a master */
+    struct clusterNode **slaves; /* pointers to slave nodes */
+    struct clusterNode *slaveof; /* pointer to the master node. Note that it
+                                    may be NULL even if the node is a slave
+                                    if we don't have the master node in our
+                                    tables. */
+    mstime_t ping_sent;      /* Unix time we sent latest ping */
+    mstime_t pong_received;  /* Unix time we received the pong */
+    mstime_t data_received;  /* Unix time we received any data */
+    mstime_t fail_time;      /* Unix time when FAIL flag was set */
+    mstime_t voted_time;     /* Last time we voted for a slave of this master */
+    mstime_t repl_offset_time;  /* Unix time we received offset for this node */
+    mstime_t orphaned_time;     /* Starting time of orphaned master condition */
+    long long repl_offset;      /* Last known repl offset for this node. */
+    char ip[NET_IP_STR_LEN];  /* Latest known IP address of this node */
+    int port;                   /* Latest known clients port of this node */
+    int cport;                  /* Latest known cluster port of this node. */
+    clusterLink *link;          /* TCP/IP link with this node */
+    list *fail_reports;         /* List of nodes signaling this as failing */
+} clusterNode;
+```
+
+## `clusterLink`
+
+保存了节点间通信的链接的信息。
+
+```c
+typedef struct clusterLink {
+    mstime_t ctime;             /* Link creation time */
+    connection *conn;           /* Connection to remote node */
+    sds sndbuf;                 /* Packet send buffer */
+    sds rcvbuf;                 /* Packet reception buffer */
+    struct clusterNode *node;   /* Node related to this link if any, or NULL */
+} clusterLink;
+```
 
 
 
