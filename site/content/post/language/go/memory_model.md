@@ -50,8 +50,8 @@ func doprint() {
 
 func main() {
 	go doprint() // a
-  go doprint() // b
-  // 这里可能打印出一个空白字符串
+    go doprint() // b
+    // 这里可能打印出一个空白字符串
 }
 ```
 
