@@ -195,6 +195,52 @@ void clusterCron(void) {
 
 # 数据结构
 
+## `clusterState`
+
+1. `state` 集群的状态
+
+```c
+typedef struct clusterState {
+    clusterNode *myself;  /* This node */
+    uint64_t currentEpoch;
+    int state;            /* CLUSTER_OK, CLUSTER_FAIL, ... */
+    int size;             /* Num of master nodes with at least one slot */
+    dict *nodes;          /* Hash table of name -> clusterNode structures */
+    dict *nodes_black_list; /* Nodes we don't re-add for a few seconds. */
+    clusterNode *migrating_slots_to[CLUSTER_SLOTS];
+    clusterNode *importing_slots_from[CLUSTER_SLOTS];
+    clusterNode *slots[CLUSTER_SLOTS];
+    uint64_t slots_keys_count[CLUSTER_SLOTS];
+    rax *slots_to_keys;
+    /* The following fields are used to take the slave state on elections. */
+    mstime_t failover_auth_time; /* Time of previous or next election. */
+    int failover_auth_count;    /* Number of votes received so far. */
+    int failover_auth_sent;     /* True if we already asked for votes. */
+    int failover_auth_rank;     /* This slave rank for current auth request. */
+    uint64_t failover_auth_epoch; /* Epoch of the current election. */
+    int cant_failover_reason;   /* Why a slave is currently not able to
+                                   failover. See the CANT_FAILOVER_* macros. */
+    /* Manual failover state in common. */
+    mstime_t mf_end;            /* Manual failover time limit (ms unixtime).
+                                   It is zero if there is no MF in progress. */
+    /* Manual failover state of master. */
+    clusterNode *mf_slave;      /* Slave performing the manual failover. */
+    /* Manual failover state of slave. */
+    long long mf_master_offset; /* Master offset the slave needs to start MF
+                                   or zero if still not received. */
+    int mf_can_start;           /* If non-zero signal that the manual failover
+                                   can start requesting masters vote. */
+    /* The following fields are used by masters to take state on elections. */
+    uint64_t lastVoteEpoch;     /* Epoch of the last vote granted. */
+    int todo_before_sleep; /* Things to do in clusterBeforeSleep(). */
+    /* Messages received and sent by type. */
+    long long stats_bus_messages_sent[CLUSTERMSG_TYPE_COUNT];
+    long long stats_bus_messages_received[CLUSTERMSG_TYPE_COUNT];
+    long long stats_pfail_nodes;    /* Number of nodes in PFAIL status,
+                                       excluding nodes without address. */
+} clusterState;
+```
+
 ## `server.cluster->nodes`
 
 一个字典，key是节点的name，值是一个`clusterNode`指针。
