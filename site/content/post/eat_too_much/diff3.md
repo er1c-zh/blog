@@ -1,9 +1,10 @@
 ---
-title: "diff3"
+title: "[吃太饱]diff3"
 date: 2021-04-16T17:08:35+08:00
-draft: true
+draft: false
 tags:
     - eat-too-much
+    - how
 ---
 
 最近在尝试看一些理论的材料然后落地其中的设计。
@@ -153,7 +154,7 @@ diff3首先调用两路比较来比较$(O,A)$和$(O,B)$来生成两个 **不交�
 而最后一个稳定chunk的结束是三个序列的结尾，所以也是不可能的，
 故性质2也是成立的。
 
-## diff3的性质
+# diff3的一些性质
 
 ### 一个能输出唯一无冲突结果的充分条件
 
@@ -177,6 +178,56 @@ diff3首先调用两路比较来比较$(O,A)$和$(O,B)$来生成两个 **不交�
 > 如果存在一个唯一的元素$x$，那么它一定在一个**稳定chunk**中
 
 然后通过反证法的思路，证明了结论，具体的证明这里就不给出了。
+
+### 对于同一个输入，可能有多个输出
+
+简单来说，造成这个现象的原因是因为最长匹配并不是唯一的。
+
+举个例子：
+
+- A: 1 2 4 6 8
+- O: 1 2 3 4 5 5 5 6 7 8
+- B: 1 4 5 5 5 6 2 3 4 8
+
+有两种可能的最长匹配：
+
+1. 第一种情况
+
+    ```plain
+    1 2   4       6       8
+    1 2,3 4 5,5,5 6   7   8
+    1     4 5,5,5 6 2,3,4 8
+    ```
+
+2. 另一种情况
+
+    ```plain
+    1     2   4 6   8
+    1     2 3 4 6,7 8
+    1 4,6 2 3 4     8
+    ```
+
+# 一个简单实现
+
+diff3从**Match**生成一系列Chunk的过程已经非常的清晰了。
+
+那实现一个diff3只差从两个序列中生成**Match**。
+
+根据算法的描述，**Match**需要满足不交叉匹配、稳定性与最大匹配的特性。
+
+[不交叉匹配与最大匹配通过递归来实现](https://github.com/er1c-zh/diff/blob/master/diff3/diff3.go#L152)：
+1. 首先通过类似[LCS](https://github.com/er1c-zh/diff/blob/master/diff3/diff3.go#L233)的思路来查找两个序列的最长子序列
+    1. 如果有多个长度相同的最长子序列，固定取第一个（或最后一个），这样就能满足稳定性
+1. 这时两个序列被分为三个部分，分别是匹配的部分、匹配的部分之前的部分和匹配的部分之后的部分。
+这时分别在前、后递归的调用该过程，直到匹配结束。这样就能保证不会出现交叉匹配的情况。
+
+如此，我们就能获得一个满足需要的匹配，
+只需要按照diff3[生成chunk的过程](https://github.com/er1c-zh/diff/blob/master/diff3/diff3.go#L20)依次执行，
+就能完成一个简单的diff3实现.
+
+上述的代码可以在我的[repo](https://github.com/er1c-zh/diff)查看。
+
+![re-impl-diff3.png](https://dsm01pap001files.storage.live.com/y4msYJ9CAQiTK9p37pcfRsVSZtboncVc1zA2MCXNUe7TMCH3CS5OJCuLgmr6AU30x7GxbaW0xUGyfMUjUXV6ep1ErOcPQWAyBT2Anyz530PyCVzzMHRC2E0ybdWhYoy4EvSIj12b9w5hozZswTniSvWv8lprUxSdprqIMpRsZ9Q4gXtjyNpgv05nCEAPmx9JvT1?width=2198&height=1026&cropmode=none)
 
 # 参考
 
