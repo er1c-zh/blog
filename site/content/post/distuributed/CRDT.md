@@ -1,7 +1,7 @@
 ---
-title: "CRDT"
-date: 2021-03-05T10:59:43+08:00
-draft: true
+title: "CRDT简单原理"
+date: 2021-04-05T10:59:43+08:00
+draft: false
 tags:
     - distributed
     - data_struct
@@ -209,11 +209,3 @@ $$
 # 参考资料
 
 - [Conflict-free Replicated Data Types](https://hal.inria.fr/hal-00932836/file/CRDTs_SSS-2011.pdf)
-
-
-
-
-
-
-
-
