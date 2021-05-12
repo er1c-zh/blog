@@ -35,10 +35,20 @@
         - [ ] 集群
     - [ ] 了解mongodb
     - [ ] 学习go的runtime的实现，结合linux来看
+        - [ ] chan
+        - [ ] 调度 sudog
     - [ ] 了解一下rust
     - [ ] 简单研究nginx的设计思想
     - [ ] 简单了解innodb的实现
     - [ ] gossip算法
+    - [ ] ruby
+        - [ ] 基础语法
+        - [ ] 函数式编程
+    - [ ] 多人编辑专题
+        - [ ] CRDT
+        - [ ] OT
+        - [x] diff
+        - [ ] 版本向量
 - [ ] 尝试为一些小的开源项目提供代码
 
 # books wait read
