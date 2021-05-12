@@ -181,26 +181,26 @@ channel相关的功能有：
     具体的分析在下面的注释中了。
 
     ```go
-        if c.qcount < c.dataqsiz { // 如果没有满
-	    	// Space is available in the channel buffer. Enqueue the element to send.
-	    	qp := chanbuf(c, c.sendx) // 计算出要插入的地址
-	    	if raceenabled {
-	    		racenotify(c, c.sendx, nil)
-	    	}
-            // 拷贝要插入的数据到刚刚计算出的地址
-	    	typedmemmove(c.elemtype, qp, ep)
-            // 更新环形缓冲区的指针
-	    	c.sendx++
-	    	if c.sendx == c.dataqsiz {
-	    		c.sendx = 0
-	    	}
-            // 更新chan缓冲的元素数量
-	    	c.qcount++
-            // 解锁
-	    	unlock(&c.lock)
-            // 完成写入
-	    	return true
-	    }
+    if c.qcount < c.dataqsiz { // 如果没有满
+		// Space is available in the channel buffer. Enqueue the element to send.
+		qp := chanbuf(c, c.sendx) // 计算出要插入的地址
+		if raceenabled {
+			racenotify(c, c.sendx, nil)
+		}
+        // 拷贝要插入的数据到刚刚计算出的地址
+		typedmemmove(c.elemtype, qp, ep)
+        // 更新环形缓冲区的指针
+		c.sendx++
+		if c.sendx == c.dataqsiz {
+			c.sendx = 0
+		}
+        // 更新chan缓冲的元素数量
+		c.qcount++
+        // 解锁
+		unlock(&c.lock)
+        // 完成写入
+		return true
+	}
     ```
 
 1. 写入-等待写入队列
@@ -219,12 +219,12 @@ channel相关的功能有：
     特别的，利用`KeepAlive`来保证在消费者“拥有”要传输的对象之前不会被清理。
 
     ```go
-        gopark(chanparkcommit, unsafe.Pointer(&c.lock), waitReasonChanSend, traceEvGoBlockSend, 2)
-	    // Ensure the value being sent is kept alive until the
-	    // receiver copies it out. The sudog has a pointer to the
-	    // stack object, but sudogs aren't considered as roots of the
-	    // stack tracer.
-	    KeepAlive(ep)
+    gopark(chanparkcommit, unsafe.Pointer(&c.lock), waitReasonChanSend, traceEvGoBlockSend, 2)
+	// Ensure the value being sent is kept alive until the
+	// receiver copies it out. The sudog has a pointer to the
+	// stack object, but sudogs aren't considered as roots of the
+	// stack tracer.
+	KeepAlive(ep)
     ```
 
 1. 写入-阻塞后被唤醒
@@ -242,9 +242,69 @@ channel相关的功能有：
 
     返回`true`。
 
+### 读取 `chanrecv`
 
+读取由`func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool)`完成。
 
+接受三个参数：
 
+- c 要读取的chan
+- ep 读取到的元素存储的地址
+- block 如果不能立即读取，是否阻塞
+
+返回两个值：
+
+- selected 如果读取有结果（channel关闭了或读取到数据），返回`true`
+- received 如果读取到了数据，返回`true`
+
+类似于写入，读取也有三种情况：
+
+- 有等待的写入goroutine
+- 缓冲区有待读取的数据
+- 没有数据可以读取，（如果需要）阻塞在chan上等待
+
+1. 加锁前的检查
+
+    如果chan为nil，非阻塞情况返回；允许阻塞的goroutine则会永久的挂起在该goroutine上。
+
+    如果不能立即读取到数据且不允许阻塞的情况下，直接返回结果。
+
+1. 加锁及检查channel是否关闭
+
+    获取chan的锁，
+    随后检查chan状态，
+    如果chan已经关闭**且没有未读取的数据**，
+    返回“**无数据可读取､chan已经关闭的情况**” _(`selected = true, received = false`)_。
+
+1. 读取-写入等待队列
+
+    尝试从`c.sendq`获取一个等待写入的goroutine，
+    如果存在，那么调用`recv`获取数据，返回“**读取到数据**”。
+
+1. 读取-缓冲区
+
+    如果缓冲区中有数据，就从其中读取一个。
+
+    ```go
+    if c.qcount > 0 {
+		// Receive directly from queue
+		qp := chanbuf(c, c.recvx) // 获取一个缓冲区中的数据
+		if raceenabled {
+			racenotify(c, c.recvx, nil)
+		}
+		if ep != nil {
+			typedmemmove(c.elemtype, ep, qp) // 如果不为空，复制数据
+		}
+		typedmemclr(c.elemtype, qp) // 声明变量的类型
+		c.recvx++
+		if c.recvx == c.dataqsiz {
+			c.recvx = 0
+		}
+		c.qcount--
+		unlock(&c.lock)
+		return true, true
+	}
+    ```
 
 
 
