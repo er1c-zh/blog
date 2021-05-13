@@ -23,6 +23,8 @@ order: 2
 
 ## 使用上的点
 
+### 关闭nil的channel或重复关闭channel会导致panic
+
 ### 只由写入方关闭channel
 
 向一个已关闭的channel写入数据，
@@ -30,6 +32,8 @@ order: 2
 
 所以关闭channel应该保证没有写入方会写入时再关闭，
 简单地，可以用“只由写入方”关闭来理解。
+
+### 读取写入是有序的
 
 # 数据结构 
 
@@ -281,6 +285,22 @@ channel相关的功能有：
     尝试从`c.sendq`获取一个等待写入的goroutine，
     如果存在，那么调用`recv`获取数据，返回“**读取到数据**”。
 
+    `func recv(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf func(), skip int)`
+
+    函数接受目标chan`c`，pop出来的等待写入的sudog`sg`，
+    目标地址，解锁函数，`goready`需要的参数`skip`。
+
+    `recv`针对有无缓冲区进行不同的操作。
+
+    如果没有缓冲区，调用`recvDirect`直接从弹出的sudog的中读取数据；
+    反之，从缓冲区中读取第一个数据，将`sg`的数据写入到缓冲区。
+
+    解锁，唤醒`sg`对应的goroutine，返回。
+
+    前述提到的`send`实现与`recv`类似，
+    但是只有直接写入到等待读取的goroutine的部分，
+    由`sendDirect`完成。最后解锁，唤醒等待读取的goroutine，返回。
+
 1. 读取-缓冲区
 
     如果缓冲区中有数据，就从其中读取一个。
@@ -296,18 +316,41 @@ channel相关的功能有：
 			typedmemmove(c.elemtype, ep, qp) // 如果不为空，复制数据
 		}
 		typedmemclr(c.elemtype, qp) // 声明变量的类型
+        // 更新缓冲区标记数据
 		c.recvx++
 		if c.recvx == c.dataqsiz {
 			c.recvx = 0
 		}
 		c.qcount--
 		unlock(&c.lock)
+        // 返回成功
 		return true, true
 	}
     ```
 
+1. 读取-阻塞
 
+    类似写入，获取､构建一个`sudog`，
+    追加到`c.recvq`中。
+    调用`gopark`阻塞。
 
+    等待直到一个写入的goroutine传输好数据，
+    唤醒。
 
+    清理､释放`sudog`，
+    检查是否传输成功(`mysg.success // mysg是sudog`)，
+    返回结果。
 
+## 关闭channel
+
+关闭channel由`func closechan(c *hchan)`完成。
+
+首先检查目标chan是否为nil或已经关闭，
+如果是抛出panic，
+其中，检查是否已经关闭之前加锁。
+
+依次遍历`sendq`和`recvq`，
+唤醒所有的goroutine，
+对于等待读取的goroutine返回“已关闭”，
+对于等待写入的程序，直接返回（会触发panic）。
 
