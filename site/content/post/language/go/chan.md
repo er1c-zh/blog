@@ -67,24 +67,24 @@ channel支持关闭，
 
 ```go
 type hchan struct {
-	qcount   uint           // 缓冲区中目前的数量
-	dataqsiz uint           // chan的缓冲区的元素数量上限
-	buf      unsafe.Pointer // 一个环形缓冲区
-	elemsize uint16
-	closed   uint32
-	elemtype *_type // element type
-	sendx    uint   // send index 下一个要插入的下标
-	recvx    uint   // receive index
-	recvq    waitq  // list of recv waiters
-	sendq    waitq  // list of send waiters
+    qcount   uint           // 缓冲区中目前的数量
+    dataqsiz uint           // chan的缓冲区的元素数量上限
+    buf      unsafe.Pointer // 一个环形缓冲区
+    elemsize uint16
+    closed   uint32
+    elemtype *_type // element type
+    sendx    uint   // send index 下一个要插入的下标
+    recvx    uint   // receive index
+    recvq    waitq  // list of recv waiters
+    sendq    waitq  // list of send waiters
 
-	// lock protects all fields in hchan, as well as several
-	// fields in sudogs blocked on this channel.
-	//
-	// Do not change another G's status while holding this lock
-	// (in particular, do not ready a G), as this can deadlock
-	// with stack shrinking.
-	lock mutex
+    // lock protects all fields in hchan, as well as several
+    // fields in sudogs blocked on this channel.
+    //
+    // Do not change another G's status while holding this lock
+    // (in particular, do not ready a G), as this can deadlock
+    // with stack shrinking.
+    lock mutex
 }
 ```
 
@@ -194,25 +194,25 @@ channel相关的功能有：
 
     ```go
     if c.qcount < c.dataqsiz { // 如果没有满
-		// Space is available in the channel buffer. Enqueue the element to send.
-		qp := chanbuf(c, c.sendx) // 计算出要插入的地址
-		if raceenabled {
-			racenotify(c, c.sendx, nil)
-		}
+        // Space is available in the channel buffer. Enqueue the element to send.
+        qp := chanbuf(c, c.sendx) // 计算出要插入的地址
+        if raceenabled {
+            racenotify(c, c.sendx, nil)
+        }
         // 拷贝要插入的数据到刚刚计算出的地址
-		typedmemmove(c.elemtype, qp, ep)
+        typedmemmove(c.elemtype, qp, ep)
         // 更新环形缓冲区的指针
-		c.sendx++
-		if c.sendx == c.dataqsiz {
-			c.sendx = 0
-		}
+        c.sendx++
+        if c.sendx == c.dataqsiz {
+            c.sendx = 0
+        }
         // 更新chan缓冲的元素数量
-		c.qcount++
+        c.qcount++
         // 解锁
-		unlock(&c.lock)
+        unlock(&c.lock)
         // 完成写入
-		return true
-	}
+        return true
+    }
     ```
 
 1. 写入-等待写入队列
@@ -232,11 +232,11 @@ channel相关的功能有：
 
     ```go
     gopark(chanparkcommit, unsafe.Pointer(&c.lock), waitReasonChanSend, traceEvGoBlockSend, 2)
-	// Ensure the value being sent is kept alive until the
-	// receiver copies it out. The sudog has a pointer to the
-	// stack object, but sudogs aren't considered as roots of the
-	// stack tracer.
-	KeepAlive(ep)
+    // Ensure the value being sent is kept alive until the
+    // receiver copies it out. The sudog has a pointer to the
+    // stack object, but sudogs aren't considered as roots of the
+    // stack tracer.
+    KeepAlive(ep)
     ```
 
 1. 写入-阻塞后被唤醒
@@ -315,25 +315,25 @@ channel相关的功能有：
 
     ```go
     if c.qcount > 0 {
-		// Receive directly from queue
-		qp := chanbuf(c, c.recvx) // 获取一个缓冲区中的数据
-		if raceenabled {
-			racenotify(c, c.recvx, nil)
-		}
-		if ep != nil {
-			typedmemmove(c.elemtype, ep, qp) // 如果不为空，复制数据
-		}
-		typedmemclr(c.elemtype, qp) // 声明变量的类型
+        // Receive directly from queue
+        qp := chanbuf(c, c.recvx) // 获取一个缓冲区中的数据
+        if raceenabled {
+            racenotify(c, c.recvx, nil)
+        }
+        if ep != nil {
+            typedmemmove(c.elemtype, ep, qp) // 如果不为空，复制数据
+        }
+        typedmemclr(c.elemtype, qp) // 声明变量的类型
         // 更新缓冲区标记数据
-		c.recvx++
-		if c.recvx == c.dataqsiz {
-			c.recvx = 0
-		}
-		c.qcount--
-		unlock(&c.lock)
+        c.recvx++
+        if c.recvx == c.dataqsiz {
+            c.recvx = 0
+        }
+        c.qcount--
+        unlock(&c.lock)
         // 返回成功
-		return true, true
-	}
+        return true, true
+    }
     ```
 
 1. 读取-阻塞
