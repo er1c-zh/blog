@@ -74,9 +74,9 @@ type Regexp struct {
 
 ```go
 type Regexp struct {
-    Op       Op // operator
+    Op       Op // operator 节点类型
     Flags    Flags
-    Sub      []*Regexp  // subexpressions, if any
+    Sub      []*Regexp  // subexpressions, if any 子节点，用于并、连接等操作
     Sub0     [1]*Regexp // storage for short Sub
     Rune     []rune     // matched runes, for OpLiteral, OpCharClass
     Rune0    [2]rune    // storage for short Rune
@@ -84,6 +84,32 @@ type Regexp struct {
     Cap      int        // capturing index, for OpCapture
     Name     string     // capturing name, for OpCapture
 }
+```
+
+### 节点类型
+
+```go
+const (
+    OpNoMatch        Op = 1 + iota // matches no strings
+    OpEmptyMatch                   // matches empty string
+    OpLiteral                      // 匹配字符序列
+    OpCharClass                    // matches Runes interpreted as range pair list
+    OpAnyCharNotNL                 // 除换行符之外所有的字符
+    OpAnyChar                      // 所有字符
+    OpBeginLine                    // 从一行开头开始匹配
+    OpEndLine                      // 匹配一行的结尾
+    OpBeginText                    // matches empty string at beginning of text
+    OpEndText                      // matches empty string at end of text
+    OpWordBoundary                 // matches word boundary `\b`
+    OpNoWordBoundary               // matches word non-boundary `\B`
+    OpCapture                      // capturing subexpression with index Cap, optional name Name
+    OpStar                         // matches Sub[0] zero or more times
+    OpPlus                         // matches Sub[0] one or more times
+    OpQuest                        // matches Sub[0] zero or one times
+    OpRepeat                       // matches Sub[0] at least Min times, at most Max (Max == -1 is no limit)
+    OpConcat                       // matches concatenation of Subs 匹配Subs的连接
+    OpAlternate                    // matches alternation of Subs 匹配Subs的并集
+)
 ```
 
 # 编译正则表达式
@@ -101,6 +127,50 @@ type Regexp struct {
 
 ## 构建语法树
 
+`syntax.Parse`将一个正则表达式解析为语法树。
+
+理论上来看，Parse没有使用递归下降算法，
+这样可以避免指数级别增长的递归深度以及潜在的栈溢出问题。
+
+实现上依赖`syntax.parser`，故首先分析下该对象。
+
+### `syntax.parser`
+
+```go
+type parser struct {
+    flags       Flags     // parse mode flags
+    stack       []*Regexp // stack of parsed expressions
+    free        *Regexp
+    numCap      int // number of capturing groups seen
+    wholeRegexp string
+    tmpClass    []rune // temporary char class work space
+}
+```
+
+todo 分析每个字段的用途
+
+- `func (p *parser) newRegexp(op Op) *Regexp`
+
+    产生一个新的节点对象，
+
+    
+
+- `func (p *parser) op(op Op) *Regexp`
+
+    新建一个语法树节点，
+
+### 解析正则表达式
+
+在解析开始的时候，初始化一个`parser`，存储了解析需要的一些状态。
+
+函数主体是一个大的循环，
+循环体是一个`switch`
+检查`lookahead`符号来调用相应的处理函数读取、处理相应的单元。
+
+- 左括号 `'('`
+
+    1. 左括号标记了一个捕获组 *(capture group)* 的开始，
+    故增加计数器`parser.numCap`。
 
 
 # 参考
