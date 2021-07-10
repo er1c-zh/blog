@@ -226,12 +226,98 @@ todo 分析每个字段的用途
     1. 调用`p.reuse(re1)`，等待后续的复用。
     1. 返回`false`。
 
+- `func (p *parser) concat() *Regexp`
+
+    从上搜索堆栈，使用`"|"`或`"("`之后的节点构建一个`OpConcat`节点（用来匹配节点的`Subs`部分的连接体）。
+
+    1. 首先调用`maybeConcat`合并堆栈上的字符序列的匹配。
+    1. 从栈顶开始搜索`opLeftParen`和`opVerticalBar`或直到栈底。
+    1. 当上一步搜索结束之后，遍历的下标指向上一个`opLeftParen`或`opVerticalBar`的前一个栈帧或者栈底，
+    从下标开始切分成两个部分：下标之前的保留在栈中；下标及之后的节点截取出来继续处理。
+        - 如果截取出来的部分为空，向栈中推入一个新的`OpEmptyMatch`节点。
+        - 否则调用`p.collapse(subs, OpConcat)`创建一个`OpConcat`节点，推入栈中。
+
+- `func (p *parser) collapse(subs []*Regexp, op Op) *Regexp`
+
+    构建一个`Subs`是`subs`的`op`类型的节点，并返回。
+
+    1. 快速路径，如果`subs`长度为一，直接返回。
+    1. `newRegexp`创建一个新的`op`类型的节点。
+    1. 遍历subs
+
+        - 如果节点类型与`op`相同，那么将节点的`Sub`追加到新节点的`Sub`中，
+        ——这样避免出现「连接」的「连接」这种情况，然后`reuse`节点。
+        - 其他情况就简单的推入新节点的`Sub`。
+
+    1. 如果要新建的节点是`OpAlternate`，调用`p.factor`来简化，
+    如果简化后的节点的`Sub`中只有一个节点，那么简化成一个，`reuse`另一个。
+    1. 返回新的节点。
+
+- `func (p *parser) factor(sub []*Regexp) []*Regexp`
+
+    对于**选择**类型的节点，尝试将`Sub`合并。
+
+    todo
+
+- `func (p *parser) swapVerticalBar() bool`
+
+    对于栈中第二个元素是`opVerticalBar`节点的情况，
+    `swapVerticalBar`会交换两个节点，返回`true`。
+
+    处理分为两种case，第一种情况：
+
+    ```ditaa
+    ditaa
+    +-------------+
+    | isCharClass | <----- stack top
+    +-------------+
+    |opVerticalBar|
+    +-------------+
+    | isCharClass |
+    +-------------+
+    |          {d}|
+    +-------------+
+    ```
+
+    其中`isCharClass`包含：
+
+    - 一个字符的`OpLiteral`
+    - `OpCharClass`
+    - `OpAnyCharNotNL`
+    - `OpAnyChar`
+
+    将两个`isCharClass`节点中优先级较低的通过`mergeCharClass`合并到较高的节点中，
+    保留优先级较高的节点到栈顶，优先级较低的节点`reuse`。
+
+    第二种情况：
+
+    ```ditaa
+    ditaa
+    +-------------+
+    | isCharClass | <----- stack top
+    +-------------+
+    |opVerticalBar|
+    +-------------+
+    |          {d}|
+    +-------------+
+    ```
+
+    这种情况简单的交换两者的位置。
+
+    特别的，代码中会对`stack[n-3]`调用`cleanAlt`来做一些优化，这里略过不提。
+
 - `func (p *parser) literal(r rune)`
 
     1. 新建一个`OpLiteral`节点。
     1. 如果是大小写不敏感的匹配，调用`minFoldRune`将字符化归到最小编码。
     1. 将`r`保存到节点的`Rune0[0]`和`Rune`中。
     1. 调用`p.push`将节点推入堆栈。
+
+#### 其他方法
+
+- `func cleanAlt(re *Regexp)`
+
+    todo
 
 ### 解析正则表达式
 
@@ -246,18 +332,38 @@ todo 分析每个字段的用途
     默认分支用于处理普通的字符匹配。
 
     1. `nextRune`读取一个字符。
-    1. 调用`parser.literal`，
+    1. 调用`parser.literal`来新建一个`OpLiteral`节点并推入堆栈。
 
 - 左括号 `'('`
 
     1. 左括号标记了一个捕获组 *(capture group)* 的开始，
     故增加计数器`parser.numCap`。
+    1. 调用`p.op(opLeftParen)`生成一个伪op节点，
+    并设置`Regexp.Cap`来保存捕获组的标号。
+
+    特别的，这里的`opLeftParen`是一个伪op，
+    类似的还有`opVerticalBar`，用于解析过程中放在堆栈中。
+
+- 选择 `'|'`
+
+    调用`parseVerticalBar`。
+
+    `func (p *parser) parseVerticalBar() error`
+
+    1. 调用`p.concat`重整堆栈上的节点，生成一个**连接**节点。
+    1. 尝试`p.swapVerticalBar`将交换一个**选择**节点到栈顶。
+    交换会将之前的节点当作**选择**的一个子节点来匹配，不改变语义。
+    1. 如果失败，则新建一个`opVerticalBar`推入堆栈。
 
 # 一些收获
 
 ## 处理大小写不敏感的匹配
 
 可以通过同样的化归方式来处理输入和模式。
+
+## 运算符优先级
+
+定义运算符常量时，可以将常量的数值的大小与运算符的优先级关联起来。
 
 # 参考
 

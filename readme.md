@@ -17,6 +17,18 @@
 <!--more-->
 ```
 
+## ditaa
+
+使用代码段，语言使用ditaa标记，开头标记ditaa与配置。
+
+````
+```ditaa
+ditaa
++-----+
+| img |
++-----+
+```
+````
 
 # todo list
 
