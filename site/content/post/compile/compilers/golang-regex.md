@@ -13,6 +13,8 @@ order: 4
 
 <!--more-->
 
+*基于golang 1.16*
+
 {{% serial_index compilers-book %}}
 
 # 最开始的
@@ -86,6 +88,28 @@ type Regexp struct {
 }
 ```
 
+### Flags
+
+```go
+const (
+    FoldCase      Flags = 1 << iota // case-insensitive match
+    Literal                         // treat pattern as literal string
+    ClassNL                         // allow character classes like [^a-z] and [[:space:]] to match newline
+    DotNL                           // allow . to match newline
+    OneLine                         // treat ^ and $ as only matching at beginning and end of text
+    NonGreedy                       // make repetition operators default to non-greedy
+    PerlX                           // allow Perl extensions
+    UnicodeGroups                   // allow \p{Han}, \P{Han} for Unicode group and negation
+    WasDollar                       // regexp OpEndText was $, not \z
+    Simple                          // regexp contains no counted repetition
+
+    MatchNL = ClassNL | DotNL
+
+    Perl        = ClassNL | OneLine | PerlX | UnicodeGroups // as close to Perl as possible
+    POSIX Flags = 0                                         // POSIX syntax
+)
+```
+
 ### 节点类型
 
 ```go
@@ -118,8 +142,8 @@ const (
 
 函数接受正则表达式字符串`expr`，正则表达式的格式`mode`和匹配模式`longest`。
 
-`compile`首先
-1. 通过`syntax.Parse`将正则表达式解析为正则表达式语法树(syntax tree)，
+`compile`
+1. 首先通过`syntax.Parse`将正则表达式解析为正则表达式语法树(syntax tree)，
 返回表示语法树的对象`syntax.Regexp`，
 1. 随后调用`syntax.Regexp.Simplify`简化结构，
 1. 然后根据生成的语法树生成执行匹配需要的代码，由`syntax.Compile`完成，
@@ -141,23 +165,73 @@ type parser struct {
     flags       Flags     // parse mode flags
     stack       []*Regexp // stack of parsed expressions
     free        *Regexp
-    numCap      int // number of capturing groups seen
+    numCap      int // 捕获组的数量
     wholeRegexp string
     tmpClass    []rune // temporary char class work space
 }
 ```
 
+#### 字段
+
 todo 分析每个字段的用途
+
+- `free`
+
+    `free`字段用于存储已经分配但没有使用的`Regexp`的实例，
+    存储的结构类似一个链表，`Regexp.Sub0[0]`是next节点。
+
+    `free`字段只有`func (p *parser) reuse(re *Regexp)`方法会修改，
+    当函数不再需要一个节点实例时，调用`reuse`，保存到`free`链表上。
+
+    在`newRegexp`会在新分配一个实例时，尝试从`free`链表中获取，
+    如果为空，再新建一个。
+
+#### 方法
 
 - `func (p *parser) newRegexp(op Op) *Regexp`
 
-    产生一个新的节点对象，
-
-    
+    产生一个新的节点对象，首先从`p.free`中尝试获取，如果失败，就`new`一个。
+    详见`parser.free`的字段的解释。
 
 - `func (p *parser) op(op Op) *Regexp`
 
-    新建一个语法树节点，
+    `p.newRegexp`新建一个语法树节点，`p.push`到堆栈中，返回这个节点。
+
+- `func (p *parser) push(re *Regexp) *Regexp`
+
+    将一个节点推入`parser`的堆栈中。
+
+    1. 根据节点的类型做一些工作。
+
+        - 普通类型
+
+            `p.maybeConcat(-1, 0)` 尝试合并栈上最近的两个节点。
+
+        - `OpCharClass`
+
+            todo
+    
+    1. `p.stack = append(p.stack, re)`
+
+- `func (p *parser) maybeConcat(r rune, flags Flags) bool`
+
+    检查并在可能的情况下，合并栈上的两个`OpLiteral`节点，返回`r`是否被推入栈中。
+
+    1. 从栈上获取最上面的两个节点（栈顶`re1`和栈顶下一个`re2`），
+    检查是否是`OpLiteral`节点且两者的大小写匹配是否一致。
+    符合则继续，否则返回`false`（表示`r`未入栈）退出。
+    1. 如果符合条件，将`re1.Rune`推到`re2.Rune`中。
+    1. 如果入参传递了`r`（具体的，通过`r >= 0`来判断），则复用`re1`，返回`true`表示已经将`r`入栈。
+    1. 因为无法复用，现在pop出`re1`。
+    1. 调用`p.reuse(re1)`，等待后续的复用。
+    1. 返回`false`。
+
+- `func (p *parser) literal(r rune)`
+
+    1. 新建一个`OpLiteral`节点。
+    1. 如果是大小写不敏感的匹配，调用`minFoldRune`将字符化归到最小编码。
+    1. 将`r`保存到节点的`Rune0[0]`和`Rune`中。
+    1. 调用`p.push`将节点推入堆栈。
 
 ### 解析正则表达式
 
@@ -167,11 +241,23 @@ todo 分析每个字段的用途
 循环体是一个`switch`
 检查`lookahead`符号来调用相应的处理函数读取、处理相应的单元。
 
+- 默认分支
+
+    默认分支用于处理普通的字符匹配。
+
+    1. `nextRune`读取一个字符。
+    1. 调用`parser.literal`，
+
 - 左括号 `'('`
 
     1. 左括号标记了一个捕获组 *(capture group)* 的开始，
     故增加计数器`parser.numCap`。
 
+# 一些收获
+
+## 处理大小写不敏感的匹配
+
+可以通过同样的化归方式来处理输入和模式。
 
 # 参考
 
