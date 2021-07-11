@@ -253,6 +253,16 @@ todo 分析每个字段的用途
     如果简化后的节点的`Sub`中只有一个节点，那么简化成一个，`reuse`另一个。
     1. 返回新的节点。
 
+- `func (p *parser) alternate() *Regexp`
+
+    将堆栈中第一个**左括号**之上的所有节点替换为一个`OpAlternate`节点。
+
+    1. 定位到第一个`opLeftParen`的位置，截取出不包括`opLeftParen`的所有节点作为`subs`；
+    pop出堆栈中不包括`opLeftParen`的所有节点。
+    1. 将第一步中获得的`subs`节点的最后一个调用`cleanAlt`清理。
+    1. 如果`subs`为空，推入一个`OpNoMatch`节点；
+    否则调用`p.collapse`构建一个包含`subs`的`OpLaternate`节点。
+
 - `func (p *parser) factor(sub []*Regexp) []*Regexp`
 
     对于**选择**类型的节点，尝试将`Sub`合并。
@@ -354,6 +364,73 @@ todo 分析每个字段的用途
     1. 尝试`p.swapVerticalBar`将交换一个**选择**节点到栈顶。
     交换会将之前的节点当作**选择**的一个子节点来匹配，不改变语义。
     1. 如果失败，则新建一个`opVerticalBar`推入堆栈。
+
+- 右括号 `')'`
+
+    调用`parseRightParen`来处理。
+
+    1. 首先调用`p.concat`来将栈顶的节点重整成一个`OpConcat`节点。
+    1. 调用`p.swapVerticalBar`将可能存在的`opVerticalBar`节点移动到栈顶，并pop掉。
+    1. 调用`p.alternate`将栈顶的一系列节点构建为一个`OpAlternate`节点。
+    1. 检查堆栈的长度和内容，这个时候栈顶的两个节点应该分别为
+    `opLeftParen`和`OpAlternate` *（也可能是`OpNoMatch`）* 节点。
+    1. pop出最上面的两个节点。
+    1. 根据`opLeftParen`节点的`regexp.Cap`来判断是否需要构建一个`OpCapture`节点。
+        - 如果`regexp.Cap`为0，表示不需要捕获，直接将`OpAlternate`节点推入堆栈。
+        - 否则将左括号的节点的`Op`改为`OpCapture`，然后将`OpAlternate`放到`Sub`中，
+        最后推入新的`OpCaptrue`节点。
+
+- 开始与结束 `'^'`和`'$'`
+
+    根据`p.flags`判断是行匹配还是跨行匹配，分别插入相应的节点。
+
+    `Op(Begin|End)(Text|Line)`
+
+- 任意字符 `'.'`
+
+    根据`.`是否支持匹配换行符推入`OpAnyChar(NotNL)?`节点。
+
+- 自定义的字符类 `'['`
+
+    `p.parseClass`
+
+    1. 首先吃掉`'['`。
+    1. 检查是否是 **“去除”** ，标记`sign`。
+    1. 初始化`Rune`数组`class`用来存储字符类的内容，
+    新建一个`OpCharClass`节点。
+
+        `class`的格式是每两个rune标记一个范围。
+
+    1. 循环读取直到字符类结束。
+        - 尝试匹配POSIX和Perl风格的`-`。
+        - 尝试匹配`[:alnum:]`。
+        - 尝试匹配`[\p{Han}]`。
+        - 尝试匹配`\d\w`。
+        - 尝试匹配普通字符与普通的字符范围。
+
+            1. `p.parseClassChar`根据是否需要转义，
+            使用`p.parseEscape`或`nextRune`来获取字符。
+            1. 检查下一个符号是否是`-`来判断是否是一个范围，如果是的话，
+            重复上一步的操作读取一个字符作为范围的结束。
+            1. 最后根据是否大小写敏感调用`append(Folded)?Range`将字符推入。
+
+    1. `cleanClass`清理合并字符类。
+
+        1. 排序，范围开始升序，范围结束降序。
+        1. 合并重复。
+
+    1. 如果是“去除”，`negateClass`获取补集。
+    1. 将`class`存储到`OpCharClass`节点的`regexp.Rune`中，将节点推入堆栈。
+
+- 重复 `'*','+','?','{}'`
+
+    对于`'*' '+' '?'`，分别调用`p.repeat`创建`OpStar, OpPlus, OpQuest`节点。
+
+    对于`{min, max}`，会首先利用`parseRepeat`尝试是否能正常的匹配，如果不能，
+    将`{`作为一个普通的字符来处理。
+    正确读取到`min, max`后，调用`p.repeat`来插入节点。
+
+    `p.repeat`检查栈中的情况，将栈顶饿节点包装到新节点的`Sub`中，推入栈中。
 
 # 一些收获
 
