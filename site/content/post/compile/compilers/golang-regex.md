@@ -82,9 +82,9 @@ type Regexp struct {
     Sub0     [1]*Regexp // storage for short Sub
     Rune     []rune     // matched runes, for OpLiteral, OpCharClass
     Rune0    [2]rune    // storage for short Rune
-    Min, Max int        // min, max for OpRepeat
-    Cap      int        // capturing index, for OpCapture
-    Name     string     // capturing name, for OpCapture
+    Min, Max int        // min, max for OpRepeat 用于 x{Min,Max} 类型的节点
+    Cap      int        // capturing index, for OpCapture 捕获组的index
+    Name     string     // capturing name, for OpCapture 捕获组的名字
 }
 ```
 
@@ -443,8 +443,6 @@ todo 分析每个字段的用途
 
 ## 简化
 
-todo
-
 递归的检查语法树的每个节点，需要简化的类型是：
 
 - `OpStar`
@@ -456,11 +454,29 @@ todo
 
 首先递归的应用到子节点，然后调用`simplify1`来进行简化。
 
-todo
+`func simplify1(op Op, flags Flags, sub, re *Regexp) *Regexp`
+函数接受`OpStar`，`OpPlus`和`OpQuest`三种`op`参数，
+来尝试简化`sub`和`re`节点：
+1. 当`sub.Op`是`OpEmptyMatch`（空匹配不管重复多少次都是等效的）
+或与`re.Op`相同且贪婪标记相同时（重复是幂等的），直接返回`sub`。
+1. 检查`re`是否需要修改，不需要的话直接返回，否则构建一个新的节点返回。
 
 ### `OpRepeat`
 
-todo
+简化的结果是消除`OpRepeat`，利用`OpStar`或`OpPlus`等节点来替换，
+具体的实现分为以下情况：
+
+1. 首先检查`x{0}`意味着匹配空串，用`OpEmptyMatch`来替换。
+1. 然后递归的调用`Simplify`来简化`Sub[0]`节点。
+1. 检查不设`Max`的情况：
+    1. `x{0,}`类型与`x*`等价，转换成一个`OpStar`节点。
+    1. `x{1,}`类型与`x+`等价，转换成一个`OpPlus`节点。
+    1. `x{4,}`这种类型，可以使用`xxxx+`这种情况，
+    因此，用三个`x`的节点和一个`OpPlus`的节点组成`OpConcat`替换一下。
+1. `x{1}`类型是精准匹配，直接使用`sub`来替换。
+1. `x{n,m}`是n个x和(m-n)个x?的组合，
+特别的，将`x?x?x?`转换成`(x(x(x)?)?)?`会加快程序执行。
+1. 最后没有处理的情况是非法的情况，返回一个`OpNoMatch`节点。
 
 ## 将语法树编译为要执行的程序
 
