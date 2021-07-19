@@ -1,5 +1,5 @@
 ---
-title: "golang的regex实现"
+title: "golang的regex实现 编译"
 date: 2021-07-07T23:05:42+08:00
 draft: true
 tags:
@@ -172,8 +172,6 @@ type parser struct {
 ```
 
 #### 字段
-
-todo 分析每个字段的用途
 
 - `free`
 
@@ -450,6 +448,8 @@ todo 分析每个字段的用途
 - `OpQuest`
 - `OpRepeat`
 
+**简化**流程会将`{m,n}`类型的语法消除，转换成`*/+/?`类型。
+
 ### 对于`OpStar` `OpPlus` `OpQuest`
 
 首先递归的应用到子节点，然后调用`simplify1`来进行简化。
@@ -480,7 +480,44 @@ todo 分析每个字段的用途
 
 ## 将语法树编译为要执行的程序
 
-todo
+```go
+prog, err := syntax.Compile(re)
+```
+
+利用`syntax.Compile`将简化过的语法树编译成可以可以执行的程序。
+
+实现上，go的正则表达式包的匹配的通过构建一个执行指令的自动机，
+来执行“能够匹配的字符串的指令列表”完成匹配。
+所以，**编译**的结果是一个“程序”，
+程序的内容是一系列指令，执行匹配的自动机可以通过执行指令来完成工作。
+
+### 数据结构
+
+1. `syntax.Prog`
+
+    `Prog`表示一个编译好的程序。
+    其中，
+    - `Prog.Inst`是一个指令列表，可以通过下标寻址。
+    - `Prog.Start`是开始指令的下标。
+    - `Prog.NumCap`是该程序中捕获组的数量。
+
+    ```go
+    type Prog struct {
+        Inst   []Inst
+        Start  int // index of start instruction
+        NumCap int // number of InstCapture insts in re
+    }
+    ```
+1. `syntax.Inst`
+
+    ```go
+    type Inst struct {
+        Op   InstOp
+        Out  uint32 // all but InstMatch, InstFail
+        Arg  uint32 // InstAlt, InstAltMatch, InstCapture, InstEmptyWidth
+        Rune []rune
+    }
+    ```
 
 # 一些收获
 
