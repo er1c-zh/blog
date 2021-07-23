@@ -1,7 +1,7 @@
 ---
-title: "golang的regex实现"
+title: "golang的regex实现 编译"
 date: 2021-07-07T23:05:42+08:00
-draft: true
+draft: false
 tags:
     - compilers-book
     - go
@@ -35,7 +35,8 @@ found := reg.MatchString("hello regex.")
 1. 首先`Compile`要使用的正则表达式，得到一个`regexp.Regexp`实例。
 1. 利用`regexp.Regexp`进行匹配。
 
-本文首先分析记录关联的数据结构，然后分析编译的过程，最后分析匹配实现。
+本文首先分析记录关联的数据结构，然后分析编译的过程，
+最后在后面的文章分析匹配的实现。
 
 # 数据结构
 
@@ -173,8 +174,6 @@ type parser struct {
 
 #### 字段
 
-todo 分析每个字段的用途
-
 - `free`
 
     `free`字段用于存储已经分配但没有使用的`Regexp`的实例，
@@ -209,7 +208,10 @@ todo 分析每个字段的用途
 
         - `OpCharClass`
 
-            todo
+            如果是只匹配一个字符，尝试合并到之前的节点，或者新建一个`OpLiteral`节点；
+
+            如果匹配类似Aa或者Bb这种如果忽略大小写之后是一个字符的情况，
+            类似的，会尝试合并到前一个节点（以大小写不敏感的flag），或者新建一个`OpLiteral`节点。
     
     1. `p.stack = append(p.stack, re)`
 
@@ -265,9 +267,18 @@ todo 分析每个字段的用途
 
 - `func (p *parser) factor(sub []*Regexp) []*Regexp`
 
-    对于**选择**类型的节点，尝试将`Sub`合并。
+    对于**选择**类型的节点，尝试将`Sub`的共同前缀提取出来。
 
-    todo
+    根据注释，这里会做如下的合并：
+
+    > For example,
+    >     ABC|ABD|AEF|BCX|BCY
+    > simplifies by literal prefix extraction to
+    >     A(B(C|D)|EF)|BC(X|Y)
+    > which simplifies by character class introduction to
+    >     A(B[CD]|EF)|BC[XY]
+
+    <del>具体怎么实现的，等到有时间在看吧。</del>
 
 - `func (p *parser) swapVerticalBar() bool`
 
@@ -327,7 +338,21 @@ todo 分析每个字段的用途
 
 - `func cleanAlt(re *Regexp)`
 
-    todo
+    主要是将`OpCharClass`类型的节点的一些特殊情况做了处理。
+
+    - 匹配任意字符的会替换成`OpAnyChar`。
+    - 匹配除换行符的任意字符的会替换成`OpAnyCharNotNL`。
+    - 如果给节点的`Rune`数组分配了太多的未使用的空间，通过重新`append`来清理。
+
+        ```go
+        if cap(re.Rune)-len(re.Rune) > 100 {
+            // re.Rune will not grow any more.
+            // Make a copy or inline to reclaim storage.
+            re.Rune = append(re.Rune0[:0], re.Rune...)
+        }
+        ```
+
+        至于这里为什么能实现这种效果，猜测和`append`的实现有关。
 
 ### 解析正则表达式
 
@@ -439,7 +464,7 @@ todo 分析每个字段的用途
     将`{`作为一个普通的字符来处理。
     正确读取到`min, max`后，调用`p.repeat`来插入节点。
 
-    `p.repeat`检查栈中的情况，将栈顶饿节点包装到新节点的`Sub`中，推入栈中。
+    `p.repeat`检查栈中的情况，将栈顶的节点包装到新节点的`Sub`中，推入栈中。
 
 ## 简化
 
@@ -449,6 +474,8 @@ todo 分析每个字段的用途
 - `OpPlus`
 - `OpQuest`
 - `OpRepeat`
+
+**简化**流程会将`{m,n}`类型的语法消除，转换成`*/+/?`类型。
 
 ### 对于`OpStar` `OpPlus` `OpQuest`
 
@@ -480,7 +507,268 @@ todo 分析每个字段的用途
 
 ## 将语法树编译为要执行的程序
 
-todo
+```go
+prog, err := syntax.Compile(re)
+```
+
+利用`syntax.Compile`将简化过的语法树编译成可以可以执行的程序。
+
+实现上，go的正则表达式包的匹配的通过构建一个执行指令的自动机，
+来执行“能够匹配的字符串的指令列表”完成匹配。
+所以，**编译**的结果是一个“程序”，
+程序的内容是一系列指令，执行匹配的自动机可以通过执行指令来完成工作。
+
+### 数据结构
+
+1. `syntax.Prog`
+
+    `Prog`表示一个编译好的程序。
+    其中，
+    - `Prog.Inst`是一个指令列表，可以通过下标寻址。
+    - `Prog.Start`是开始指令的下标。
+    - `Prog.NumCap`是该程序中捕获组的数量。
+
+    ```go
+    type Prog struct {
+        Inst   []Inst
+        Start  int // index of start instruction
+        NumCap int // number of InstCapture insts in re
+    }
+    ```
+1. `syntax.Inst`
+
+    `Inst`表示程序中的一个指令。
+
+    ```go
+    type Inst struct {
+        Op   InstOp
+        Out  uint32 // all but InstMatch, InstFail
+        Arg  uint32 // InstAlt, InstAltMatch, InstCapture, InstEmptyWidth
+        Rune []rune
+    }
+    ```
+
+    其中，`Op`表明了该指令的类型，`InstOp`是定义的类型，有若干常量。
+
+    ```go
+    InstAlt InstOp = iota // 分支，类似于if-else
+    InstAltMatch
+    InstCapture // 标记捕获组的开始和结束
+    InstEmptyWidth // 匹配位置
+    InstMatch // 匹配完成
+    InstFail // 匹配失败
+    InstNop // nop
+    InstRune // 匹配Inst.Rune中的字符
+    InstRune1 // 匹配一个字符
+    InstRuneAny // 匹配任意字符
+    InstRuneAnyNotNL // 匹配除换行符之外的任意字符
+    ```
+
+    `Out`的值是`Prog.Inst`的下标，是需要执行的下一个指令的下标；
+    `Arg`的值与`Inst.Op`有关，
+    比如对于`InstAlt`来说是另一个分支的指令的下标；
+    `Rune`存储了需要匹配的字符。
+
+1. `syntax.frag`
+
+    `frag`表示一个编译好的程序的片段，`i`表示片段开始的指令的下标，
+    `out`是一个`patchList`对象，业务上的含义是整个片段的下一步的指令，
+    编译中，有时无法立即确定下一步需要跳转到哪里，所以需要这种用于暂存编译过程中需要补全信息的位置。
+    `patchList`的详细解释在下文。
+
+    ```go
+    // A frag represents a compiled program fragment.
+    type frag struct {
+        i   uint32    // index of first instruction
+        out patchList // where to record end instruction
+    }
+    ```
+
+1. `syntax.patchList`
+
+    `patchList`是一系列指令指针的列表。
+    因为编译是自顶向下的，
+    所以存在生成一个指令实例`syntax.Inst`时，
+    无法确定`Inst.Out`或`Inst.Arg`的情况。
+    为了解决这种问题，引入了`patchList`。
+    特别的，利用需要填充的字段来存储了列表中的其他指针，
+    `patchList`只需要存储头尾指针。
+
+    当`head`为0时表示是空列表，
+    当`l.head&1==0`时，指向`p.inst[l.head>>1].Out`，
+    当`l.head&1==1`时，指向`p.inst[l.head>>1].Arg`。
+    
+    ```go
+    type patchList struct {
+        head, tail uint32
+    }
+    ```
+
+1. `syntax.compiler`
+
+    `compiler`是执行编译的对象，存储了表示编译结果的`syntax.Prog`实例，
+    具体的编译工作由`compiler.compile`完成。
+
+    ```go
+    type compiler struct {
+        p *Prog
+    }
+    ```
+
+### 编译
+
+编译的入口函数是`syntax.Compile`，
+函数首先初始化一个`compiler`对象，
+然后通过`compiler.compile`遍历语法树、生成指令表并表示整个程序的片段实例。
+最后，将`patchList`补充好，保存入口的下标，返回表示编译好的程序的`Prog`实例。
+
+```go
+func Compile(re *Regexp) (*Prog, error) {
+    var c compiler
+    c.init() 
+    f := c.compile(re)
+    f.out.patch(c.p, c.inst(InstMatch).i)
+    c.p.Start = int(f.i)
+    return c.p, nil
+}
+```
+
+1. 初始化
+
+    增加捕获组的数量，将指令表开头初始化为InstFail
+
+1. `c.compile`
+
+    `c.compile`的工作是将语法树转换成指令表，并串联起来。
+
+    实现上，`c.compile`自顶向下遍历语法树，
+    对于每个节点，会在指令表中生成新的指令，
+    如果有子节点的通常还会递归的调用`c.compile`编译子节点，
+    下面具体的分析编译的实现。
+
+    `c.compile`中是一个大`switch`，
+    首先根据是否有子节点分为两类来分析。
+
+    - 需要处理子节点
+
+        - 连接 `OpConcat`
+
+            遍历节点的子节点，
+            调用`compiler.compile`递归的生成指令，获得片段；
+            从第二个节点开始，会调用`compiler.cat(f1, f2 frag)`将指令连接起来。
+
+            `cat`的内容十分简单，
+            如果两个片段有指向指令列表的第一个元素——意味着匹配失败——直接返回表示匹配失败的片段。
+            其他的时候，调用第一个片段的`frag.out.patch`方法，
+            将第一个片段的所有在`patchList`中的位置（`Inst.Out`和`Inst.Arg`）填充为`f2`表示的指令。
+            返回一个新的片段，入口是`f1`的入口，`patchList`是`f2`的`patchList`。
+
+            从本质上来说，`cat`起到类似于“合并”片段的作用。
+
+        - 选择 `OpAlternate`
+
+            遍历子节点，首先用`compiler.compile`生成指令，获得片段，
+            然后调用`compiler.alt(f1, f2 frag)`来生成一个分支。
+
+            `alt`生成一个新的`InstAlt`指令，
+            `Inst.Out`指向`f1`的入口，`Inst.Arg`指向`f2`的入口。
+            
+            调用`f1.out.append(c.p, f2.out)`来将`f1`和`f2`的`patchList`合并起来，
+            作为新的`InstAlt`指令的片段的`patchList`。
+
+        - 重复 `*`
+
+            第一步生成子节点的指令，
+            然后通过调用`compiler.star`实现重复匹配的功能。
+
+            `star`会生成一个`InstAlt`指令，
+            根据是否贪婪，分别将重复的指令放在`Inst.Out`或`Inst.Arg`中，
+            将另一个字段放置到`patchList`中，等待后续的填充。
+
+            最后，将需要重复的单元的`patchList`用新的`InstAlt`节点填充，
+            这样就生成了类似循环的指令循环，
+
+        - 重复 `+`
+
+            `+`的实现比较巧妙，功能由`compiler.plus`实现，可以实现上看到没有创建新的指令。
+
+            通过简单的将返回的片段的开始下标由指向`InstAlt`转换为指向重复单元，就实现了“至少匹配一次”的目的。
+
+            ```go
+            func (c *compiler) plus(f1 frag, nongreedy bool) frag {
+                return frag{f1.i, c.star(f1, nongreedy).out}
+            }
+            ```
+
+        - 重复 `?`
+
+            具体的由`compiler.quest`实现，对比`compiler.star`来看也十分巧妙。
+
+            区别于`star`最后会将`InstAlt`指令填充到重复单元的`patchList`上，
+            `quest`将重复单元的`patchList`和`InstAlt`的`patchList`合并起来，等待填充。
+
+            这样就类似于实现了“匹配一次（走`InstAlt`的重复单元分支）或零次（直接走延迟填充的节点的分支）”的目标。
+
+        - 捕获 Capture
+
+            捕获功能比较特殊的是引入了新的指令`InstCapture`，
+            在遇到`OpCapture`时，使用`compiler.cat`将两个`InstCapture`和子节点编译成的指令连接起来。
+
+            `InstCapture`指令由`compiler.cap`生成。
+            过程比较简单：
+            
+            1. 将传入的参数保存到指令的`Inst.Arg`字段。
+                
+                `Inst.Arg >> 1`是对应的捕获组的序数，
+                `Inst.Arg & 1`标记捕获组的开始（0）或结束（1）。
+                
+            1. 将`compiler`的捕获组数量增加。
+
+    - 不需要处理子节点
+
+        - 匹配字符的节点
+
+            对于`OpLiteral`/`OpCharClass`/`OpAnyCharNotNL`/`OpAnyChar`四种节点，
+            会调用`compiler.rune(runeArrayNeedMatch, flags)`来生成指令。
+            
+            1. 首先通过`compiler.inst(InstRune)`生成一个`InstRune`类型的指令，
+            写入到指令表中。
+            1. 随后将传入的需要匹配的rune放置到指令中的`Inst.Rune`字段。
+            1. 过滤出标记中的`FlodCase`，处理后存储到`Inst.Arg`
+            1. 将新指令的`Inst.out`加入到返回的片段的`patchList`中。
+            1. 最后将三种情况下的指令的类型修改为更特化的指令。
+                - 如果是匹配任意一个字符的时候，替换为`InstRuneAny`。
+                - 如果是匹配除换行符的所有字符，替换为`InstRuneAnyNotNL`。
+                - 如果匹配的只有一个字符，那么替换为`InstRune`。
+
+            特别的，对于`OpLiteral`，会遍历需要匹配的字符列表，
+            重复执行上述的过程。对于返回的结果，会调用`compiler.cat`将若干匹配的指令连接起来。
+
+        - 匹配空串
+
+            `compiler.nop`会生成一个`InstNop`指令。
+
+        - 匹配失败
+
+            `compiler.fail`生成一个`Inst.Op`为0的指令实例。
+
+        - 匹配位置
+
+            对于`OpBeginLine`/`OpEndLine`/`OpBeginText`/
+            `OpEndText`/`OpWordBoundary`/`OpNoWordBoundary`这类匹配位置的节点，
+            会调用`compiler.empty`生成一个`InstEmptyWidth`指令，
+            将要匹配的位置信息存储到指令的`Inst.Arg`中。
+            最后，将`Inst.Out`连接进`patchList`。
+
+1. 增加程序的结尾
+
+    根据实现，
+    最后返回的`frag`对象的`frag.i`表示程序的开头，
+    `frag.out`表示的是匹配运行的结尾处的“`Inst.Out`或`Inst.Arg`”，
+    为了结束匹配，所以生成一个表示匹配完成的`InstMatch`指令并将它填充到最后的`patchList`上。
+    这样，在匹配的程序运行到最后的时候，就会执行`InstMatch`指令，标志匹配的完成。
+
+1. 最后，将程序开始的下标，存储到要返回的`Prog`实例中。
 
 # 一些收获
 
