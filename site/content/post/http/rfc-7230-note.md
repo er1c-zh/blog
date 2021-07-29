@@ -272,6 +272,77 @@ https的授权过程在RFC2818中定义。
 
 - host部分是大小写不敏感的，其他部分是大小写敏感的。
 
+# 3 报文格式
+
+HTTP报文由一个**开头行**开始，
+后续是类似于**因特网报文格式** *(Internet Message Format, RFC5322)* 的字符序列。
+字符序列包含：
+
+1. 首先是零个或多个**首部字段**，合并称为**首部** *(headers or header section)*。
+1. 一个空行表示**首部**的结束。
+1. 最后是可选的报文体。
+
+> HTTP-message   = start-line
+>                  *( header-field CRLF )
+>                  CRLF
+>                  [ message-body ]
+
+通常解析报文的流程是：
+
+1. 读取**开头行**。
+1. 一次读取**首部字段**，根据**字段名称**写入到一个哈希表中，直到遇到空行。
+1. 根据**首部**的信息，判断是否需要存在报文体。
+如果存在，那么将报文体作为一个流读入，直到读取了足够多的字符或链接被关闭为止。
+
+由于解析多字节字符的库面对不合法的、包含换行符的序列时的不确定性，
+如果将HTTP报文作为一个Unicode字符流来处理，会导致安全问题。
+因此，接受者MUST将HTTP报文作为一个使用了US-ASCII超集的编码的字节流来处理。
+当拆分报文完成后，便可使用基于字符串的解析器 *(string-based parser)* 。
+
+发送者MUST NOT在**开头行**和第一个**首部字段**之间写入空白字符；
+接受者在收到这种请求时，MUST因不合法而拒绝这个请求，
+或直接丢弃掉所有空白字符之前的行。
+这种情况可能是攻击者希望服务器忽略一些字段或将后续的数据当作一个新的请求来处理，
+这些都有可能导致安全上的问题。
+
+## 3.1 开始行 Start Line
+
+语法上，请求与响应报文的区别仅在于它们的开始行，一个称为**请求行** *(request-line)* ，
+另一个称为**状态行** *(status-line)* 。
+
+> start-line     = request-line / status-line
+
+### 3.1.1 请求行
+
+请求行的构成：
+
+> request-line   = method SP request-target SP HTTP-version CRLF
+
+- `method`表明要对资源执行的操作，大小写敏感。
+- `request-target`表明目标资源。
+
+接受者通常可以使用空白字符切分请求行，因为空白字符不应该也不允许出现在这三个部分中。
+但一些客户端没有正确的实现，导致`request-target`中可能存在空白字符。
+对于这种不合法的请求行，接受者SHOULD返回400 *(Bad Request)* 错误，
+或者一个指向正确的`request-target`的301 *(Moved Permanently)* 响应。
+接受者SHOULD NOT不重定向而自动修正`request-target`并处理请求，
+因为这可能导致安全问题。
+
+协议没有预定请求行的长度限制，
+如果服务器接收到了过长的`method`，那么SHOULD返回501 *(Not Implemented)* 响应；
+如果接收到了过长的`request-target`，应该MUST返回414 *(URI Too Long)* 错误。
+
+RECOMMENDED，所有的HTTP协议的发送者和接受者，请求行最少支持8000字符长度。
+
+### 3.1.2 状态行
+
+状态行的构成：
+
+> status-line = HTTP-version SP status-code SP reason-phrase CRLF
+
+- `status-code`是一个三位数字，用来描述服务端处理客户端请求的结果。
+更详细的介绍在RFC7231第六节。
+
 # 参考
 
 - [rfc7230](https://datatracker.ietf.org/doc/html/rfc7230)
