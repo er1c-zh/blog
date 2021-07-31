@@ -489,6 +489,22 @@ MUST返回一个4xx (Client Error) 错误。
 都可能去按照`Transfer-Encoding`解码内容来减少一层编码
 或增加一层编码。
 
+服务端MUST NOT在1xx *(Informational)* 或204 *(No Content)* 
+的响应中返回`Transfer-Encoding`首部字段。
+服务端MUST NOT在返回对应一个`CONNECT`请求的2xx *(Successful)* 
+响应时包含`Transfer-Encoding`首部字段。
+
+`Transfer-Encoding`是HTTP/1.1新加入的字段，
+所以客户端MUST NOT在不确定服务端是否支持HTTP/1.1的情况下，
+发送包含`Transfer-Encoding`的请求。
+同样地，除非能从请求中确定发送者支持HTTP/1.1，
+服务端MUST NOT使用`Transfer-Encoding`字段。
+
+当服务端接受到不支持的`Transfer-Encoding`（编码格式）时，
+SHOULD返回一个501 *(Not Implemented)* 错误。
+
+### 3.3.2 Content-Length
+
 # 参考
 
 - [rfc7230](https://datatracker.ietf.org/doc/html/rfc7230)
