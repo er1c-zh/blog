@@ -449,17 +449,18 @@ MUST返回一个4xx (Client Error) 错误。
 除非指定了**传输编码** *(transfer coding)* ，
 报文体的内容与载荷的内容应该是完全一致的。
 
-指明是否存在报文体的规则在请求和响应中是不同的。
+指明是否存在报文体的规则在请求和响应中是不同的：
 
-对于请求来说，需要在首部中存在`Content-Length`或`Transfer-Encoding`字段。
+- 对于请求来说，需要在首部中存在`Content-Length` **或** `Transfer-Encoding`字段。
 
-另外，请求报文的结构与请求方法无关，尽管请求方法没有定义报文体的用途（也可以有报文体）。
-**对于响应来说，是否存在报文体由请求方法和状态码来决定，**
+- **对于响应来说，是否存在报文体由请求方法和状态码来决定，**
 有如下的特殊情况，没有报文体（，除此之外，都存在长度大于等于0的报文体）：
 
-- 对于`HEAD`方法的请求，都没有报文体。
-- 对去`CONNECT`请求，2xx状态码表示切换到隧道模式，没有报文体。
-- 所有的 1xx (Informational) 204 (No Content) 304 (Not Modified) 的响应都表明没有报文体。
+    - 对于`HEAD`方法的请求，都没有报文体。
+    - 对去`CONNECT`请求，2xx状态码表示切换到隧道模式，没有报文体。
+    - 所有的 1xx (Informational) 204 (No Content) 304 (Not Modified) 的响应都表明没有报文体。
+
+另外，请求报文的结构与请求方法无关，尽管请求方法没有定义报文体的用途（也可以有报文体）。
 
 ### 3.3.1 传输编码 Transfer-Encoding
 
@@ -504,6 +505,89 @@ MUST返回一个4xx (Client Error) 错误。
 SHOULD返回一个501 *(Not Implemented)* 错误。
 
 ### 3.3.2 Content-Length
+
+`Content-Length`在没有`Transfer-Encoding`时，
+提供了潜在的载荷内容长度（字符的个数）。
+如果报文拥有载荷，
+那么`Content-Length`帮助分片传输来确定报文体的结尾；
+如果报文没有载荷，
+`Content-Length`表明了被选中的**表现** *（representation 会在第三节介绍）* 的大小。
+
+发送者MUST NOT发送既有`Content-Length`也有`Transfer-Encoding`的报文。
+
+如果请求报文没有包含`Transfer-Encoding`，且请求方法需要一个封闭 *(enclosed)* 的载荷，
+那么用户代理SHOULD在报文中包含`Content-Length`字段。
+如果请求报文不包含载荷且请求方法也没有需要有载荷，
+那么用户代理SHOULD NOT设置`Content-Length`字段。
+
+对于HEAD请求的响应或304响应，
+MAY返回目标资源的200响应时的`Content-Length`。
+
+对于1xx和204响应，
+服务端MUST NOT设置`Content-Length`字段。
+对于CONNECT请求的响应，
+服务端MUST NOT设置`Content-Length`字段。
+
+除了一些特殊的情况，
+当没有设定`Transfer-Encoding`时，
+源服务器如果知道载荷的大小，
+SHOULD设置`Content-Length`帮助下游接受者处理报文。
+
+协议没有规定`Content-Length`的大小，处理时需要小心溢出的问题。
+
+有时报文会存在多个`Content-Length`字段或字段的值是一个列表，
+这种情况是由于上游存在处理的问题导致的，
+接受者应该拒绝或修复这个问题。
+
+### 3.3.3 报文体的长度
+
+报文体的长度由以下规则决定，有优先级：
+
+1. 对于HEAD请求的响应和状态码为1xx、204、304的响应，
+报文的解析在遇到第一个空行时结束，因为这些响应没有也不能 *(cannot contain)* 报文体。
+1. 对于CONNECT请求、状态码为2xx的响应，
+（因为在解析完该响应报文的首部之后，会立即成为一个隧道，所以）
+客户端MUST忽略首部的`Transfer-Encoding`和`Content-Length`字段。
+1. 如果报文采用了`chunked`编码且是`Transfer-Encoding`的最后一个编码，报文体的结束由报文体的内容决定。
+如果响应报文应用了`chunked`编码但不是最终的编码，
+当链接被关闭时，报文数据传输结束。
+如果是请求报文存在这种情况，没有可靠的途径来决定什么时候报文传输完毕，
+服务端MUST返回一个400错误，然后关闭链接。
+如果一个报文同时包含`Transfer-Encoding`和`Content-Length`字段，
+`Transfer-Encoding`字段生效。
+1. 如果报文中只包含`Content-Length`字段，
+且存在多个不同的`Content-Length`值或非法的`Content-Length`值，
+那么这个报文是一个非法的报文，接受者根据自己的角色和请求、响应来进行错误处理：
+
+    - 对于请求报文，MUST返回400错误
+    - 对于响应报文，如果是代理，那么代理MUST关闭于服务端的链接，丢弃这个响应，返回502错误；
+    如果是客户端，MUST关闭与服务器的代理，并丢弃这个响应。
+
+1. 如果有一个合法的`Content-Length`值且没有`Transfer-Encoding`时，
+那么`Content-Length`的值表明了期望传输的按字符计算的载荷长度。
+如果在接受到目标长度的报文之前断开了链接或超时，
+那么MUST丢弃这些数据，并关闭链接。
+
+1. 如果没有上述的情况（，即没有`Content-Length`也没有`Transfer-Encoding`），
+且该报文是一个请求报文，那么表明报文的长度是0；
+如果是响应报文，服务端关闭链接表明数据传输完成。
+
+特别的，并无可靠的方法来区分关闭链接是表明传输完成或者网络问题导致的关闭，
+所以服务端SHOULD在可能的情况下生成`Transfer-Encoding`或`Content-Length`字段。
+关闭链接表明报文传输完成是为了兼容HTTP/1.0。
+
+服务端MAY通过返回411 (Length Required) 错误来处理有消息体但缺乏`Content-Length`字段的请求。
+
+除非是应用了除了`chunked`之外的传输编码，
+客户端在知道报文体长度的情况下，SHOULD发送带有`Content-Length`的请求。
+这是因为存在一些服务端实现，
+会对于缺少`Content-Length`的`chunked`请求，会返回411 (Length Required) 错误。
+
+如果用户代理不确定服务端是否能够处理HTTP/1.1请求，
+MUST发送带有合法`Content-Length`字段的请求。
+
+如果客户端发现有超出`Content-Length`的数据，
+MUST NOT处理、缓存或者转发。
 
 # 参考
 

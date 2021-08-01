@@ -62,6 +62,17 @@ ditaa
         - [ ] OT
         - [x] diff
         - [ ] 版本向量
+    - [ ] 监控系统
+        - [ ] 整理一下 监控的哲学
+        - [ ] Prometheuse简单实现
+    - [ ] HTTP/1.1协议的笔记
+        - [ ] rfc7230 "Message Syntax and Routing" (this document)
+        - [ ] rfc7231 "Semantics and Content" [RFC7231]
+        - [ ] rfc7232 "Conditional Requests" [RFC7232]
+        - [ ] rfc7233 "Range Requests" [RFC7233]
+        - [ ] rfc7234 "Caching" [RFC7234]
+        - [ ] rfc7235 "Authentication" [RFC7235]
+    - [ ] HTTP/2
 - [ ] 尝试为一些小的开源项目提供代码
 - [ ] 构建自己的dotfiles
 
