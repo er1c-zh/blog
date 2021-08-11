@@ -71,18 +71,18 @@ typedef struct aeTimeEvent {
 
 1. 初始化一个事件循环
 
-在初始化过程中调用`aeEventLoop *aeCreateEventLoop(int setsize)`初始化一个`EventLoop`对象并设置追踪的文件描述符的最大数量。
+    在初始化过程中调用`aeEventLoop *aeCreateEventLoop(int setsize)`初始化一个`EventLoop`对象并设置追踪的文件描述符的最大数量。
 
-`aeCreateEventLoop`调用了特定的多路复用框架的初始化方法。epoll初始化了一个与`EventLoop`中events大小相同的`epoll_event`数组。
+    `aeCreateEventLoop`调用了特定的多路复用框架的初始化方法。epoll初始化了一个与`EventLoop`中events大小相同的`epoll_event`数组。
 
-```c
-void initServer(void) {
-  // ...
-  // src/server.c#1846
-  server.el = aeCreateEventLoop(server.maxclients+CONFIG_FDSET_INCR);
-  // ...
-}
-```
+    ```c
+    void initServer(void) {
+      // ...
+      // src/server.c#1846
+      server.el = aeCreateEventLoop(server.maxclients+CONFIG_FDSET_INCR);
+      // ...
+    }
+    ```
 
 1. 注册事件
 
@@ -139,61 +139,67 @@ void initServer(void) {
             ```
 1. 注册两个时间点的函数
 
-两个函数在每次事件主循环中，都会在前后调用。
+    两个函数在每次事件主循环中，都会在前后调用。
 
-```c
-void initServer(void) {
-    // ...
-    // src/server.c#3902
-    aeSetBeforeSleepProc(server.el,beforeSleep);
-    aeSetAfterSleepProc(server.el,afterSleep);
-    // ...
-}
-```
+    ```c
+    void initServer(void) {
+        // ...
+        // src/server.c#3902
+        aeSetBeforeSleepProc(server.el,beforeSleep);
+        aeSetAfterSleepProc(server.el,afterSleep);
+        // ...
+    }
+    ```
 
 1. 开始事件循环
 
-```c
-void initServer(void) {
-    // ...
-    // src/server.c#3904
-    aeMain(server.el);
-    // ...
-}
-```
-  1. 一个简单的循环，调用`beforeSleep`与`aeProcessEvents`。
+    ```c
+    void initServer(void) {
+        // ...
+        // src/server.c#3904
+        aeMain(server.el);
+        // ...
+    }
+    ```
 
-      ```c
-      void aeMain(aeEventLoop *eventLoop) {
-          eventLoop->stop = 0;
-          while (!eventLoop->stop) {
-              if (eventLoop->beforesleep != NULL)
-                  eventLoop->beforesleep(eventLoop);
-              aeProcessEvents(eventLoop, AE_ALL_EVENTS|AE_CALL_AFTER_SLEEP);
-          }
-      }
-      ```
+    1. 一个简单的循环，调用`beforeSleep`与`aeProcessEvents`。
 
-  1. `aeProcessEvents`
+        ```c
+        void aeMain(aeEventLoop *eventLoop) {
+            eventLoop->stop = 0;
+            while (!eventLoop->stop) {
+                if (eventLoop->beforesleep != NULL)
+                    eventLoop->beforesleep(eventLoop);
+                aeProcessEvents(eventLoop, AE_ALL_EVENTS|AE_CALL_AFTER_SLEEP);
+            }
+        }
+        ```
 
-      ```plantuml
-      @startuml
-      title aeProcessEvents
+    1. `aeProcessEvents`
 
-      start
-      :计算最近发生的时间事件距今需要多长时间tvp;
-      :调用系统相关的aeApiPoll接口，等待tvp;
-      :调用aftersleep处理函数;
+        对于事件采取先处理读，然后处理写的策略，
+        这样可以在读取一个命令并执行完成后，迅速的写入到链接中。
+        但例外的是，可以通过传入flag `AE_BARRIER` 来反转上述的策略，
+        用于在读取执行命令和写入结果之间需要通过`beforeSleep`或`afterSleep`对结果做一些处理的情况。
 
-      repeat
-      :调用读事件handler;
-      :调用写事件handler;
-      repeat while(poll返回的事件仍有未处理完成的)
+        ```plantuml
+        @startuml
+        title aeProcessEvents
 
-      :调用processTimeEvents处理时间事件;
-      stop
-      @enduml
-      ```
+        start
+        :计算最近发生的时间事件距今需要多长时间tvp;
+        :调用系统相关的aeApiPoll接口，等待tvp到达或者其他文件事件被触发;
+        :调用aftersleep处理函数;
+
+        repeat
+        :调用读事件handler;
+        :调用写事件handler;
+        repeat while(poll返回的事件仍有未处理完成的)
+
+        :调用processTimeEvents处理时间事件;
+        stop
+        @enduml
+        ```
 
 1. 事后清理
 
@@ -206,3 +212,36 @@ void initServer(void) {
 }
 ```
 
+# `beforeSleep`、`afterSleep`与`serverCron`
+
+简单记录了各个“定时任务”做的工作，
+不包含集群、模组等的相关的内容。
+
+## `beforeSleep`
+
+1. 允许时，调用`activeExpireCycle`来尝试一轮主动的快速过期键检查。
+具体实现在[这篇文章]({{< relref "how_redis_work_common.md#过期时间的实现" >}})有介绍。
+1. `flushAppendOnlyFile`刷新AOF。
+1. `handleClientsWithPendingWrites`将需要发送到客户端的缓冲区发送并清空，
+具体实现在[这篇文章]({{< relref "main_process.md#返回结果" >}})有介绍。
+
+## `afterSleep`
+
+模组相关的工作。
+
+## `serverCron`
+
+1. 首先是做了一些统计、监控方面的工作：
+
+    - 占用的资源
+    - 不同db的大小、包含的key的数量
+    - 客户端的信息
+
+1. `clientsCron`
+1. `databasesCron`
+1. 如果有触发后台重写aof，会调用`rewriteAppendOnlyFileBackground`
+1. 检查子进程是否有中途失败的情况。
+1. 检查是否需要进行rdb或aof的持久化操作。
+1. 如果需要，刷新aof缓存。
+1. 清理客户端。
+1. 如果需要，开始一个后台的rdb保存工作。
