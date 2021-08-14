@@ -124,6 +124,7 @@ robj *createObject(int type, void *ptr) {
 *** 压缩列表
 ** OBJ_HASH
 *** 压缩列表
+*** 哈希表
 ** OBJ_MODULE
 ** OBJ_STREAM
 
@@ -484,11 +485,11 @@ typedef struct intset {
 
 # 针对不同的对象类型的操作
 
-### 字符串
+## 字符串
 
 字符串是redis最基本、最简单的数据类型。对于字符串类型的值，redis支持将值看作string、bitmap、整数和浮点数，并为各个形式的字符串提供了一些特殊的操作。
 
-#### common
+### common
 
 - GET/SET 查询/设置
   - GET key
@@ -504,7 +505,7 @@ typedef struct intset {
   - PSETEX key milliseconds value
 - GETSET 设置key的值，并把原有的值返回
 
-#### string
+### string
 
 - APPEND key value
 - STRLEN key
@@ -512,7 +513,7 @@ typedef struct intset {
   - GETRANGE key start end
   - SETRANGE key offset value 从[offset:]开始覆写
 
-### 整数
+## 整数
 
 - INCR/DECR 原子加1/减1
   - INCR key
@@ -521,7 +522,7 @@ typedef struct intset {
   - INCRBY key increment
   - DECRBY key decrement
 
-#### bitmap
+### bitmap
 
 - BITCOUNT key [start end]
   - 从start字节，到end字节，闭区间中的1的bit数
@@ -540,27 +541,27 @@ typedef struct intset {
   - SETBIT key offset value
     - 返回值为offset原来的值
 
-#### 浮点数
+### 浮点数
 
 - INCRBYFLOAT key increment
   - 参数可正可负
 
-### 有序列表 lists
+## 有序列表 lists
 
 认为list的左边为头，右边为尾。
 
-#### 列表
+### 列表
 
 - LLEN key 获得列表的长度
 
-#### 对元素读
+### 对元素读
 
 - LINDEX key index 从列表key中获得下标index的元素
 - LRANGE key start stop
   - 从列表中获得一个节点序列，闭区间
   - 任何下标的异常，如start大于stop、stop大于实际的长度，都不会报错，会提供符合直觉的结果
 
-#### 对元素修改
+### 对元素修改
 
 - LSET key index value
   - 将列表key中index的元素设置成value
@@ -574,7 +575,7 @@ typedef struct intset {
 - LTRIM key start stop
   - 只保留[start, stop]的元素
 
-#### 队列
+### 队列
 
 - LPOP/RPOP key
   - 从队列的头/尾pop一个节点
@@ -586,11 +587,11 @@ typedef struct intset {
   - 从src尾部pop一个元素，push到dest头部
   - 返回值为元素
 
-#### 阻塞
+### 阻塞
 
 - BLPOP/BRPOP/BRPOPLPUSH 
 
-### 集合 sets
+## 集合 sets
 
 - SADD / SMOVE / SPOP / SRANDMEMBER / SREM / SMEMBERS
   - 添加到集合 / 从一个集合移动到另一个 / 随机弹出一个 / 随即获取一个 / 删除一个 / 获取所有
@@ -605,8 +606,8 @@ typedef struct intset {
 - SSCAN key cursor \[pattern\]
   - 迭代器
 
-### 有序集合 sorted sets
+## 有序集合 sorted sets
 
-### 哈希 hashes
+## 哈希 hashes
 
 一个kv都是字符串（对象，区分于常规意义的字符串）的哈希表，平平无奇。
