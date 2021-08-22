@@ -775,7 +775,7 @@ func Compile(re *Regexp) (*Prog, error) {
 ### 编译一趟匹配
 
 通过`compileOnePass`来检查前面编译产物`syntax.Prog`是否可以支持一趟匹配。
-只有当在`InstAlt`指令，可以无歧义的判断下一步分支时，才可能可以转换为一趟匹配的`Prog`。
+只有当在`InstAlt`指令，可以无歧义的判断下一步分支时，才可能转换为一趟匹配的`Prog`。
 
 1. 检查是否可以转换为一趟匹配
 
@@ -787,7 +787,7 @@ func Compile(re *Regexp) (*Prog, error) {
 
         如果发现任何匹配结束不是文本结束位置，那么就无法转换，返回nil。
 
-1. `onePassCopy`复制一份`prog`，在复制过程中，尝试重写指令为可以转换的形式。
+1. `onePassCopy`复制一份`prog`，在复制过程中，**尝试**重写指令为可以转换的形式。
 
 1. `makeOnePass`尝试构建一份一趟匹配的`prog`，如果失败，返回nil。
 
