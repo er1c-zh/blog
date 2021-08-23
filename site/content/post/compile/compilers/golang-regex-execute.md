@@ -1,7 +1,7 @@
 ---
 title: "golang的regex实现 执行匹配"
 date: 2021-08-15T19:21:07+08:00
-draft: true
+draft: false
 tags:
     - compilers-book
     - go
@@ -155,9 +155,52 @@ order: 5
 
 ## 回溯匹配
 
-todo
+回溯匹配时，
+如果是锚定了开始的位置，
+会从对应的位置开始一个任务，
+反之，会遍历输入流，依次开始匹配。
+
+每依次匹配由`Regexp.tryBacktrack`具体的执行，
+每次调用会在一组输入偏移量和指令下标开始一次回溯匹配。
+
+### `Regexp.tryBacktrack(b *bitState, i input, pc uint32, pos int) bool`
+
+`tryBacktrack`是回溯匹配的具体实现，
+函数接受四个参数：
+
+- `b` 回溯过程中的上下文
+- `i` 输入字符流
+- `pc` 指令的位置
+- 从输入的`pos`开始匹配
+
+首先向`bitState.jobs`压入第一个任务，
+然后开始循环处理`jobs`。
+
+每次循环弹出一个任务进行处理，
+一个任务包括指令的下标`pc`，
+流中的位置`pos`，
+和参数`arg`。
+
+对于不会发生选择的情况，
+循环中会按照指令的语义进行匹配、捕获等操作，
+推动`pos`和`pc`。
+每次推进一步时，通过`bitState.shouldVisit`来计算
+`pos`与`pc`的组合是否访问过，
+如果已经访问，就不再继续，回溯到上一个分支节点；
+否则，继续推动。
+特别的，记录是否完成存储在`bitState.visited`数组中。
+数组每个值的每一位表示了一个`pos`和`pc`组合是否访问过，
+1表示访问过，反之没有，
+具体计算的方式是：
+1. 计算出`pc * 字符流长度 + 字符流偏移量`作为组合的id
+1. 计算`id/32`作为`bitState.visited`的定位到桶
+1. 计算`id%32`作为上一步定位的桶的位数偏移量
+这样，就唯一的将`pos`和`pc`的组合定位到了一位上。
+
+对于`InstAlt`和`InstAltMatch`，
+会将一个分支压入`bitState.jobs`等待匹配失败时弹出进行处理，
+实现回溯。
 
 # 参考
 
-- [Regular Expression Matching: the Virtual Machine Approach
-](https://swtch.com/~rsc/regexp/regexp2.html)
+- [Regular Expression Matching: the Virtual Machine Approach](https://swtch.com/~rsc/regexp/regexp2.html)

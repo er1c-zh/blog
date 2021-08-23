@@ -36,7 +36,7 @@ found := reg.MatchString("hello regex.")
 1. 利用`regexp.Regexp`进行匹配。
 
 本文首先分析记录关联的数据结构，然后分析编译的过程，
-最后在后面的文章分析匹配的实现。
+然后会在[后面的文章]({{< relref "post/compile/compilers/golang-regex-execute.md" >}})分析匹配的实现。
 
 # 数据结构
 
@@ -552,7 +552,7 @@ prog, err := syntax.Compile(re)
 
     ```go
     InstAlt InstOp = iota // 分支，类似于if-else
-    InstAltMatch
+    InstAltMatch // 类似InstAlt，但是一个分支标识匹配完成
     InstCapture // 标记捕获组的开始和结束
     InstEmptyWidth // 匹配位置
     InstMatch // 匹配完成
