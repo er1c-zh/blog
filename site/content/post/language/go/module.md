@@ -5,15 +5,76 @@ draft: true
 tags:
     - go
     - how
+    - memo
 ---
 
 这是关于go的包管理的入门学习记录。
 
 <!--more-->
 
-# 模块相关的指令
+# 指令速查
 
-todo
+关联到依赖的go指令有两种执行模式：`module-aware`和`GOPATH`。
+决定了go指令会从哪里获取依赖。
+
+## 详细一点点的解释
+
+大部分go指令都有运行在`module-aware`模式或`GOPATH`模式两种情况。
+在`module-aware`模式下，
+指令执行时会从`go.mod`文件读取已确定的依赖、
+加载需要的包、寻找能提供缺失的包的模块；
+在`GOPATH`模式下，
+指令忽略模块概念，从`vendor`目录和`GOPATH`下寻找依赖。
+
+从1.16之后，`module-aware`模式成为默认的模式；
+之前的版本根据当前模块是否有`go.mod`文件来决定是否开启`module-aware`模式。
+
+### 关于vendor
+
+vendor机制用来将编译所需的文件放在一个文件树下面，
+特别的，可以用来引用旧版没有开启模块机制的go代码。
+
+## 指令
+
+- `go get [-d] [-t] [-u] [build flags] [packages]`
+
+    更新主模块的`go.mod`文件中的依赖，然后构建并安装`packages`列出的包。
+
+    首先，根据提供的`packages`来获得能够提供该包或符合该模式的包的模块，
+    更新这些模块。
+    特别的，`packages`参数可以是一个包名，一个指向包的模式，一个模块名。
+    对于指向了一个不包含包的模块，指令只会更新这个模块，而不进行构建。
+    `packages`参数也可以省略，指令会将当前路径`.`作为参数来处理。
+    
+    当查找到符合需要的模块时，
+    会更新主模块的`go.mod`文件中的记录。
+    对模块的更新，可能指增加依赖，升级、降级模块的版本。
+
+    一些常见一点的参数：
+
+    - `-d` 如果开启，表示不进行构建和安装。特别的，从1.18版本开始，`-d`标签将总是开启。
+    - `-u` 升级指定的包直接或间接依赖的模块。
+    - `-t` 也许要考虑指定的包中的测试依赖。
+
+    未来，`go install`指令将会分担构建和安装包的职责，
+    `go get`指令更多的聚焦于管理模块的依赖。
+
+- `go install [build flags] [packages]`
+
+    编译并安装`packages`。
+
+    ```shell
+    # 安装最新版本的程序
+    $ go install golang.org/x/tools/gopls@latest
+    # 安装指定版本的程序
+    $ go install golang.org/x/tools/gopls@v0.6.4
+    # 安装当前目录的模块指定的版本
+    $ go install golang.org/x/tools/gopls
+    # 安装目录下的所有程序
+    $ go install ./cmd/...
+    ```
+
+- `go list -m [-u] [-retracted] [-versions] [list flags] [modules]`
 
 # 根据包路径查找依赖的模块
 
@@ -54,7 +115,7 @@ todo
 
 ## 从例子出发了解`go.mod`的格式
 
-```gomod
+```go.mod
 /*
 cstyle的块注释
 */
