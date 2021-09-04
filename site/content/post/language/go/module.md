@@ -1,7 +1,7 @@
 ---
 title: "有关go module的一点点记录"
 date: 2021-08-25T20:59:19+08:00
-draft: true
+draft: false
 tags:
     - go
     - how
@@ -74,7 +74,33 @@ vendor机制用来将编译所需的文件放在一个文件树下面，
     $ go install ./cmd/...
     ```
 
-- `go list -m [-u] [-retracted] [-versions] [list flags] [modules]`
+- `go mod download [-json] [-x] [modules]`
+
+    指令会下载`modules`到模块缓存。
+
+- `go mod edit [editing flags] [-fmt|-print|-json] [go.mod]`
+
+    编辑、格式化`go.mod`文件的CLI程序。
+
+- `go mod graph`
+
+    输出一个文字版的模块依赖图。
+
+- `go mod init`
+
+    初始化一个`go.mod`文件。
+
+- `go mod tidy [-e] [-v] [-go=version] [-compat=version]`
+
+    在`go.mod`文件中，增加缺少的依赖，移除不需要的依赖。
+
+- `go mod why [-m] [-vendor] packages...`
+
+    展示主模块对`packages`的依赖路径。
+
+- `go clean -modcache`
+
+    清理整个模块缓存。
 
 # 根据包路径查找依赖的模块
 
