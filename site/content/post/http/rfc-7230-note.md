@@ -669,6 +669,111 @@ MAY按照“将这些字段放置在报文首部的最后”来处理。
 
 用来压缩载荷。
 
+### 4.2.1 Compress Coding
+
+一种兼容LZW *(Lempel-Ziv-Welch)* 的压缩编码。
+
+### 4.2.2 Deflate Coding
+
+一种压缩编码。
+
+### 4.2.3 Gzip Coding
+
+一种压缩编码。
+
+## 4.3 TE
+
+**TE** 首部字段在请求中表示客户端期望的传输编码，
+和是否希望在分块编码传输中接受追加字段。
+字段的内容为逗号分割的编码名称和关键字`trailers`。
+
+## 4.4 Trailer
+
+对于有追加字段的响应，
+发送者SHOULD在首部字段中增加**Trailer**字段，
+表明追加字段中有哪些字段。
+
+这项信息可以帮助接受者在解析报文时进行需要的工作。
+
+# 5 报文路由 Message Routing
+
+HTTP请求报文的路由选择由客户端决定，
+如下信息会影响这个决定：
+
+- 目标资源
+- 客户端的代理配置
+- 建立新的链接或复用inbound链接
+
+对应该请求的响应报文的路由会按照请求的链路原路返回。
+
+## 5.1 区分出目标资源
+
+HTTP链接由用户代理按照若干目的来初始化。
+目的是请求语义和需要执行语义的目标资源的组合。
+
+URI是一种区分目标资源的标识符。
+
+## 5.2 建立到服务器的链接
+
+根据URI定位到目标资源后，
+客户端需要判断是否需要一个网络请求来完成语义，
+以及该请求需要发送到哪里。
+
+如果存在能满足目的的缓存，通常，请求会被发送到缓存。
+
+否则，客户端会检查是否有代理能够满足这个请求。
+如果有的话，会建立或复用到代理的链接。
+
+最后，其他方式都无法满足，
+客户端会根据协议（比如HTTP或HTTPS）尝试直接连接到目标资源。
+
+## 5.3 请求目标 Request Target
+
+当到服务器的链接建立完成之后，
+客户端发送一个包含了`request-target`的HTTP请求报文。
+
+`request-target`根据请求的方法和请求是否通过代理有四种不同的格式：
+
+```plain
+request-target = origin-form
+    / absolute-form
+    / authority-form
+    / asterisk-form
+```
+
+### 5.3.1 origin-form
+
+```origin-form    = absolute-path [ "?" query ]```
+
+`origin-form`是最常用的`request-target`格式。
+当客户端直接向目标服务器发送请求时，
+除了CONNECT请求或server-wide OPTIONS请求，
+MUST发送URI的绝对路径和query部分作为`request-target`，
+也就是`origin-form`格式。
+
+### 5.3.2 absolute-form
+
+用于向proxy发送的请求。
+
+```absolute-form  = absolute-URI```
+
+但是这里有个问题，缺少query如何正确的查询？
+
+### 5.3.3 authority-form
+
+用于CONNECT请求。
+
+```authority-form = authority```
+
+### 5.3.4 asterisk-form
+
+用于server-wide OPTIONS请求。
+
+```asterisk-form  = "*"```
+
+当客户端希望向整个服务端的资源发送OPTIONS请求时，
+会使用asterisk-form作为`request-target`。
+
 # 参考
 
 - [rfc7230](https://datatracker.ietf.org/doc/html/rfc7230)
