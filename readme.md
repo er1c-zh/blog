@@ -47,7 +47,8 @@ ditaa
         - [ ] 集群
     - [ ] 了解mongodb
     - [ ] 学习go的runtime的实现，结合linux来看
-        - [ ] chan
+        - [x] chan
+        - [ ] select
         - [ ] 调度 sudog
     - [ ] 了解一下rust
     - [ ] 简单研究nginx的设计思想
@@ -58,7 +59,7 @@ ditaa
         - [ ] 函数式编程
     - [ ] 编译原理的基础部分
     - [ ] 多人编辑专题
-        - [ ] CRDT
+        - [x] CRDT
         - [ ] OT
         - [x] diff
         - [ ] 版本向量
@@ -66,7 +67,7 @@ ditaa
         - [ ] 整理一下 监控的哲学
         - [ ] Prometheuse简单实现
     - [ ] HTTP/1.1协议的笔记
-        - [ ] rfc7230 "Message Syntax and Routing" (this document)
+        - [x] rfc7230 "Message Syntax and Routing" (this document)
         - [ ] rfc7231 "Semantics and Content" [RFC7231]
         - [ ] rfc7232 "Conditional Requests" [RFC7232]
         - [ ] rfc7233 "Range Requests" [RFC7233]
@@ -85,4 +86,3 @@ ditaa
 - [ ] 编译原理
 - [ ] SQL与关系数据库理论
 - [ ] 应用密码学：协议、算法与C源程序（原书第2版）
-
