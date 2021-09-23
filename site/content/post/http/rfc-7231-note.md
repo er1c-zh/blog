@@ -126,6 +126,22 @@ media type中有`boundary`参数 *（parameter）* 。
 
 HTTP报文不使用`boundary`参数作为消息体长度。
 
+#### 3.1.1.5 Content-Type
+
+`Content-Type`首部字段指明关联的表现的**媒体类型** *（media type）* 。
+媒体类型同时定义了数据格式和数据按照`Content-Encoding`解码后应该如何被接受者处理。
+
+发送者发送带有载荷体的报文
+SHOULD生成`Content-Type`字段，
+除非发送者自己不知道。
+如果接收到缺失`Content-Type`字段的报文，
+接受者MAY假定是`application/octet-stream`类型，
+或通过测试数据来决定类型。
+
+实践中，资源的提供方，服务器，不总是能正确的设置`Content-Type`，
+所以客户端有时会覆盖收到的报文中的`Content-Type`字段，
+这会导致安全上的风险和其他的问题，如一种数据能满足多种`Content-Type`。
+
 # 参考
 
 - [rfc7231](https://datatracker.ietf.org/doc/html/rfc7231)
