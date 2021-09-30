@@ -142,6 +142,31 @@ SHOULD生成`Content-Type`字段，
 所以客户端有时会覆盖收到的报文中的`Content-Type`字段，
 这会导致安全上的风险和其他的问题，如一种数据能满足多种`Content-Type`。
 
+### 3.1.2 因压缩或正确性 *(Integrity)* 编码
+
+#### 3.1.2.1 Content Codings
+
+`Content coding`的值指出表现可以或已经被应用的转换编码。
+通常，被编码过的表现只会在最后的接收者处解开。
+
+`content-coding`的值大小写不敏感，
+且应该是被注册的。
+
+`content-coding`被用于`Accept-Encoding`字段
+和`Content-Encoding`字段。
+
+RFC7230定义了三个`content-coding`：
+
+- `compress` `x-compress`
+- `deflate`
+- `gzip` `x-gzip`
+
+#### 3.1.2.2 `Content-Encoding`
+
+`Content-Encoding`指明表现已经应用的编码 *(content encoding)* ，
+在按照`Content-Type`指明的媒体类型处理之前，
+需要按照`Content-Encoding`解码。
+
 # 参考
 
 - [rfc7231](https://datatracker.ietf.org/doc/html/rfc7231)
