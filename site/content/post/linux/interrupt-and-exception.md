@@ -113,6 +113,35 @@ stop
 @enduml
 ```
 
+### 一些问题
+
+1. 当一个中断发生时，内核如何决定在哪个核心上运行对应的handler？
+
+    内核与中断控制器会根据类似“中断与CPU核心的亲和度”配置来决定这个中断handler该在哪个核心上运行。
+
+    参考[which-processor-would-execute-hardware-interrupt](https://stackoverflow.com/questions/41323565/which-processor-would-execute-hardware-interrupt-in-a-muticore-system)。
+
+1. 一个中断线的handler同时只会有一个运行的实例，不会嵌套，也不会并行。
+
+    根据 *LKD* ，对于给定的中断线，在运行handler时，对应中断线在所有的核心上都是禁用的。
+    根据 *深入理解Linux内核架构* ，在**电流处理**阶段，
+    如果遇到了一个标记了`IRQ_INPROGRESS`的中断，
+    会设置`IRQ_PENDING`标识来声明该中断发生了另外一次。
+
+    以上的区别可能是版本导致的差异。
+
+    <del>总的来说，每个中断请求有一个全局的描述符`irq_desc`，
+    通过设置描述符的`status` *(2.6.26)* 来实现非并行运行。</del>
+
+    根据代码，在执行中断handler之前，会首先获取IRQ描述符的锁，
+    然后再ack中断请求，这个时候同样地中断会进来（到中断控制器，但不会到同一个核心，这里本地中断还是关闭的）
+    但不会被响应（因为锁住了）。
+    在持有锁期间，会设置IRQ描述符的各种状态，标记“已经有人在处理了”这种信息，
+    随后，释放锁，开始执行handler（这里可能会开启本地中断）。
+    这个时候另一个处理相同中断的代码才会获取到锁，
+    会发现已经有核心在处理了，
+    会在IRQ描述符标记PENDING表示有新的中断需要处理，然后放弃处理返回。
+
 ## 中断上下文与为什么中断服务例程不能发生进程切换。
 
 中断与异常的处理函数（以下简称处理函数）运行在`中断上下文(interrupt context)`中，相较于进程上下文，更轻量，且没有进程的概念。
@@ -337,11 +366,25 @@ partition do_softirq() {
 stop
 ```
 
+#### 软中断FAQ
+
+1. 同一种软中断的handler会在不同的核心上并行。
+
+    根据`local_softirq_pending`来看，获取的是本地的变量。
+    另外，设置软中断需要被执行的`raise_softirq`也是本地相关的。
+
 ### tasklet
 
 tasklet基于`HI_SOFTIRQ`/`TASKLET_SOFTIRQ`两种软中断实现。
 
 tasklet的处理流程类似软中断，主要的不同在于，同类型的tasklet同时只会运行一个。
+
+根据 *LKD* ，待执行的tasklet会被放在处理器相关的两个链表本地变量中，分别表示高优先级与普通优先级。
+处理tasklet的软中断handler遍历本地的两个链表，
+检查tasklet实例的状态字段，
+如果已经是`TASKLET_STATE_SCHED`，
+表明已经有其他核心调度了这个tasklet，
+所以直接返回。
 
 ## 工作队列:
 
