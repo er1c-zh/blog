@@ -373,6 +373,9 @@ stop
     根据`local_softirq_pending`来看，获取的是本地的变量。
     另外，设置软中断需要被执行的`raise_softirq`也是本地相关的。
 
+1. 软中断执行在中断上下文中，tasklet也是；工作队列执行在进程上下文中。
+参考[stackoverflow的一个问题](https://stackoverflow.com/questions/12258333/how-can-the-linux-bottom-halfs-execute-in-interrupt-context)。
+
 ### tasklet
 
 tasklet基于`HI_SOFTIRQ`/`TASKLET_SOFTIRQ`两种软中断实现。
