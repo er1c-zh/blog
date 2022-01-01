@@ -30,19 +30,18 @@ ditaa
 ```
 ````
 
-# todo list
+# TODO list
 
-- [x] unicode && utf-8
-- [ ] 弄清md5 sha-1等加密算法
 - blog维护相关
     - [x] 自动触发gitalk生成文章的issue
     - [ ] 截图上传到onedrive的跨平台应用
-- 技术学习2020
-    - [x] redis的命令实现
+- 技术学习
+    - [x] unicode && utf-8
+    - [ ] 弄清md5 sha-1等加密算法
     - [ ] react/vue的入门，结合截图上传工具来实践以下
     - [x] git rebase
-- 技术学习2021
-    - [ ] redis的持久化、集群
+    - [ ] redis
+        - [x] 单机命令实现
         - [x] 持久化
         - [ ] 集群
     - [ ] 了解mongodb
@@ -76,13 +75,14 @@ ditaa
     - [ ] HTTP/2
 - [ ] 尝试为一些小的开源项目提供代码
 - [ ] 构建自己的dotfiles
-
-# books wait read
-
-- hackers delight
-- ~https://swtch.com/~rsc/regexp/regexp1.html~
-- 两次全球大危机的比较研究
-- [x] DDIA
-- [ ] 编译原理
-- [ ] SQL与关系数据库理论
-- [ ] 应用密码学：协议、算法与C源程序（原书第2版）
+    - [x] mac
+    - [ ] linux
+- books wait read
+    - [ ] hackers delight
+    - [ ] ~https://swtch.com/~rsc/regexp/regexp1.html~
+    - [ ] 两次全球大危机的比较研究
+    - [x] DDIA
+    - [x] Linux内核设计与实现
+    - [ ] 编译原理
+    - [ ] SQL与关系数据库理论
+    - [ ] 应用密码学：协议、算法与C源程序（原书第2版）
