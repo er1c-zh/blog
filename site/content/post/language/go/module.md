@@ -22,12 +22,12 @@ tags:
 大部分go指令都有运行在`module-aware`模式或`GOPATH`模式两种情况。
 在`module-aware`模式下，
 指令执行时会从`go.mod`文件读取已确定的依赖、
-加载需要的包、寻找能提供缺失的包的模块；
+加载需要的包、寻找能提供缺失的包的模块；
 在`GOPATH`模式下，
 指令忽略模块概念，从`vendor`目录和`GOPATH`下寻找依赖。
 
 从1.16之后，`module-aware`模式成为默认的模式；
-之前的版本根据当前模块是否有`go.mod`文件来决定是否开启`module-aware`模式。
+之前的版本根据当前模块是否有`go.mod`文件来决定是否开启`module-aware`模式。
 
 ### 关于vendor
 
