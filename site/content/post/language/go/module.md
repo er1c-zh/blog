@@ -74,29 +74,35 @@ vendor机制用来将编译所需的文件放在一个文件树下面，
     $ go install ./cmd/...
     ```
 
-- `go mod download [-json] [-x] [modules]`
+- `go mod` 管理模块
 
-    指令会下载`modules`到模块缓存。
+    - `go mod download [-json] [-x] [modules]`
 
-- `go mod edit [editing flags] [-fmt|-print|-json] [go.mod]`
+        指令会下载`modules`到模块缓存。
 
-    编辑、格式化`go.mod`文件的CLI程序。
+    - `go mod edit [editing flags] [-fmt|-print|-json] [go.mod]`
 
-- `go mod graph`
+        编辑、格式化`go.mod`文件的CLI程序。
 
-    输出一个文字版的模块依赖图。
+    - `go mod graph`
 
-- `go mod init`
+        输出一个文字版的模块依赖图。
 
-    初始化一个`go.mod`文件。
+    - `go mod init`
 
-- `go mod tidy [-e] [-v] [-go=version] [-compat=version]`
+        初始化一个`go.mod`文件。
 
-    在`go.mod`文件中，增加缺少的依赖，移除不需要的依赖。
+    - `go mod tidy [-e] [-v] [-go=version] [-compat=version]`
 
-- `go mod why [-m] [-vendor] packages...`
+        在`go.mod`文件中，增加缺少的依赖，移除不需要的依赖。
 
-    展示主模块对`packages`的依赖路径。
+    - `go mod why [-m] [-vendor] packages...`
+
+        展示主模块对`packages`的依赖路径。
+
+    - `go mod vendor` 将依赖的module存储到`vendor`中
+
+    - `go mod verify` 校验依赖的模块的内容是否符合预期。（防止预期之外的修改）
 
 - `go clean -modcache`
 

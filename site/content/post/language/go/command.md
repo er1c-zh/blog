@@ -39,6 +39,38 @@ go开发套件包含一组编译和构建源码的指令和对应的程序。
 
 更加完整的命令集在[标准库/cmd包的文档](https://pkg.go.dev/cmd)中。
 
+# 通用的
+
+## 如何定义一个package
+
+> `go help packages`
+
+很多指令需要一个`packages`参数表示哪些包需要处理。
+
+package通常利用 **引用路径** *(import path)* 来定义。
+**引用路径**有两种形式，一个是绝对或相对路径指向的文件夹中的包；
+另一个是基于`GOPATH/src/`指向的包。
+
+如果没有传入`packages`，那么表示当前文件夹下的包。
+
+有四个**引用路径**是保留的：
+
+- `main` 表示独立可执行文件的最外的包。
+- `all` 表示在GOPATH中的所有的包。
+- `std` 表示所有的go标准库。
+- `cmd` 表示所有的go command和相关的内部包。
+
+对于一个**引用路径**，如果包含一个或多个的`...`通配符，
+表示是一个“模式”。`...`可以匹配任何字符串，包括空字符串和包含`/`的字符串。
+特别的，
+
+1. `/...`结尾时，可以匹配空字符串。
+比如`net/...`可以匹配到`net`。
+1. 包含斜杠的模式，如果没有`vendor`，是不会匹配`vendor`路径中的包。
+
+对于由`.`和`_`开头的或`testdata`，
+会被忽略。
+
 # `go`
 
 ```shell
@@ -93,7 +125,7 @@ testfunc        testing functions
 vcs             controlling version control with GOVCS
 ```
 
-## `go build` 编译包和依赖
+## 编译包和依赖 `go build`
 
 `go build [-o output] [build flags] [packages]`
 
@@ -109,7 +141,7 @@ vcs             controlling version control with GOVCS
         1. （如果传入了文件列表）第一个文件的名字
         1. （没有指定文件列表）源码目录的名字
 
-### flags 参数
+### build flags 编译参数
 
 - `-a` 强制重新编译（缓存的编译结果）已经是最新的包。
 - `-p n` 指定可以并行的数量，覆盖默认值`GOMAXPROCS`。
@@ -154,15 +186,248 @@ vcs             controlling version control with GOVCS
 - 这提供了一种为不同的包使用不同的参数的能力。
 - 如果需要传递给所有的包，可以使用如`go build -gcflags='all=-l -N' packages`的形式。
 
-## Gofmt / `go fmt` 格式化源码
+## 格式化源码 Gofmt / `go fmt`
+
+```shell
+go fmt [-n] [-x] [packages]
+```
+
+`go fmt`相当于在`packages`上执行`gofmt -l -w`，
+效果是将格式化之后的代码写回文件，并在标准输出列出修改过的文件。
+
+更多的关于`gofmt`参见[这里](#gofmt指令)
+
+- `-n` 
+
+## 按照文件中的指令进行以生成、更新go代码的工作 `go generate`
+
+`go generate`会扫描文件中形如：
+
+```go
+//go:generate command argument list
+```
+
+的指令。
+
+其中`command`指明需要运行的程序，可以是如下的形式：
+
+- 在shell path中
+- 绝对路径
+- 指令的别名
+
+**特别的，`go generate`不会解析文件，
+所以在注释或者多行字符串中符合形式的字符串也会被认为是需要运行的指令。**
+
+`argument list`是传递给`command`的参数，
+空格分隔的token或者双引号表示字符串参数。
+
+为了表明某些代码是生成的，
+需要在这些文件的开头注明符合以下格式的行作为标记：
+
+```plain
+^// Code generated .* DO NOT EDIT\.$
+```
+
+`go generate`会在调用`command`时设置一些环境变量，
+如`$GOARCH`执行的cpu架构等。
+
+`//go:generate -command foo go tool foo` 可以将`foo`定义为`go tool foo`的别名，用于上述的`command`中。
+
+`go generate`运行时会表明使用tag `generate` ，
+这样可以使得一些文件只被`go generate`识别，但在`build`时被忽略。
+
+`go generate`接受`-run=""`参数，指明要执行的指令的正则表达式。
+
+## 增加当前模块的依赖并且安装这些依赖 `go get` 和 `go install`
+
+具体的指令使用[看这里]({{< relref "post/language/go/module.md#指令" >}})。
+
+`go get`与`go install`的职责分别是“管理依赖”和“安装模块”。
+这一变化也是随着go版本的迭代会逐渐明确。
+
+### `go install`
+
+`go install`也会将可执行文件安装到`GOBIN`目录下。
+
+```shell
+go install [build flags] [packages]
+```
+
+出于消除歧义的目的，参数需要满足：
+
+- packages需要是一下情况的一种：
+    - 包路径
+    - 描述包的pattern
+    - 不能是标准库的包，meta-patterns(std, cmd, all)，文件的相对路径或绝对路径。
+- 所有的参数需要有相同的版本后缀。
+- 所有关联的在同一个模块的包需要使用同样版本的模块。
+- 所有关联的模块，在被认为是main与否时，不能有不同的表现。
+    - 如当一个模块是main时，go.mod文件中的`replace`指令会生效，导致这种情况。
+- 使用“包路径”来描述时，一定要指向main包。
+
+## 列出包或模块
+
+`go list`
 
 todo
 
-## `go generate`
+## 模块维护
+
+`go mod`指令提供维护模块的能力。
+
+具体的指令使用[看这里]({{< relref "post/language/go/module.md#指令" >}})。
+
+## 编译、运行程序
+
+`go run`编译并运行传入的main包。
+
+```go run [build flags] [-exec xprog] package [arguments...]```
+
+用法：
+
+- `build flags` 与[之前]("#build flags 编译参数")相同
+- `-exec` 运行产物的方式：
+    - 默认的会直接执行。
+    - 如果传入了`-exec {{executor}}`参数，会使用`executor a.out arguments`来执行。
+    - 如果没有设置`-exec`，而且编译产物不是 **GOOS** 和 **GOARCH** ，
+    而且`go_$GOOS_$GOARCH_exec`在path中存在，那么会使用
+    `go_$GOOS_$GOARCH_exec a.out arguments`来执行。使用的场景是交叉编译。
+
+## 测试
+
+`go test [build/test flags] [packages] [build/test flags & test binary flags]`
+
+`go test`会重新编译每个包中的`*_test.go`文件。
+每个列出的包会生成一个单独的测试可执行文件。
+
+定义了`*_test`包的测试文件会被编译成单独的包，然后和主test包链接、执行。
+
+`go tool`会忽略`testdata`文件夹。
+
+### `go vet`检测
+
+默认的，`go test`会执行`go vet`来检测明显的错误，
+如果`go vet`发现了错误，那么测试就会被提前中断，实际代码不会被执行。
+
+**如果想要关闭vet检测，可以使用参数`-vet=off`。**
+
+### 两种执行模式
+
+第一种，本地目录模式。当没有设置`packages`参数时，会使用这种模式。
+
+- `go test`处理在当前目录下的测试
+- 不使用缓存
+- 输出测试结果的总结
+
+第二种，传递了包的模式。
+`go test`测试列出的包。
+
+- 如果没有问题，只显示ok；有问题或者传入了`-v`或者`-bench`，会打印出所有的输出。
+- 缓存成功的测试结果，来避免重复的测试。
+    - 判定是否命中缓存，由是否是同一个二进制测试文件和传入的参数是否是“可缓存的”来决定。
+    - **避免命中缓存，可以通过传入不可缓存的参数来实现，比如`-count=1`。**
+
+### `go test`接受的参数
+
+这里列出的是只传递给`go test`的参数。
+
+- `-args` 该参数会被原封不动 (uninterpreted and unchanged) 的传递给测试二进制文件。
+    - 可以用来避免参数被`go test`解析和重写。
+- `-c` 只编译不执行。
+- `-exec xprog` 使用xprog来执行测试二进制程序。
+- `-i` 安装测试依赖的包，不执行测试。
+- `-json` 将输出格式化为json格式，用于自动化处理结果。
+- `-o` 测试二进制文件的名字。
+
+### 测试二进制文件接受的参数
+
+`go test`与生成的测试可执行文件都接受一组参数，
+用来控制测试的运行方式。
+
+需要注意的：
+
+1. 所有的下列的参数接受一个`test.`前缀，例如`-test.v`。**如果直接执行生成的可执行文件，那么这个前缀是必须的。**
+
+常用的：
+
+- `-run regexp` 运行符合正则的测试。
+- `-bench regexp` 只运行匹配该正则的benchmark，`-bench .`或者`-bench=.`可以用来运行所有的benchmark。
+- `-vet list` 逗号分割的vet检测列表,`-vet off`关闭检测。
+- `-failfast` 快速失败，发现了错误就不再执行了。
+- `-count n` 运行每个test和benchmark n次。
+- `-cover` 开启覆盖分析。 *（因为会插入代码来计算覆盖率，所以出错时展示的行号可能不可信）*
+- `-v` verbose模式。
+
+其他：
+
+- `-benchtime 1h30s` `-benchtime 100x` 使得每一个benchmark运行到1h30s或者100次。
+- `-covermode set,count,atomic` 覆盖分析的模式。
+    - `set` 每个语句是否运行。
+    - `count` 每个语句运行的次数。
+    - `atomic` 并发安全的`count`。
+- `-coverpkg pattern1,pattern2` 为匹配模式的包运行覆盖分析。
+- `-cpu 1,2,4` 分别在`GOMAXPROCS`为1、2、4的情况下运行测试。
+- `-list regexp` 不执行，只列出符合正则的test/benchmark/example。
+- `-parallel n` 允许调用`t.Parallel`的测试执行。
+- `-short` ？
+- `-timeout d` 测试可执行文件如果运行超过d时，抛出panic。
+
+性能检测：
+
+- `-benchmem` 打印benchmark的内存分配统计信息。
+- `-blockprofile block.out` 将goroutine阻塞情况写到`block.out`中。
+- `-blockprofilerate n` 调整阻塞情况的采样率。
+- `-coverprofile cover.out` 将覆盖分析写入到`cover.out`。
+- `-cpuprofile cpu.out` 将CPU分析写入到`cpu.out`中。
+- `-memprofile mem.out` 内存分配分析。
+- `-memprofilerate n` 更精准的内存分配采样。
+- `-mutexprofile mutex.out` 互斥量竞争情况。
+- `-mutexprofilefraction n` 每n个采样一个获得发生竞争的互斥量的goroutine的堆栈信息。
+- `-outputdir directory` 所有的信息的输出目录。
+- `-trace trace.out` 将执行trace写入到`trace.out`。
+
+## 执行指定的指令 `go tool command`
+
+`go tool [-n] command [args...]`
+
+- `-n` 只打印指令，不执行。
+
+## 扫描可能的错误
+
+```shell
+go vet [-n] [-x] [-vettool prog] [build flags] [vet flags] [packages]
+```
+
+# 编译约束
+
+# gofmt指令
+
+Gofmt格式化go源码，使用tab缩进，空格对齐（注释、结构的字段类型等）。
+
+如果没有指定路径，那么gofmt处理标准输入。
+如果指定了一个文件，那么处理文件。
+如果指定了文件夹，那么递归的处理文件夹中的所有.go文件。
+
+默认的，gofmt将格式化之后的源码输出到标准输出（而不是直接写回）。
+
+```shell
+gofmt [flags] [path ...]
+```
+
+参数：
+
+- `-d` 不输出格式化之后的源码，而是将格式化前后的diff输出到标准输出。
+- `-e` ？输出所有的异常。
+- `-l` 不输出格式化之后的源码，而是输出格式化前后不同的的文件名。
+- `-r rule` 在格式化之前将重写规则 *（rewrite rule）* 应用到源码上。
+- `-s` 尝试简化代码。
+- `-w` 不输出格式化之后的源码，而是将格式化之后的代码写回到文件。
+
+## 重写规则
 
 todo
 
-## `go get`
+# go compile
 
 todo
 
@@ -171,3 +436,4 @@ todo
 - [Golang official document - Command Documentation](https://go.dev/doc/cmd)
 - [标准库/cmd包的文档](https://pkg.go.dev/cmd)
 - [关于`-mod`的文档](https://go.dev/ref/mod#build-commands)
+- [gofmt的文档]](https://pkg.go.dev/cmd/gofmt@go1.17.5)
