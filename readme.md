@@ -73,6 +73,7 @@ ditaa
         - [ ] rfc7234 "Caching" [RFC7234]
         - [ ] rfc7235 "Authentication" [RFC7235]
     - [ ] HTTP/2
+    - [ ] [SWIG](http://swig.org)
 - [ ] 尝试为一些小的开源项目提供代码
 - [ ] 构建自己的dotfiles
     - [x] mac

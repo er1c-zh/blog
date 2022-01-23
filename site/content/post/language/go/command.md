@@ -6,7 +6,31 @@ tags:
     - go
     - how
     - memo
+    - go-command
+order: 1
 ---
+
+记录go的指令的用法。
+
+<!--more-->
+
+{{% serial_index go-command %}}
+
+组织的思路是：
+
+1. 首先按照**使用场景**来介绍`go`中一些常用的指令的使用方式。
+    1. 编译
+    1. 格式化源码
+    1. 生成代码
+    1. 管理包的依赖
+    1. 维护包的依赖
+    1. 运行一个项目
+    1. 单元测试
+    1. 执行具体实现功能的指令
+    1. 扫描可能的错误
+1. 然后介绍更加细节的实现方式，有的会在这一篇中，有的会链接到其他的上。
+    1. 编译相关
+1. 随后是两个比较特殊的`gofmt`和`godoc`。
 
 # Intro
 
@@ -36,12 +60,14 @@ go开发套件包含一组编译和构建源码的指令和对应的程序。
 - `fmt` 格式化源码
 - `godoc` 导出并生成go代码中的文档
 - `vet` 检查代码中的可疑之处，比如`Printf`中格式化字符串和参数是否对应。
+ 
+本文主要记录了`go`的使用方法。
 
 更加完整的命令集在[标准库/cmd包的文档](https://pkg.go.dev/cmd)中。
 
 # 通用的
 
-## 如何定义一个package
+## 指令中的`packages`参数如何被使用？
 
 > `go help packages`
 
@@ -152,7 +178,7 @@ vcs             controlling version control with GOVCS
 - `-x` 打印指令？
 - `-asmfalgs '[pattern=]arg list'` 会传递给所有的`go tool asm`调用。
 - `buildmode mode` 编译模式，表明需要的编译结果，
-更多的可以通过`go help buildmode`查看。
+更多的可以通过`go help buildmode`查看，[也可以看这里](#编译模式-build-mode)。
     - `default`模式：输入的main包编译成可执行文件；
     其他包编译成`.a`文件。
     - `plugin`模式：编译为go插件。
@@ -172,7 +198,7 @@ vcs             controlling version control with GOVCS
 指定要使用的`go.mod`文件。
 - `-overlay file` `overlay`文件提供了将编译中需要使用的文件映射到需要的路径的能力。
 - `-pkgdir dir` ？替换所有的安装和加载所有的包的路径。
-- `-tags tag,list` 逗号分割的编译tag列表。
+- `-tags tag,list` 逗号分割的编译tag列表，[详细的用法在这里](#编译约束-build-constraints)。
 - `-trimpath` （用处？）将输出的可执行文件中的所有文件系统路径（前缀）移除，分别替代为：
     - `go` 标准库
     - `module_path@version` 使用module机制
@@ -195,7 +221,7 @@ go fmt [-n] [-x] [packages]
 `go fmt`相当于在`packages`上执行`gofmt -l -w`，
 效果是将格式化之后的代码写回文件，并在标准输出列出修改过的文件。
 
-更多的关于`gofmt`参见[这里](#gofmt指令)
+更多的关于`gofmt`参见[这里](#gofmt指令)。
 
 - `-n` 
 
@@ -398,9 +424,99 @@ todo
 go vet [-n] [-x] [-vettool prog] [build flags] [vet flags] [packages]
 ```
 
-# 编译约束
+# 更加详细的细节
 
-# gofmt指令
+## 编译
+
+### 编译约束 build constraints
+
+aka build tag
+
+用于描述一个文件在什么情况下需要被包含在package中。
+
+例子：
+
+```go
+//go:build (linux && 386) || (darwin && !cgo)
+```
+
+约束了编译该文件的操作系统、指令集、cgo。
+
+要求：
+
+- 可以出现在所有的源码文件中（不仅是go）。
+- 需要在文件的靠前的位置，再之前只能有空白行或其他注释。
+- 为了区分编译约束和package文档，编译约束需要接一个空行。
+- 一个文件只能有一个编译约束。
+
+编译约束支持以下的类型：
+
+- 目标操作系统
+- 目标指令集
+- 使用的编译器，比如gc或者gccgo。
+- 是否支持cgo。
+- go的版本，如`go.1.12`。
+- 通过`-tags`给出的其他tag。
+
+如果一个源码文件在去除扩展名和可能的`_test`后缀后，
+匹配到类似：`*_GOOS/*_GOARH/*_GOOS_GOARCH`的文件名时，
+等价于追加了操作系统或指令集的编译约束。
+
+对于1.16之前的版本，使用的是`//+build`作为编译约束的前缀。
+
+### 编译模式 build mode
+
+`go build`和`go install`接受一个编译模式，
+用来控制输出产物的类型。
+
+- `archive` 构建给出的所有非main包为`.a`文件。
+- `c-archive` 构建给出的main包和所有它引用的包，产出C archive文件。
+导出的可调用符号 *(callable symbols)* 只有使用cgo的`//export`标记的函数。
+- `c-shared` 构建给出的main包和所有它引用的包，产出C共享lib。
+导出的可调用符号 *(callable symbols)* 只有使用cgo的`//export`标记的函数。
+- `default` 默认的参数。
+构建给出的main包，产出可执行文件。
+构建所有的非main包，产出`.a`文件。
+- `shared` 构建所有的非main包，产出后续用于`-linkshared`的单个共享lib。
+- `exe` 构建给出的main包，产出可执行文件。
+- `pie` 构建给出的main包和它引用的包，产出位置无关可执行文件(Position indenpendent executable)。
+- `plugin` 构建给出的main包和它引用的包，产出Go plugin。
+
+### 编译和测试缓存
+
+go指令会缓存编译的输出并且尝试在未来的构建中使用。
+默认的位置在当前操作系统的用户缓存目录下的go-build子文件夹中。
+位置可以通过`GOCACHE`控制。
+
+缓存会周期性的清理，或者使用`go clean -cache`来清理。
+通常不会需要手动清理编译缓存，
+go指令会探知源文件的修改、编译选项的变更等会影响编译结果的变化，
+**但C库的变化不会被感知**，所以如果使用了C库，且发生了变动，
+需要手动的清理编译缓存。
+
+## 环境变量
+
+go指令会通过环境变量来进行一些设置，
+如果相关的环境变量没有设置，
+那么会使用默认值。
+
+操作：
+
+- 查看环境变量NAME `go env <NAME>`
+- 修改环境变量NAME `go env -w <NAME>=<VALUE>`
+    - 默认的，保存到`GOENV`指向的文件中。
+
+- 通用的
+    - `GO111MODULE` 控制是否运行在`module-aware`模式下。
+    - `GCCGO` `go build -compiler=gccgo`使用的指令。？
+    - `GOARCH` 目标指令集。
+    - `GOBIN` `go install`的目标路径。
+    - `GOCACHE` 构建缓存存放的文件夹。
+    - `GOMODCACHE` 下载的模块的缓存的文件夹。
+    - `GODEBUG` 激活
+
+
+## gofmt指令
 
 Gofmt格式化go源码，使用tab缩进，空格对齐（注释、结构的字段类型等）。
 
@@ -423,11 +539,7 @@ gofmt [flags] [path ...]
 - `-s` 尝试简化代码。
 - `-w` 不输出格式化之后的源码，而是将格式化之后的代码写回到文件。
 
-## 重写规则
-
-todo
-
-# go compile
+## go compile
 
 todo
 

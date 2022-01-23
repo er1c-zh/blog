@@ -6,11 +6,15 @@ tags:
     - go
     - how
     - memo
+    - go-command
+order: 2
 ---
 
 这是关于go的包管理的入门学习记录。
 
 <!--more-->
+
+{{% serial_index go-command %}}
 
 # 指令速查
 
