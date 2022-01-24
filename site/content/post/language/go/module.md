@@ -220,6 +220,48 @@ todo
 
 # 环境变量参数速查
 
+TODO
+
+# 一些松散的信息
+
+## 内部包
+
+`internal`文件夹下的代码只能够由包含这个文件的包引用。
+
+## 私有的代码、模块如何处理
+
+`GOPRIVATE`环境变量控制哪些模块是非公开的。
+
+逗号分隔，模块路径前缀的模式，例子：
+
+```shell
+GOPRIVATE=*.corp.example.com,rsc.io/private
+```
+
+对于非公开的模块，
+go指令会不再使用代理或校验和检查。
+
+更加细粒度的控制模块的下载和验证，
+`GONOPROXY`和`GONOSUMDB`两个环境变量可以完成。
+
+# 解决日常开发可能会遇到的问题
+
+## replace和相对路径引用来解决需要修改引用的模块的本地调试场景
+
+在本地调试时可以利用相对路径来使编译的时候使用本地修改的包。
+
+如下，使用本地的`mod2`而不是从线上拉取。
+
+```
+module github.com/er1c-zh/go_test/mod1
+
+require github.com/er1c-zh/go_test/mod2 v1.0.0
+
+replace github.com/er1c-zh/go_test/mod2 v1.0.0 => ../mod2
+
+go 1.17
+```
+
 # 名词表
 
 - **build list** 编译指令使用的模块及版本列表，

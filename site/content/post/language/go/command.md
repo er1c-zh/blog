@@ -1,7 +1,7 @@
 ---
 title: "go开发套件"
 date: 2022-01-03T11:48:10+08:00
-draft: true
+draft: false
 tags:
     - go
     - how
@@ -30,7 +30,8 @@ order: 1
     1. 扫描可能的错误
 1. 然后介绍更加细节的实现方式，有的会在这一篇中，有的会链接到其他的上。
     1. 编译相关
-1. 随后是两个比较特殊的`gofmt`和`godoc`。
+    1. 环境变量
+    1. gofmt
 
 # Intro
 
@@ -513,7 +514,76 @@ go指令会通过环境变量来进行一些设置，
     - `GOBIN` `go install`的目标路径。
     - `GOCACHE` 构建缓存存放的文件夹。
     - `GOMODCACHE` 下载的模块的缓存的文件夹。
-    - `GODEBUG` 激活
+    - `GODEBUG` 激活多种调试机制。？
+    - `GOENV` 存储go环境变量的文件。
+    - `GOFLAGS` 空格分割的`-flag=value`列表，
+    当要执行的go指令支持这些flag时，会传递给go指令。
+    优先级低于直接在命令中给出的flag。
+    - `GOINSECURE` 一组逗号分割的模块通配符，
+    符合的模块会被使用不安全的方法来获取。
+    只在直接获取的模块上生效。
+    - `GOOS` 编译目标的操作系统。
+    - `GOPATH` 指明需要从哪些地方来获取go代码，
+    在使用模块时不再用于解析引入的包。
+        - unix下，是冒号分割的字符串。
+        - windows下，是分号分割的字符串。
+    - `GOPROXY` go模块代理的地址。
+    - `GOPRIVAGE,GONOPROXY,GONOSUMDB` 逗号分割的模块前缀通配模式，
+    符合模式的模块会直接获取 *(be fetched directly)* ，
+    也不会进行校验和校验。
+    - `GOROOT` go树的根。？
+    - `GOSUMDB` 需要使用的校验和数据库。
+    - `GOTMPDIR` go指令使用的临时文件夹。
+    - `GOVCS` 会用来尝试匹配服务器？的版本控制指令。
+- 用于`cgo`的 todo
+    - AR The command to use to manipulate library archives when building with the gccgo compiler. The default is 'ar'.
+    - CC The command to use to compile C code.
+    - CGO_ENABLED Whether the cgo command is supported. Either 0 or 1.
+    - CGO_CFLAGS
+        - Flags that cgo will pass to the compiler when compiling
+        - C code.
+    - CGO_CFLAGS_ALLOW
+        - A regular expression specifying additional flags to allow
+        - to appear in #cgo CFLAGS source code directives.
+        - Does not apply to the CGO_CFLAGS environment variable.
+    - CGO_CFLAGS_DISALLOW
+        - A regular expression specifying flags that must be disallowed
+        - from appearing in #cgo CFLAGS source code directives.
+        - Does not apply to the CGO_CFLAGS environment variable.
+    - CGO_CPPFLAGS, CGO_CPPFLAGS_ALLOW, CGO_CPPFLAGS_DISALLOW
+        - Like CGO_CFLAGS, CGO_CFLAGS_ALLOW, and CGO_CFLAGS_DISALLOW,
+        - but for the C preprocessor.
+    - CGO_CXXFLAGS, CGO_CXXFLAGS_ALLOW, CGO_CXXFLAGS_DISALLOW
+        - Like CGO_CFLAGS, CGO_CFLAGS_ALLOW, and CGO_CFLAGS_DISALLOW,
+        - but for the C++ compiler.
+    - CGO_FFLAGS, CGO_FFLAGS_ALLOW, CGO_FFLAGS_DISALLOW
+        - Like CGO_CFLAGS, CGO_CFLAGS_ALLOW, and CGO_CFLAGS_DISALLOW,
+        - but for the Fortran compiler.
+    - CGO_LDFLAGS, CGO_LDFLAGS_ALLOW, CGO_LDFLAGS_DISALLOW
+        - Like CGO_CFLAGS, CGO_CFLAGS_ALLOW, and CGO_CFLAGS_DISALLOW,
+        - but for the linker.
+    - CXX
+        - The command to use to compile C++ code.
+    - FC
+        - The command to use to compile Fortran code.
+    - PKG_CONFIG
+        - Path to pkg-config tool.
+
+- 用于特定的指令集的 todo
+- 特殊目的的 todo
+    - GCCGOTOOLDIR
+    - GOEXPERIMENT
+    - GOROOT_FINAL
+    - GO_EXTLINK_ENABLED
+    - GIT_ALLOW_PROTOCOL
+- 其他的`go env`提供的信息，但不是从环境变量读取的。
+    - GOEXE
+    - GOGCCFLAGS
+    - GOHOSTARCH
+    - GOHOSTOS
+    - GOMOD
+    - GOTOOLDIR
+    - GOVERSION
 
 
 ## gofmt指令
@@ -538,10 +608,6 @@ gofmt [flags] [path ...]
 - `-r rule` 在格式化之前将重写规则 *（rewrite rule）* 应用到源码上。
 - `-s` 尝试简化代码。
 - `-w` 不输出格式化之后的源码，而是将格式化之后的代码写回到文件。
-
-## go compile
-
-todo
 
 # 参考
 
