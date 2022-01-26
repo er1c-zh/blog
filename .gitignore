@@ -2,3 +2,4 @@
 blog.code-workspace
 site/resources/
 **/.idea
+site/.hugo_build.lock
