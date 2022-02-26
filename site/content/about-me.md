@@ -9,3 +9,7 @@ tags:
 # About Me
 
 A coder.
+
+# My friends
+
+- [是JIN大佬](https://caijin.tech)
