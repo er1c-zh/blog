@@ -35,6 +35,8 @@ kafka的设计思路。
 - 支持实时的从分片、分布式的流中创建新的下游流。
 - 良好的容灾机制，处理好机器失效等问题。
 
+**这些目标使得kafka更像一个数据库日志系统而不是一个传统的消息系统。**
+
 # 持久化 Persistence
 
 ## 使用磁盘与操作系统的文件系统
@@ -51,6 +53,9 @@ kafka的设计思路。
 
 - 操作系统面向块存储设备提供的预读 *(read ahead)* 和批量写 *(write behind)* 机制、页缓存机制以及页缓存与磁盘中的一致性保证。
 - （基于JVM）在内存中维护数据结构会增加内存占用（甚至翻倍），以及内存占用增大导致垃圾回收导致的性能问题。
+
+又考虑，可以将缓存的一致性以及维护的问题交给操作系统来实现，
+来降低kafka本身的复杂度。
 
 所以kafka被设计为以页缓存 *(pagecache)* 为存储消息的核心的形式。
 参考了[Varnish](http://varnish-cache.org/wiki/ArchitectNotes)的设计。
@@ -100,9 +105,21 @@ O(logN)的存储数据结构（如BTree/B+Tree）不能像在内存中一样当�
     服务器操作消息时不需要解析消息的格式。
     具体的，
     服务器可以将一个个消息集合当作文件来处理，
-    利用操作系统提供的`sendfile`调用，
+    利用Linux操作系统提供的`sendfile`调用，
     将文件的内容直接放到socket的发送缓冲区中，
     减少了数据的拷贝。
+
+    > 现代unix操作系统提供高效的方法用来将pagecache的数据传递给一个socket。
+
+    常见的操作路径是：
+
+    1. 操作系统从Disk读取数据到内核空间的pagecache。
+    1. 应用从内核空间将数据读取（产生复制）到用户空间的buffer。
+    1. 应用将用户空间的buffer的数据写入到（产生复制）在内核空间中的socket缓冲区。
+    1. 操作系统从socket的缓冲区写入（产生复制）到NIC的缓冲区来完成发送。
+
+    包含了四次复制和两次系统调用。
+    改用`sendfile`之后，只需要一次系统调用和一次复制：从pagecache复制到NIC缓冲区。
 
 # 生产者
 
@@ -113,4 +130,4 @@ O(logN)的存储数据结构（如BTree/B+Tree）不能像在内存中一样当�
 - [kafka DESIGN](https://kafka.apache.org/30/documentation/#design)
 - [The Pathologies of Big Data](https://queue.acm.org/detail.cfm?id=1563874)
 - [Notes from the Architect](http://varnish-cache.org/docs/trunk/phk/notes.html)
-
+- [一个关于磁盘的介绍](https://zhuanlan.zhihu.com/p/534821258)
