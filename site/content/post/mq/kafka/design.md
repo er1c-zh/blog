@@ -123,7 +123,117 @@ O(logN)的存储数据结构（如BTree/B+Tree）不能像在内存中一样当�
 
 # 生产者
 
+## 负载均衡
+
+生产者总是将数据发送给该分片的的leader broker。
+为了帮助生产者完成这个设计，
+每个kafka的节点都能回答所有节点的活性以及partition的leader。
+
+生产者client决定将消息发送到那个partition。
+负载均衡工作可以在这里完成，
+支持随机或者按照语意进行划分。
+
+一个实用的case：
+
+生产者可以根据比如uid来选择分片发送，
+这可以使得一个uid的消息都发送到一个分片中。
+这使得consumer可以进行本地敏感*(locality-sensitive)*的处理。
+
+## 异步发送
+
+开启批量发送之后，生产者会尝试在内存中聚合数据并通过一个批量请求来提交。
+可以设置不超过某个大小或者不等待超过某个时间。
+
+这项设置可以实现通过牺牲一点延迟来换取更好的吞吐。
+
 # 消费者
+
+消费者通过发送 **fetch请求** 给想要消费的partition的leading broker来完成消费。
+每个请求中，消费者设定想要开始消费的offset，接收到从该位置开始的一组数据。
+
+显然易见的，消费者可以控制消费的位置以及如果需要的话，可以重新消费。
+
+## 推或者拉？
+
+kafka选择了传统的消息系统的设计方式：生产者推，消费者拉。
+
+### push-based system
+
+缺点：
+
+- 难以处理多个消费者的消费速率。
+
+### pull-based system
+
+优势：
+
+- 消费者自行控制消费的速率
+- broker能够更激进的batch消息，
+相比于push-based实现，需要在立即推送和聚合推送之间做出取舍。
+
+不足：
+
+- 如果没有数据的话会产生大量的无用轮询。
+
+    解决方案：通过 **long poll** 请求，来等待数据的到来。
+    *（这里也可以等待到足够的数据来实现batch）*
+
+### store-and-forward 生产者
+
+指生产者写入数据到local log，当consumer从broker尝试拉取数据时，
+broker从producer拉取数据。
+
+对于kafka的使用场景，有时需要支持数千的生产者。
+数据分布在这么多的磁盘上将会是一个维护上的灾难。
+
+## 消费位置 consumer position
+
+**追踪消息被消费到哪个位置是消息系统的一个很关键的性能点。**
+
+通常，消费情况的元数据被存储在borker上。
+这是符合直觉的的方案：
+
+1. broker能知道消费的发生以及ack，并且对于单一server的实现，没有其他合适的地方来存储。
+1. 传统的消息系统没有很好的可伸缩性，broker可以将消费过的数据清除来保持较小的存储。
+
+问题：如何在broker和consumer之间对于消费情况达成一致是一个不小的问题。
+
+发送即标记消费实现最多一次会丢消息。
+
+通过接受ACK来实现至少一次成本比较高：
+
+- 如broker要维护每个消息的状态机：发送、消费完成、锁（不重复消费）。
+- 如果永远没有收到ack，如何处理。
+
+### kafka的方案
+
+每个topic划分为有序的若干分片，
+对于一个consumer group，一个分片同时有且只有一个consumer会消费。
+
+因此consumer position只会有一个数字，不管是存储还是ack都非常的方便。
+
+同时有一个side benefit，
+消费者可以主动的回滚consumer position，
+重复消费之前消费过的数据。
+
+## Offline Data Load
+
+## Static Membership
+
+**静态成员** 用来帮助在 consumer group rebalance 协议上的程序提升可用性。
+
+rebalance protocol依赖于group coordinator为group中的成员分配id。
+这个id是临时的，每次成员重启或者重新加入会产生变化。
+
+对于消费者类型的服务，这种变化会导致消息的大量reassign。
+对于有状态的服务，这种调整会导致local的优化失效，进而导致系统部分或全部不可用。
+
+为了解决这种问题，设计了Static Member机制。
+
+# 消息投递语义
+
+- deliberately
+- equivalent
 
 # 参考
 
