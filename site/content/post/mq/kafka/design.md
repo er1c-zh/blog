@@ -1,7 +1,7 @@
 ---
 title: "kafka设计"
-date: 2021-09-30T20:08:12+08:00
-draft: true
+date: 2022-10-24T20:08:12+08:00
+draft: false
 tags:
     - mq
     - kafka
@@ -384,9 +384,17 @@ kafka提供了两个对于一致性和可用性不同倾向的方案：
 许哦咦kafka选择使用controller进行选主，
 controller自身失败，会自行选主。
 
+# 日志压缩
+
+TBD
+
+# Quotas
+
+TBD
+
 # 参考
 
-- [kafka DESIGN](https://kafka.apache.org/30/documentation/#design)
+- [kafka DESIGN](https://kafka.apache.org/documentation/#design)
 - [The Pathologies of Big Data](https://queue.acm.org/detail.cfm?id=1563874)
 - [Notes from the Architect](http://varnish-cache.org/docs/trunk/phk/notes.html)
 - [一个关于磁盘的介绍](https://zhuanlan.zhihu.com/p/534821258)
