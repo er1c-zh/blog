@@ -232,8 +232,157 @@ rebalance protocol依赖于group coordinator为group中的成员分配id。
 
 # 消息投递语义
 
-- deliberately
-- equivalent
+- *At most once*
+- *At least once*
+- *Exactly once*
+
+可以分割为两个问题：
+
+1. pub消息的可靠性
+1. 消费消息的保证
+
+## 写入
+
+当一个消息写入的分片返回了 **committed** ，
+只要有一个拥有该分片副本的borker是*alive*的，
+那么这个消息就不会丢失。
+
+### producer没有收到提交message的response
+
+从0.11.0.0之后，kafka支持了幂等发送，
+producer可以重复发送消息，但不会产生多个消息记录。
+
+broker为每个producer赋予一个ID，
+生产者发送消息的时候，会为每个消息带上一个序列号。
+
+也是从0.11.0.0之后，producer支持使用类似事务的语义，
+将消息发送到多个topic分片中：
+要么都写入成功，要么都失败。
+
+要求不是那么高的场景下，
+也可以配置等待若干时间用来提交消息。
+也可以，完全的异步发送，或者等待到只有leader分片（相对于follower分片）
+拥有这个消息。
+
+## 消费
+
+### At least once
+
+消费完成之后，记录消费的offset。
+
+### At most once
+
+开始消费之前，就记录消费的offset。
+
+### Exactly once
+
+对于kafka内部的场景，消费一个topic然后写入到另一个topic。
+那么可以利用kafka提供的事务机制。
+将offset和产生的结果作为一个原子写入到topic中。
+
+对于消费topic写入外部系统中，
+也需要使得记录offset和输出结果原子化的执行。
+通常的实现方式，比如两步提交。
+作为替代，可以将offset和输出存储到同一个地方。
+
+# 副本 Replication
+
+kafka根据配置的参数来控制每个分片的副本数量。
+
+副本机制的运行单元是topic的分片。
+
+Followers和普通的消费者一样，
+从leader消费消息，应用到自身的日志中。
+
+在分布式系统中，为了自动处理失败，需要一个精确的“存活”定义。
+在kafka中，是这样定义的：
+
+1. broker维持一个与controller的活跃session来接受元数据更新。
+    - kRaft集群中，需要周期性的与controller发送心跳。
+    - Zookeeper集群中，间接通过broker在初始化与zookeeper的会话时建立的虚节点。
+1. broker保持维护的作为follower的分片与leader不会落后太远。
+
+使用**in sync**来表示**alive**和**failed**之间的状态。
+kafka维护一个ISR(in-sync replica)集合，
+如果没有维持活跃session或者落后太多，那么这个broker就会被从ISR中移除。
+
+**committed的含义**：
+（如果消息是committed的，）
+不需要担心如果leader fail之后，会丢失消息。
+生产者需要权衡latency和可靠性来选择是否要等待message成为committed。
+
+kafka保证committed的消息，在有至少一个in sync副本的情况下，
+不会丢失。
+
+kafka不解决网络分区问题。
+
+## 副本log Quorums, ISRs, and State Machines
+
+副本log是kafka分片的核心。
+在分布式数据系统中，副本日志是一个很常见的基本元素。
+副本log可以被其他的系统以状态机风格来实现其他的分布式系统。
+
+副本日志实现了将一系列数据的顺序达成共识的过程。
+最简单的方式是选出一个leader来决断所有的输入。
+
+### 如何选出拥有所有committed消息的新leader
+
+当leader无法正常工作时，我们需要选出一个up-to-date的follower。
+kafka提供的保证需要分片复制算法能够在leader无法工作之后，
+保证选出的leader拥有所有committed的消息。
+
+考虑，如果在写入等待a个副本返回写入成功，选举需要检查b个副本，
+a和b中保证有overlap，这个过程就是Quorum。
+
+一个常见的方法是在写入和选举是都等待/检查超过半数的副本（以下称为过半选举）。
+特别的，这种方法有一个天然的优势：
+操作取决于latency最小的若干实例。
+实现这种检查，有若干算法及其变种：ZAB, kRaft etc。
+
+**过半选举**的不足在于只能容忍较少的节点失败或者需要更大的存储成本。
+
+实践上，kafka选择了一个权衡之后的方案。
+相比于过半选举，kafka动态维护了一个称作ISR(in-sync replicas)的集合来作为
+quorum set。
+ISR中的成员的数据与leader保持同步，也只有ISR中的成员有资格被选为新的leader。
+所有写入只有在被所有的ISR副本处理才被认为是committed。
+ISR成员维护在集群元数据中。
+通过ISR模型和f+1个（ISR）副本，
+kafka topic可以容忍f个节点失败而不丢失committed的消息。
+
+ISR模型与过半选举在支持相同失败容忍度的时候，写入需要等待相同数量的副本的ack。
+对于过半选举的只依赖低延迟实例的天然优点，
+kafka选择通过让producer来决定是否等待follower ack来解决。
+ISR模型的优势在于节省了很多带宽和存储，是值得的。
+
+## kafka不要求崩溃的节点将所有的数据带回来
+
+不同于普通的副本算法，kafka支持基于不可靠的存储运行。
+
+实践中，磁盘错误是非常常见的情况。
+另外，为了提高性能，kafka无法容忍每次都调用fsync来刷盘。
+
+## 所有ISR节点失败后会发生什么？
+
+kafka提供了两个对于一致性和可用性不同倾向的方案：
+
+1. 等待任意ISR节点重新接入。
+1. 选择一个ISR外的节点作为leader。
+
+## 可用性与持久性
+
+写入时，producer可以选择等待0、1、所有的（ISR）副本返回ack。
+
+提供两个选项来提升持久性：
+
+1. 禁用使用ISR外的节点作为主。
+1. 设置最小ISR size。
+
+## 副本管理
+
+因为有很多副本，如果在broker之间进行选主会带来性能困扰。
+许哦咦kafka选择使用controller进行选主，
+controller自身失败，会自行选主。
 
 # 参考
 
