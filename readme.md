@@ -67,7 +67,7 @@ ditaa
         - [ ] Prometheuse简单实现
     - [ ] HTTP/1.1协议的笔记
         - [x] rfc7230 "Message Syntax and Routing" (this document)
-        - [ ] rfc7231 "Semantics and Content" [RFC7231]
+        - [x] rfc7231 "Semantics and Content" [RFC7231]
         - [ ] rfc7232 "Conditional Requests" [RFC7232]
         - [ ] rfc7233 "Range Requests" [RFC7233]
         - [ ] rfc7234 "Caching" [RFC7234]
