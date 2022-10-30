@@ -211,6 +211,8 @@ request method表明了这个请求希望是什么含义。
 
 大小写敏感。
 
+```ditaa
+ditaa
 +---------+-------------------------------------------------+-------+
 | Method  | Description                                     | Sec.  |
 +---------+-------------------------------------------------+-------+
@@ -231,6 +233,7 @@ request method表明了这个请求希望是什么含义。
 | TRACE   | Perform a message loop-back test along the path | 4.3.8 |
 |         | to the target resource.                         |       |
 +---------+-------------------------------------------------+-------+
+```
 
 其他方法会在[IANA](https://www.iana.org/assignments/http-methods/http-methods.xhtml)注册。
 
@@ -291,7 +294,9 @@ TBD
 
 - 1xx Informational: 请求被接受到，继续处理。
 - 2xx Successful: 请求成功的收到、理解、接收。
-- 3xx Redirection: 
+- 3xx Redirection: 需要完成更多的操作来完成请求。
+- 4xx Client Error: 请求有错误。
+- 5xx Server Error: 服务端生成响应失败。
 
 ```ditaa
 ditaa
