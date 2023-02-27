@@ -36,10 +36,12 @@ ditaa
     - [x] 自动触发gitalk生成文章的issue
     - [ ] 截图上传到onedrive的跨平台应用
 - 技术学习
-    - [x] unicode && utf-8
-    - [ ] 弄清md5 sha-1等加密算法
+    - [ ] cloud native
+        - [ ] kubernates 概念&&操作
+        - [ ] 代码走读
+    - [ ] 区块链
+        - [ ] 弄清md5 sha-1等加密算法
     - [ ] react/vue的入门，结合截图上传工具来实践以下
-    - [x] git rebase
     - [ ] redis
         - [x] 单机命令实现
         - [x] 持久化
@@ -49,7 +51,8 @@ ditaa
         - [x] chan
         - [ ] select
         - [ ] 调度 sudog
-    - [ ] 了解一下rust
+    - [ ] rust
+        - [x] 了解一下rust
     - [ ] 简单研究nginx的设计思想
     - [ ] 简单了解innodb的实现
     - [ ] gossip算法
@@ -74,16 +77,20 @@ ditaa
         - [ ] rfc7235 "Authentication" [RFC7235]
     - [ ] HTTP/2
     - [ ] [SWIG](http://swig.org)
-- [ ] 尝试为一些小的开源项目提供代码
+    - [x] unicode && utf-8
+    - [x] git rebase
+- [ ] 尝试为一些~小的~开源项目提供代码
+    - [x] qwerty-learner-vscode
+    - [ ] kubernates
 - [ ] 构建自己的dotfiles
     - [x] mac
     - [ ] linux
 - books wait read
     - [ ] hackers delight
     - [ ] ~https://swtch.com/~rsc/regexp/regexp1.html~
-    - [ ] 两次全球大危机的比较研究
-    - [x] DDIA
-    - [x] Linux内核设计与实现
+    - [ ] ~两次全球大危机的比较研究~
     - [ ] 编译原理
     - [ ] SQL与关系数据库理论
     - [ ] 应用密码学：协议、算法与C源程序（原书第2版）
+    - [x] DDIA
+    - [x] Linux内核设计与实现
