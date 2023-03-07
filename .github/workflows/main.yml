@@ -28,10 +28,10 @@ jobs:
     - name: Install Hugo
       run: brew install hugo
       
-    - name: Get theme
-      run: |
-        git submodule init
-        git submodule update
+    #- name: Get theme
+    #  run: |
+    #    git submodule init
+    #    git submodule update
       
     # Runs a single command using the runners shell
     - name: Build static page
