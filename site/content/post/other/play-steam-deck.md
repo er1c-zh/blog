@@ -6,7 +6,7 @@ tags:
     - steam deck
 ---
 
-拆机换ssd && warframe && Genshin Impact
+拆机换ssd && warframe && Genshin Impact && ns simulator
 
 <!--more-->
 
@@ -69,3 +69,46 @@ tags:
 - 横版背景: 在库-genshin-横幅右键（左扳机）修改。
 - 竖版背景: TODO
 
+# 传输文件
+
+尝试下来，直接通过smb共享比较快速方便。
+
+win11 新建了本地账户，设置了密码。
+everyone共享sd还是提示需要账号密码。
+
+# NS模拟器
+
+尝试了一下偷跑totk。
+
+方案:emudeck + ryujinx
+
+## emudeck
+
+[emudeck](https://www.emudeck.com/)是用于管理不同模拟器的工具。
+安装过程比较清晰，按照指导下载安装即可。
+
+会帮助把模拟器倒入到库中。
+
+## NS模拟器
+
+尝试了两种模拟器：yuzu和[ryujinx](https://ryujinx.org/)。
+
+yuzu卡在加载中，ryujinx可以正常进入。
+
+### 密钥和固件
+
+`prod.keys`和`title.keys`，可以搜索到。
+
+固件比较容易找到。
+
+注意两者版本需要互相适配。
+
+totk我用了15版本的可以加载成功。
+
+对于ryujinx，密钥放在`~/.config/ryujinx/system`下面。
+固件在运行了模拟器之后，
+`Tools > Firmware > Install from XCI/ZIP`导入。
+
+### totk
+
+磁力链接下载到的xci文件。
