@@ -13,14 +13,31 @@ DIY一个分体式键盘。
 - 分体
 - colemak & mac
 - 有线
+- 旋钮调整音量
 
 # PCB
 
 - 2 * MCU AVR ATMEGA32U4-MU
 - 链接两个split
-- 2 * type-c 充电 + 连接
+- 1 * type-c on master 充电 + 连接
 - 2 * 旋钮 亮度 + 音量
 - switcher colemak / qwerty && win / mac
+
+## 烧录固件
+
+> 烧录固件的方式：
+>
+> ISP（In-System Programming）在系统编程，使用引导程序（Bootloader）加上外围UART/SPI等接口进行烧录。
+>
+> ICP （In-circuit programmer）在电路编程，使用SWD/JTAG接口。
+>
+> IAP（In-Application Programming）指MCU可以在系统中获取新代码并对自己重新编程，即用程序来改变程序。
+
+方案采取master支持ISP和ICP，slave支持ICP。
+
+[qmk toolbox](https://github.com/qmk/qmk_toolbox)支持Atmel DFU和若干ISP烧录器。
+
+选了
 
 ## MCU
 
@@ -43,7 +60,6 @@ ATMEGA32U4-MU
 [TRS母座](https://so.szlcsc.com/global.html?c=&k=C5123139)
 
 # 外壳
-
 
 # Reference
 
