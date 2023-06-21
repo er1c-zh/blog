@@ -6,7 +6,7 @@
 1. 在文章需要展示系列列表的地方增加
     
     ```hugo
-        {{% serial_index serial_id %}}
+    {{% serial_index serial_id %}}
     ```
 
 1. 通过在Front-Matter中增加`order`，整数，小的在前大的在后，来明确顺序，。
@@ -55,7 +55,7 @@ ditaa
         - [x] 了解一下rust
     - [ ] 简单研究nginx的设计思想
     - [ ] 简单了解innodb的实现
-    - [ ] gossip算法
+    - [x] gossip算法
     - [ ] ruby
         - [x] 基础语法
         - [ ] 函数式编程
@@ -96,4 +96,4 @@ ditaa
     - [ ] 应用密码学：协议、算法与C源程序（原书第2版）
     - [x] DDIA
     - [x] Linux内核设计与实现
-    - [ ] [Linux Performance Analysis in 60,000 Milliseconds](https://netflixtechblog.com/linux-performance-analysis-in-60-000-milliseconds-accc10403c55)
+    - [x] [Linux Performance Analysis in 60,000 Milliseconds](https://netflixtechblog.com/linux-performance-analysis-in-60-000-milliseconds-accc10403c55)

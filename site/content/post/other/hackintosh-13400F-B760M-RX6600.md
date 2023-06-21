@@ -2,7 +2,7 @@
 title: "Hackintosh 13400F B760M RX6600"
 date: 2023-06-19T20:26:15+08:00
 draft: false
-tag:
+tags:
     - how
     - hackintosh
 ---
