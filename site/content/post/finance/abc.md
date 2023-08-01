@@ -23,12 +23,35 @@ draft: true
 
 # 指标
 
+## 成交量相关
+
+**SVP** 交易时段成交量分布图。
+
 ## VWAP Moving Average
 
 Volume Weighted Average Price 
 
-# 移动平均线 Moving Average
+## Price Volume Trend
+
+
+
+# TODO
+
+- [ ] 构建涨跌同频关联。
+
+# 词汇
+
+波动 oscillate
+
 
 # Diary
+
+## 0705 初次确定交易原则
+
+1. 交易周期三个决定因素。
+
+    - 止损 6% 。
+    - 买入当天 - 持有一天 - 收益不如预期。
+    - 止盈 日线级别
 
 
