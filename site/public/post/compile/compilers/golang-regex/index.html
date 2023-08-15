@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>golang的regex实现 编译 - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="本文是golang的正则表达式的学习笔记。
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/compile/compilers/golang-regex/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="golang的regex实现 编译" />
+<meta property="og:description" content="本文是golang的正则表达式的学习笔记。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/compile/compilers/golang-regex/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-07-07T23:05:42+08:00" />
+<meta property="article:modified_time" content="2021-07-07T23:05:42+08:00" />
+<meta itemprop="name" content="golang的regex实现 编译">
+<meta itemprop="description" content="本文是golang的正则表达式的学习笔记。"><meta itemprop="datePublished" content="2021-07-07T23:05:42+08:00" />
+<meta itemprop="dateModified" content="2021-07-07T23:05:42+08:00" />
+<meta itemprop="wordCount" content="10193">
+<meta itemprop="keywords" content="compilers-book,go,how," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="golang的regex实现 编译"/>
+<meta name="twitter:description" content="本文是golang的正则表达式的学习笔记。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">golang的regex实现 编译</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-07-07 </span>
+        
+          <span class="more-meta"> 约 10193 字 </span>
+          <span class="more-meta"> 预计阅读 21 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#最开始的">最开始的</a></li>
+    <li><a href="#数据结构">数据结构</a>
+      <ul>
+        <li><a href="#regexpregexp"><code>regexp.Regexp</code></a></li>
+        <li><a href="#syntaxregexp"><code>syntax.Regexp</code></a>
+          <ul>
+            <li><a href="#flags">Flags</a></li>
+            <li><a href="#节点类型">节点类型</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#编译正则表达式">编译正则表达式</a>
+      <ul>
+        <li><a href="#构建语法树">构建语法树</a>
+          <ul>
+            <li><a href="#syntaxparser"><code>syntax.parser</code></a></li>
+            <li><a href="#解析正则表达式">解析正则表达式</a></li>
+          </ul>
+        </li>
+        <li><a href="#简化">简化</a>
+          <ul>
+            <li><a href="#对于opstar-opplus-opquest">对于<code>OpStar</code> <code>OpPlus</code> <code>OpQuest</code></a></li>
+            <li><a href="#oprepeat"><code>OpRepeat</code></a></li>
+          </ul>
+        </li>
+        <li><a href="#将语法树编译为要执行的程序">将语法树编译为要执行的程序</a>
+          <ul>
+            <li><a href="#数据结构-1">数据结构</a></li>
+            <li><a href="#编译">编译</a></li>
+          </ul>
+        </li>
+        <li><a href="#收尾工作">收尾工作</a>
+          <ul>
+            <li><a href="#编译一趟匹配">编译一趟匹配</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#一些收获">一些收获</a>
+      <ul>
+        <li><a href="#处理大小写不敏感的匹配">处理大小写不敏感的匹配</a></li>
+        <li><a href="#运算符优先级">运算符优先级</a></li>
+      </ul>
+    </li>
+    <li><a href="#参考">参考</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p>本文是golang的正则表达式的学习笔记。</p>
+<p><em>基于golang 1.16</em></p>
+
+
+
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+            
+                <div class="serial-index">
+                    <p>系列列表</p>
+                    <ul>
+                    
+                        <li><a href="https://blog.er1c.dev/post/compile/compilers/1/">编译原理 第一章 笔记</a></li>
+                    
+                        <li><a href="https://blog.er1c.dev/post/compile/compilers/2/">编译原理 第二章 笔记</a></li>
+                    
+                        <li><a href="https://blog.er1c.dev/post/compile/compilers/golang-regex/">golang的regex实现 编译</a></li>
+                    
+                        <li><a href="https://blog.er1c.dev/post/compile/compilers/golang-regex-execute/">golang的regex实现 执行匹配</a></li>
+                    
+                    </ul>
+                </div>
+            
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+
+
+<h1 id="最开始的">最开始的</h1>
+<p><code>regexp</code>包实现了语法与<a href="https://github.com/google/re2/"><code>RE2</code></a>相同的正则表达式匹配功能，
+能够保证在线性时间中完成匹配。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">reg</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">regexp</span><span class="p">.</span><span class="nf">Compile</span><span class="p">(</span><span class="s">`regex`</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">panic</span><span class="p">(</span><span class="s">&#34;invalid regex.&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nx">found</span> <span class="o">:=</span> <span class="nx">reg</span><span class="p">.</span><span class="nf">MatchString</span><span class="p">(</span><span class="s">&#34;hello regex.&#34;</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这是golang使用<code>regexp</code>库的一个典型模式：</p>
+<ol>
+<li>首先<code>Compile</code>要使用的正则表达式，得到一个<code>regexp.Regexp</code>实例。</li>
+<li>利用<code>regexp.Regexp</code>进行匹配。</li>
+</ol>
+<p>本文首先分析记录关联的数据结构，然后分析编译的过程，
+然后会在<a href="/post/compile/compilers/golang-regex-execute/">后面的文章</a>分析匹配的实现。</p>
+<h1 id="数据结构">数据结构</h1>
+<h2 id="regexpregexp"><code>regexp.Regexp</code></h2>
+<p><code>Regexp</code>表示了编译过的正则表达式，
+大部分函数并发安全。</p>
+<p><code>Regexp</code>的结构如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Regexp</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">expr</span>           <span class="kt">string</span>       <span class="c1">// as passed to Compile
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">prog</span>           <span class="o">*</span><span class="nx">syntax</span><span class="p">.</span><span class="nx">Prog</span> <span class="c1">// compiled program
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">onepass</span>        <span class="o">*</span><span class="nx">onePassProg</span> <span class="c1">// onepass program or nil
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">numSubexp</span>      <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">maxBitStateLen</span> <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">subexpNames</span>    <span class="p">[]</span><span class="kt">string</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">prefix</span>         <span class="kt">string</span>         <span class="c1">// required prefix in unanchored matches
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">prefixBytes</span>    <span class="p">[]</span><span class="kt">byte</span>         <span class="c1">// prefix, as a []byte
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">prefixRune</span>     <span class="kt">rune</span>           <span class="c1">// first rune in prefix
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">prefixEnd</span>      <span class="kt">uint32</span>         <span class="c1">// pc for last rune in prefix
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">mpool</span>          <span class="kt">int</span>            <span class="c1">// pool for machines
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">matchcap</span>       <span class="kt">int</span>            <span class="c1">// size of recorded match lengths
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">prefixComplete</span> <span class="kt">bool</span>           <span class="c1">// prefix is the entire regexp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">cond</span>           <span class="nx">syntax</span><span class="p">.</span><span class="nx">EmptyOp</span> <span class="c1">// empty-width conditions required at start of match
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">minInputLen</span>    <span class="kt">int</span>            <span class="c1">// minimum length of the input in bytes
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// This field can be modified by the Longest method,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// but it is otherwise read-only.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">longest</span> <span class="kt">bool</span> <span class="c1">// whether regexp prefers leftmost-longest match
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="syntaxregexp"><code>syntax.Regexp</code></h2>
+<p><code>syntax.Regexp</code>表示正则表达式的语法树的一个节点。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Regexp</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">Op</span>       <span class="nx">Op</span> <span class="c1">// operator 节点类型
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">Flags</span>    <span class="nx">Flags</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">Sub</span>      <span class="p">[]</span><span class="o">*</span><span class="nx">Regexp</span>  <span class="c1">// subexpressions, if any 子节点，用于并、连接等操作
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">Sub0</span>     <span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="nx">Regexp</span> <span class="c1">// storage for short Sub
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">Rune</span>     <span class="p">[]</span><span class="kt">rune</span>     <span class="c1">// matched runes, for OpLiteral, OpCharClass
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">Rune0</span>    <span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="kt">rune</span>    <span class="c1">// storage for short Rune
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">Min</span><span class="p">,</span> <span class="nx">Max</span> <span class="kt">int</span>        <span class="c1">// min, max for OpRepeat 用于 x{Min,Max} 类型的节点
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">Cap</span>      <span class="kt">int</span>        <span class="c1">// capturing index, for OpCapture 捕获组的index
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">Name</span>     <span class="kt">string</span>     <span class="c1">// capturing name, for OpCapture 捕获组的名字
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="flags">Flags</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">const</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">FoldCase</span>      <span class="nx">Flags</span> <span class="p">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="kc">iota</span> <span class="c1">// case-insensitive match
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">Literal</span>                         <span class="c1">// treat pattern as literal string
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">ClassNL</span>                         <span class="c1">// allow character classes like [^a-z] and [[:space:]] to match newline
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">DotNL</span>                           <span class="c1">// allow . to match newline
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OneLine</span>                         <span class="c1">// treat ^ and $ as only matching at beginning and end of text
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">NonGreedy</span>                       <span class="c1">// make repetition operators default to non-greedy
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">PerlX</span>                           <span class="c1">// allow Perl extensions
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">UnicodeGroups</span>                   <span class="c1">// allow \p{Han}, \P{Han} for Unicode group and negation
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">WasDollar</span>                       <span class="c1">// regexp OpEndText was $, not \z
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">Simple</span>                          <span class="c1">// regexp contains no counted repetition
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="nx">MatchNL</span> <span class="p">=</span> <span class="nx">ClassNL</span> <span class="p">|</span> <span class="nx">DotNL</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nx">Perl</span>        <span class="p">=</span> <span class="nx">ClassNL</span> <span class="p">|</span> <span class="nx">OneLine</span> <span class="p">|</span> <span class="nx">PerlX</span> <span class="p">|</span> <span class="nx">UnicodeGroups</span> <span class="c1">// as close to Perl as possible
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">POSIX</span> <span class="nx">Flags</span> <span class="p">=</span> <span class="mi">0</span>                                         <span class="c1">// POSIX syntax
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="节点类型">节点类型</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">const</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">OpNoMatch</span>        <span class="nx">Op</span> <span class="p">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="kc">iota</span> <span class="c1">// matches no strings
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpEmptyMatch</span>                   <span class="c1">// matches empty string
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpLiteral</span>                      <span class="c1">// 匹配字符序列
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpCharClass</span>                    <span class="c1">// matches Runes interpreted as range pair list
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpAnyCharNotNL</span>                 <span class="c1">// 除换行符之外所有的字符
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpAnyChar</span>                      <span class="c1">// 所有字符
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpBeginLine</span>                    <span class="c1">// 从一行开头开始匹配
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpEndLine</span>                      <span class="c1">// 匹配一行的结尾
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpBeginText</span>                    <span class="c1">// matches empty string at beginning of text
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpEndText</span>                      <span class="c1">// matches empty string at end of text
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpWordBoundary</span>                 <span class="c1">// matches word boundary `\b`
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpNoWordBoundary</span>               <span class="c1">// matches word non-boundary `\B`
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpCapture</span>                      <span class="c1">// capturing subexpression with index Cap, optional name Name
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpStar</span>                         <span class="c1">// matches Sub[0] zero or more times
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpPlus</span>                         <span class="c1">// matches Sub[0] one or more times
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpQuest</span>                        <span class="c1">// matches Sub[0] zero or one times
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpRepeat</span>                       <span class="c1">// matches Sub[0] at least Min times, at most Max (Max == -1 is no limit)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpConcat</span>                       <span class="c1">// matches concatenation of Subs 匹配Subs的连接
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">OpAlternate</span>                    <span class="c1">// matches alternation of Subs 匹配Subs的并集
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h1 id="编译正则表达式">编译正则表达式</h1>
+<p>编译的工作最终由<code>func compile(expr string, mode syntax.Flags, longest bool) (*Regexp, error)</code>完成。</p>
+<p>函数接受正则表达式字符串<code>expr</code>，正则表达式的格式<code>mode</code>和匹配模式<code>longest</code>。</p>
+<p><code>compile</code></p>
+<ol>
+<li>首先通过<code>syntax.Parse</code>将正则表达式解析为正则表达式语法树(syntax tree)，
+返回表示语法树的对象<code>syntax.Regexp</code>，</li>
+<li>随后调用<code>syntax.Regexp.Simplify</code>简化结构，</li>
+<li>然后根据生成的语法树生成执行匹配需要的代码，由<code>syntax.Compile</code>完成，</li>
+<li>最后构建<code>regexp.Regexp</code>对象返回。</li>
+</ol>
+<h2 id="构建语法树">构建语法树</h2>
+<p><code>syntax.Parse</code>将一个正则表达式解析为语法树。</p>
+<p>理论上来看，Parse没有使用递归下降算法，
+这样可以避免指数级别增长的递归深度以及潜在的栈溢出问题。</p>
+<p>实现上依赖<code>syntax.parser</code>，故首先分析下该对象。</p>
+<h3 id="syntaxparser"><code>syntax.parser</code></h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">parser</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">flags</span>       <span class="nx">Flags</span>     <span class="c1">// parse mode flags
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">stack</span>       <span class="p">[]</span><span class="o">*</span><span class="nx">Regexp</span> <span class="c1">// stack of parsed expressions
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">free</span>        <span class="o">*</span><span class="nx">Regexp</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">numCap</span>      <span class="kt">int</span> <span class="c1">// 捕获组的数量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">wholeRegexp</span> <span class="kt">string</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">tmpClass</span>    <span class="p">[]</span><span class="kt">rune</span> <span class="c1">// temporary char class work space
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="字段">字段</h4>
+<ul>
+<li>
+<p><code>free</code></p>
+<p><code>free</code>字段用于存储已经分配但没有使用的<code>Regexp</code>的实例，
+存储的结构类似一个链表，<code>Regexp.Sub0[0]</code>是next节点。</p>
+<p><code>free</code>字段只有<code>func (p *parser) reuse(re *Regexp)</code>方法会修改，
+当函数不再需要一个节点实例时，调用<code>reuse</code>，保存到<code>free</code>链表上。</p>
+<p>在<code>newRegexp</code>会在新分配一个实例时，尝试从<code>free</code>链表中获取，
+如果为空，再新建一个。</p>
+</li>
+</ul>
+<h4 id="方法">方法</h4>
+<ul>
+<li>
+<p><code>func (p *parser) newRegexp(op Op) *Regexp</code></p>
+<p>产生一个新的节点对象，首先从<code>p.free</code>中尝试获取，如果失败，就<code>new</code>一个。
+详见<code>parser.free</code>的字段的解释。</p>
+</li>
+<li>
+<p><code>func (p *parser) op(op Op) *Regexp</code></p>
+<p><code>p.newRegexp</code>新建一个语法树节点，<code>p.push</code>到堆栈中，返回这个节点。</p>
+</li>
+<li>
+<p><code>func (p *parser) push(re *Regexp) *Regexp</code></p>
+<p>将一个节点推入<code>parser</code>的堆栈中。</p>
+<ol>
+<li>
+<p>根据节点的类型做一些工作。</p>
+<ul>
+<li>
+<p>普通类型</p>
+<p><code>p.maybeConcat(-1, 0)</code> 尝试合并栈上最近的两个节点。</p>
+</li>
+<li>
+<p><code>OpCharClass</code></p>
+<p>如果是只匹配一个字符，尝试合并到之前的节点，或者新建一个<code>OpLiteral</code>节点；</p>
+<p>如果匹配类似Aa或者Bb这种如果忽略大小写之后是一个字符的情况，
+类似的，会尝试合并到前一个节点（以大小写不敏感的flag），或者新建一个<code>OpLiteral</code>节点。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><code>p.stack = append(p.stack, re)</code></p>
+</li>
+</ol>
+</li>
+<li>
+<p><code>func (p *parser) maybeConcat(r rune, flags Flags) bool</code></p>
+<p>检查并在可能的情况下，合并栈上的两个<code>OpLiteral</code>节点，返回<code>r</code>是否被推入栈中。</p>
+<ol>
+<li>从栈上获取最上面的两个节点（栈顶<code>re1</code>和栈顶下一个<code>re2</code>），
+检查是否是<code>OpLiteral</code>节点且两者的大小写匹配是否一致。
+符合则继续，否则返回<code>false</code>（表示<code>r</code>未入栈）退出。</li>
+<li>如果符合条件，将<code>re1.Rune</code>推到<code>re2.Rune</code>中。</li>
+<li>如果入参传递了<code>r</code>（具体的，通过<code>r &gt;= 0</code>来判断），则复用<code>re1</code>，返回<code>true</code>表示已经将<code>r</code>入栈。</li>
+<li>因为无法复用，现在pop出<code>re1</code>。</li>
+<li>调用<code>p.reuse(re1)</code>，等待后续的复用。</li>
+<li>返回<code>false</code>。</li>
+</ol>
+</li>
+<li>
+<p><code>func (p *parser) concat() *Regexp</code></p>
+<p>从上搜索堆栈，使用<code>&quot;|&quot;</code>或<code>&quot;(&quot;</code>之后的节点构建一个<code>OpConcat</code>节点（用来匹配节点的<code>Subs</code>部分的连接体）。</p>
+<ol>
+<li>首先调用<code>maybeConcat</code>合并堆栈上的字符序列的匹配。</li>
+<li>从栈顶开始搜索<code>opLeftParen</code>和<code>opVerticalBar</code>或直到栈底。</li>
+<li>当上一步搜索结束之后，遍历的下标指向上一个<code>opLeftParen</code>或<code>opVerticalBar</code>的前一个栈帧或者栈底，
+从下标开始切分成两个部分：下标之前的保留在栈中；下标及之后的节点截取出来继续处理。
+<ul>
+<li>如果截取出来的部分为空，向栈中推入一个新的<code>OpEmptyMatch</code>节点。</li>
+<li>否则调用<code>p.collapse(subs, OpConcat)</code>创建一个<code>OpConcat</code>节点，推入栈中。</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>
+<p><code>func (p *parser) collapse(subs []*Regexp, op Op) *Regexp</code></p>
+<p>构建一个<code>Subs</code>是<code>subs</code>的<code>op</code>类型的节点，并返回。</p>
+<ol>
+<li>
+<p>快速路径，如果<code>subs</code>长度为一，直接返回。</p>
+</li>
+<li>
+<p><code>newRegexp</code>创建一个新的<code>op</code>类型的节点。</p>
+</li>
+<li>
+<p>遍历subs</p>
+<ul>
+<li>如果节点类型与<code>op</code>相同，那么将节点的<code>Sub</code>追加到新节点的<code>Sub</code>中，
+——这样避免出现「连接」的「连接」这种情况，然后<code>reuse</code>节点。</li>
+<li>其他情况就简单的推入新节点的<code>Sub</code>。</li>
+</ul>
+</li>
+<li>
+<p>如果要新建的节点是<code>OpAlternate</code>，调用<code>p.factor</code>来简化，
+如果简化后的节点的<code>Sub</code>中只有一个节点，那么简化成一个，<code>reuse</code>另一个。</p>
+</li>
+<li>
+<p>返回新的节点。</p>
+</li>
+</ol>
+</li>
+<li>
+<p><code>func (p *parser) alternate() *Regexp</code></p>
+<p>将堆栈中第一个<strong>左括号</strong>之上的所有节点替换为一个<code>OpAlternate</code>节点。</p>
+<ol>
+<li>定位到第一个<code>opLeftParen</code>的位置，截取出不包括<code>opLeftParen</code>的所有节点作为<code>subs</code>；
+pop出堆栈中不包括<code>opLeftParen</code>的所有节点。</li>
+<li>将第一步中获得的<code>subs</code>节点的最后一个调用<code>cleanAlt</code>清理。</li>
+<li>如果<code>subs</code>为空，推入一个<code>OpNoMatch</code>节点；
+否则调用<code>p.collapse</code>构建一个包含<code>subs</code>的<code>OpLaternate</code>节点。</li>
+</ol>
+</li>
+<li>
+<p><code>func (p *parser) factor(sub []*Regexp) []*Regexp</code></p>
+<p>对于<strong>选择</strong>类型的节点，尝试将<code>Sub</code>的共同前缀提取出来。</p>
+<p>根据注释，这里会做如下的合并：</p>
+<blockquote>
+<p>For example,
+ABC|ABD|AEF|BCX|BCY
+simplifies by literal prefix extraction to
+A(B(C|D)|EF)|BC(X|Y)
+which simplifies by character class introduction to
+A(B[CD]|EF)|BC[XY]</p>
+</blockquote>
+<p><!-- raw HTML omitted -->具体怎么实现的，等到有时间在看吧。<!-- raw HTML omitted --></p>
+</li>
+<li>
+<p><code>func (p *parser) swapVerticalBar() bool</code></p>
+<p>对于栈中第二个元素是<code>opVerticalBar</code>节点的情况，
+<code>swapVerticalBar</code>会交换两个节点，返回<code>true</code>。</p>
+<p>处理分为两种case，第一种情况：</p>
+<pre tabindex="0"><code class="language-ditaa" data-lang="ditaa">ditaa
++-------------+
+| isCharClass | &lt;----- stack top
++-------------+
+|opVerticalBar|
++-------------+
+| isCharClass |
++-------------+
+|          {d}|
++-------------+
+</code></pre><p>其中<code>isCharClass</code>包含：</p>
+<ul>
+<li>一个字符的<code>OpLiteral</code></li>
+<li><code>OpCharClass</code></li>
+<li><code>OpAnyCharNotNL</code></li>
+<li><code>OpAnyChar</code></li>
+</ul>
+<p>将两个<code>isCharClass</code>节点中优先级较低的通过<code>mergeCharClass</code>合并到较高的节点中，
+保留优先级较高的节点到栈顶，优先级较低的节点<code>reuse</code>。</p>
+<p>第二种情况：</p>
+<pre tabindex="0"><code class="language-ditaa" data-lang="ditaa">ditaa
++-------------+
+| isCharClass | &lt;----- stack top
++-------------+
+|opVerticalBar|
++-------------+
+|          {d}|
++-------------+
+</code></pre><p>这种情况简单的交换两者的位置。</p>
+<p>特别的，代码中会对<code>stack[n-3]</code>调用<code>cleanAlt</code>来做一些优化，这里略过不提。</p>
+</li>
+<li>
+<p><code>func (p *parser) literal(r rune)</code></p>
+<ol>
+<li>新建一个<code>OpLiteral</code>节点。</li>
+<li>如果是大小写不敏感的匹配，调用<code>minFoldRune</code>将字符化归到最小编码。</li>
+<li>将<code>r</code>保存到节点的<code>Rune0[0]</code>和<code>Rune</code>中。</li>
+<li>调用<code>p.push</code>将节点推入堆栈。</li>
+</ol>
+</li>
+</ul>
+<h4 id="其他方法">其他方法</h4>
+<ul>
+<li>
+<p><code>func cleanAlt(re *Regexp)</code></p>
+<p>主要是将<code>OpCharClass</code>类型的节点的一些特殊情况做了处理。</p>
+<ul>
+<li>
+<p>匹配任意字符的会替换成<code>OpAnyChar</code>。</p>
+</li>
+<li>
+<p>匹配除换行符的任意字符的会替换成<code>OpAnyCharNotNL</code>。</p>
+</li>
+<li>
+<p>如果给节点的<code>Rune</code>数组分配了太多的未使用的空间，通过重新<code>append</code>来清理。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="k">if</span> <span class="nb">cap</span><span class="p">(</span><span class="nx">re</span><span class="p">.</span><span class="nx">Rune</span><span class="p">)</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="nx">re</span><span class="p">.</span><span class="nx">Rune</span><span class="p">)</span> <span class="p">&gt;</span> <span class="mi">100</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// re.Rune will not grow any more.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// Make a copy or inline to reclaim storage.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">re</span><span class="p">.</span><span class="nx">Rune</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">re</span><span class="p">.</span><span class="nx">Rune0</span><span class="p">[:</span><span class="mi">0</span><span class="p">],</span> <span class="nx">re</span><span class="p">.</span><span class="nx">Rune</span><span class="o">...</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>至于这里为什么能实现这种效果，猜测和<code>append</code>的实现有关。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="解析正则表达式">解析正则表达式</h3>
+<p>在解析开始的时候，初始化一个<code>parser</code>，存储了解析需要的一些状态。</p>
+<p>函数主体是一个大的循环，
+循环体是一个<code>switch</code>
+检查<code>lookahead</code>符号来调用相应的处理函数读取、处理相应的单元。
+最后在将传入的正则表达式全部读取、处理完成后，
+依次调用<code>p.concat</code>、<code>p.swapVerticalBar</code>、<code>p.alternate</code>来
+将栈中的节点合并。
+最后返回语法树的根节点。</p>
+<p>翻译的核心思路是<strong>字符类</strong>连接成<strong>连接</strong>类型，通过<code>|</code>构建成<strong>选择</strong>类型，
+对于捕获组或单纯的分组的情况，嵌套一个<strong>选择</strong>类型。</p>
+<p>下面详细分析各个情况的处理。</p>
+<ul>
+<li>
+<p>默认分支</p>
+<p>默认分支用于处理普通的字符匹配。</p>
+<ol>
+<li><code>nextRune</code>读取一个字符。</li>
+<li>调用<code>parser.literal</code>来新建一个<code>OpLiteral</code>节点并推入堆栈。</li>
+</ol>
+</li>
+<li>
+<p>左括号 <code>'('</code></p>
+<ol>
+<li>左括号标记了一个捕获组 <em>(capture group)</em> 的开始，
+故增加计数器<code>parser.numCap</code>。</li>
+<li>调用<code>p.op(opLeftParen)</code>生成一个伪op节点，
+并设置<code>Regexp.Cap</code>来保存捕获组的标号。</li>
+</ol>
+<p>特别的，这里的<code>opLeftParen</code>是一个伪op，
+类似的还有<code>opVerticalBar</code>，用于解析过程中放在堆栈中。</p>
+</li>
+<li>
+<p>选择 <code>'|'</code></p>
+<p>调用<code>parseVerticalBar</code>。</p>
+<p><code>func (p *parser) parseVerticalBar() error</code></p>
+<ol>
+<li>调用<code>p.concat</code>重整堆栈上的节点，生成一个<strong>连接</strong>节点。</li>
+<li>尝试<code>p.swapVerticalBar</code>将交换一个<strong>选择</strong>节点到栈顶。
+交换会将之前的节点当作<strong>选择</strong>的一个子节点来匹配，不改变语义。</li>
+<li>如果失败，则新建一个<code>opVerticalBar</code>推入堆栈。</li>
+</ol>
+</li>
+<li>
+<p>右括号 <code>')'</code></p>
+<p>调用<code>parseRightParen</code>来处理。</p>
+<ol>
+<li>首先调用<code>p.concat</code>来将栈顶的节点重整成一个<code>OpConcat</code>节点。</li>
+<li>调用<code>p.swapVerticalBar</code>将可能存在的<code>opVerticalBar</code>节点移动到栈顶，并pop掉。</li>
+<li>调用<code>p.alternate</code>将栈顶的一系列节点构建为一个<code>OpAlternate</code>节点。</li>
+<li>检查堆栈的长度和内容，这个时候栈顶的两个节点应该分别为
+<code>opLeftParen</code>和<code>OpAlternate</code> <em>（也可能是<code>OpNoMatch</code>）</em> 节点。</li>
+<li>pop出最上面的两个节点。</li>
+<li>根据<code>opLeftParen</code>节点的<code>regexp.Cap</code>来判断是否需要构建一个<code>OpCapture</code>节点。
+<ul>
+<li>如果<code>regexp.Cap</code>为0，表示不需要捕获，直接将<code>OpAlternate</code>节点推入堆栈。</li>
+<li>否则将左括号的节点的<code>Op</code>改为<code>OpCapture</code>，然后将<code>OpAlternate</code>放到<code>Sub</code>中，
+最后推入新的<code>OpCaptrue</code>节点。</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>
+<p>开始与结束 <code>'^'</code>和<code>'$'</code></p>
+<p>根据<code>p.flags</code>判断是行匹配还是跨行匹配，分别插入相应的节点。</p>
+<p><code>Op(Begin|End)(Text|Line)</code></p>
+</li>
+<li>
+<p>任意字符 <code>'.'</code></p>
+<p>根据<code>.</code>是否支持匹配换行符推入<code>OpAnyChar(NotNL)?</code>节点。</p>
+</li>
+<li>
+<p>自定义的字符类 <code>'['</code></p>
+<p><code>p.parseClass</code></p>
+<ol>
+<li>
+<p>首先吃掉<code>'['</code>。</p>
+</li>
+<li>
+<p>检查是否是 <strong>“去除”</strong> ，标记<code>sign</code>。</p>
+</li>
+<li>
+<p>初始化<code>Rune</code>数组<code>class</code>用来存储字符类的内容，
+新建一个<code>OpCharClass</code>节点。</p>
+<p><code>class</code>的格式是每两个rune标记一个范围。</p>
+</li>
+<li>
+<p>循环读取直到字符类结束。</p>
+<ul>
+<li>
+<p>尝试匹配POSIX和Perl风格的<code>-</code>。</p>
+</li>
+<li>
+<p>尝试匹配<code>[:alnum:]</code>。</p>
+</li>
+<li>
+<p>尝试匹配<code>[\p{Han}]</code>。</p>
+</li>
+<li>
+<p>尝试匹配<code>\d\w</code>。</p>
+</li>
+<li>
+<p>尝试匹配普通字符与普通的字符范围。</p>
+<ol>
+<li><code>p.parseClassChar</code>根据是否需要转义，
+使用<code>p.parseEscape</code>或<code>nextRune</code>来获取字符。</li>
+<li>检查下一个符号是否是<code>-</code>来判断是否是一个范围，如果是的话，
+重复上一步的操作读取一个字符作为范围的结束。</li>
+<li>最后根据是否大小写敏感调用<code>append(Folded)?Range</code>将字符推入。</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>
+<p><code>cleanClass</code>清理合并字符类。</p>
+<ol>
+<li>排序，范围开始升序，范围结束降序。</li>
+<li>合并重复。</li>
+</ol>
+</li>
+<li>
+<p>如果是“去除”，<code>negateClass</code>获取补集。</p>
+</li>
+<li>
+<p>将<code>class</code>存储到<code>OpCharClass</code>节点的<code>regexp.Rune</code>中，将节点推入堆栈。</p>
+</li>
+</ol>
+</li>
+<li>
+<p>重复 <code>'*','+','?','{}'</code></p>
+<p>对于<code>'*' '+' '?'</code>，分别调用<code>p.repeat</code>创建<code>OpStar, OpPlus, OpQuest</code>节点。</p>
+<p>对于<code>{min, max}</code>，会首先利用<code>parseRepeat</code>尝试是否能正常的匹配，如果不能，
+将<code>{</code>作为一个普通的字符来处理。
+正确读取到<code>min, max</code>后，调用<code>p.repeat</code>来插入节点。</p>
+<p><code>p.repeat</code>检查栈中的情况，将栈顶的节点包装到新节点的<code>Sub</code>中，推入栈中。</p>
+</li>
+</ul>
+<h2 id="简化">简化</h2>
+<p>递归的检查语法树的每个节点，需要简化的类型是：</p>
+<ul>
+<li><code>OpStar</code></li>
+<li><code>OpPlus</code></li>
+<li><code>OpQuest</code></li>
+<li><code>OpRepeat</code></li>
+</ul>
+<p><strong>简化</strong>流程会将<code>{m,n}</code>类型的语法消除，转换成<code>*/+/?</code>类型。</p>
+<h3 id="对于opstar-opplus-opquest">对于<code>OpStar</code> <code>OpPlus</code> <code>OpQuest</code></h3>
+<p>首先递归的应用到子节点，然后调用<code>simplify1</code>来进行简化。</p>
+<p><code>func simplify1(op Op, flags Flags, sub, re *Regexp) *Regexp</code>
+函数接受<code>OpStar</code>，<code>OpPlus</code>和<code>OpQuest</code>三种<code>op</code>参数，
+来尝试简化<code>sub</code>和<code>re</code>节点：</p>
+<ol>
+<li>当<code>sub.Op</code>是<code>OpEmptyMatch</code>（空匹配不管重复多少次都是等效的）
+或与<code>re.Op</code>相同且贪婪标记相同时（重复是幂等的），直接返回<code>sub</code>。</li>
+<li>检查<code>re</code>是否需要修改，不需要的话直接返回，否则构建一个新的节点返回。</li>
+</ol>
+<h3 id="oprepeat"><code>OpRepeat</code></h3>
+<p>简化的结果是消除<code>OpRepeat</code>，利用<code>OpStar</code>或<code>OpPlus</code>等节点来替换，
+具体的实现分为以下情况：</p>
+<ol>
+<li>首先检查<code>x{0}</code>意味着匹配空串，用<code>OpEmptyMatch</code>来替换。</li>
+<li>然后递归的调用<code>Simplify</code>来简化<code>Sub[0]</code>节点。</li>
+<li>检查不设<code>Max</code>的情况：
+<ol>
+<li><code>x{0,}</code>类型与<code>x*</code>等价，转换成一个<code>OpStar</code>节点。</li>
+<li><code>x{1,}</code>类型与<code>x+</code>等价，转换成一个<code>OpPlus</code>节点。</li>
+<li><code>x{4,}</code>这种类型，可以使用<code>xxxx+</code>这种情况，
+因此，用三个<code>x</code>的节点和一个<code>OpPlus</code>的节点组成<code>OpConcat</code>替换一下。</li>
+</ol>
+</li>
+<li><code>x{1}</code>类型是精准匹配，直接使用<code>sub</code>来替换。</li>
+<li><code>x{n,m}</code>是n个x和(m-n)个x?的组合，
+特别的，将<code>x?x?x?</code>转换成<code>(x(x(x)?)?)?</code>会加快程序执行。</li>
+<li>最后没有处理的情况是非法的情况，返回一个<code>OpNoMatch</code>节点。</li>
+</ol>
+<h2 id="将语法树编译为要执行的程序">将语法树编译为要执行的程序</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">prog</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">syntax</span><span class="p">.</span><span class="nf">Compile</span><span class="p">(</span><span class="nx">re</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>利用<code>syntax.Compile</code>将简化过的语法树编译成可以可以执行的程序。</p>
+<p>实现上，go的正则表达式包的匹配的通过构建一个执行指令的自动机，
+来执行“能够匹配的字符串的指令列表”完成匹配。
+所以，<strong>编译</strong>的结果是一个“程序”，
+程序的内容是一系列指令，执行匹配的自动机可以通过执行指令来完成工作。</p>
+<h3 id="数据结构-1">数据结构</h3>
+<ol>
+<li>
+<p><code>syntax.Prog</code></p>
+<p><code>Prog</code>表示一个编译好的程序。
+其中，</p>
+<ul>
+<li><code>Prog.Inst</code>是一个指令列表，可以通过下标寻址。</li>
+<li><code>Prog.Start</code>是开始指令的下标。</li>
+<li><code>Prog.NumCap</code>是该程序中捕获组的数量。</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Prog</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">Inst</span>   <span class="p">[]</span><span class="nx">Inst</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">Start</span>  <span class="kt">int</span> <span class="c1">// index of start instruction
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">NumCap</span> <span class="kt">int</span> <span class="c1">// number of InstCapture insts in re
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><code>syntax.Inst</code></p>
+<p><code>Inst</code>表示程序中的一个指令。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Inst</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">Op</span>   <span class="nx">InstOp</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">Out</span>  <span class="kt">uint32</span> <span class="c1">// all but InstMatch, InstFail
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">Arg</span>  <span class="kt">uint32</span> <span class="c1">// InstAlt, InstAltMatch, InstCapture, InstEmptyWidth
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">Rune</span> <span class="p">[]</span><span class="kt">rune</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>其中，<code>Op</code>表明了该指令的类型，<code>InstOp</code>是定义的类型，有若干常量。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">InstAlt</span> <span class="nx">InstOp</span> <span class="p">=</span> <span class="kc">iota</span> <span class="c1">// 分支，类似于if-else
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">InstAltMatch</span> <span class="c1">// 类似InstAlt，但是一个分支标识匹配完成
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">InstCapture</span> <span class="c1">// 标记捕获组的开始和结束
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">InstEmptyWidth</span> <span class="c1">// 匹配位置
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">InstMatch</span> <span class="c1">// 匹配完成
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">InstFail</span> <span class="c1">// 匹配失败
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">InstNop</span> <span class="c1">// nop
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">InstRune</span> <span class="c1">// 匹配Inst.Rune中的字符
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">InstRune1</span> <span class="c1">// 匹配一个字符
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">InstRuneAny</span> <span class="c1">// 匹配任意字符
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">InstRuneAnyNotNL</span> <span class="c1">// 匹配除换行符之外的任意字符
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>Out</code>的值是<code>Prog.Inst</code>的下标，是需要执行的下一个指令的下标；
+<code>Arg</code>的值与<code>Inst.Op</code>有关，
+比如对于<code>InstAlt</code>来说是另一个分支的指令的下标；
+<code>Rune</code>存储了需要匹配的字符。</p>
+</li>
+<li>
+<p><code>syntax.frag</code></p>
+<p><code>frag</code>表示一个编译好的程序的片段，<code>i</code>表示片段开始的指令的下标，
+<code>out</code>是一个<code>patchList</code>对象，业务上的含义是整个片段的下一步的指令，
+编译中，有时无法立即确定下一步需要跳转到哪里，所以需要这种用于暂存编译过程中需要补全信息的位置。
+<code>patchList</code>的详细解释在下文。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// A frag represents a compiled program fragment.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">frag</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">i</span>   <span class="kt">uint32</span>    <span class="c1">// index of first instruction
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">out</span> <span class="nx">patchList</span> <span class="c1">// where to record end instruction
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><code>syntax.patchList</code></p>
+<p><code>patchList</code>是一系列指令指针的列表。
+因为编译是自顶向下的，
+所以存在生成一个指令实例<code>syntax.Inst</code>时，
+无法确定<code>Inst.Out</code>或<code>Inst.Arg</code>的情况。
+为了解决这种问题，引入了<code>patchList</code>。
+特别的，利用需要填充的字段来存储了列表中的其他指针，
+<code>patchList</code>只需要存储头尾指针。</p>
+<p>当<code>head</code>为0时表示是空列表，
+当<code>l.head&amp;1==0</code>时，指向<code>p.inst[l.head&gt;&gt;1].Out</code>，
+当<code>l.head&amp;1==1</code>时，指向<code>p.inst[l.head&gt;&gt;1].Arg</code>。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">patchList</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">head</span><span class="p">,</span> <span class="nx">tail</span> <span class="kt">uint32</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><code>syntax.compiler</code></p>
+<p><code>compiler</code>是执行编译的对象，存储了表示编译结果的<code>syntax.Prog</code>实例，
+具体的编译工作由<code>compiler.compile</code>完成。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">compiler</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">p</span> <span class="o">*</span><span class="nx">Prog</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ol>
+<h3 id="编译">编译</h3>
+<p>编译的入口函数是<code>syntax.Compile</code>，
+函数首先初始化一个<code>compiler</code>对象，
+然后通过<code>compiler.compile</code>遍历语法树、生成指令表并表示整个程序的片段实例。
+最后，将<code>patchList</code>补充好，保存入口的下标，返回表示编译好的程序的<code>Prog</code>实例。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">Compile</span><span class="p">(</span><span class="nx">re</span> <span class="o">*</span><span class="nx">Regexp</span><span class="p">)</span> <span class="p">(</span><span class="o">*</span><span class="nx">Prog</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nx">c</span> <span class="nx">compiler</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">c</span><span class="p">.</span><span class="nf">init</span><span class="p">()</span> 
+</span></span><span class="line"><span class="cl">    <span class="nx">f</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nf">compile</span><span class="p">(</span><span class="nx">re</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">f</span><span class="p">.</span><span class="nx">out</span><span class="p">.</span><span class="nf">patch</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">p</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nf">inst</span><span class="p">(</span><span class="nx">InstMatch</span><span class="p">).</span><span class="nx">i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">c</span><span class="p">.</span><span class="nx">p</span><span class="p">.</span><span class="nx">Start</span> <span class="p">=</span> <span class="nb">int</span><span class="p">(</span><span class="nx">f</span><span class="p">.</span><span class="nx">i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">c</span><span class="p">.</span><span class="nx">p</span><span class="p">,</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ol>
+<li>
+<p>初始化</p>
+<p>增加捕获组的数量，将指令表开头初始化为InstFail</p>
+</li>
+<li>
+<p><code>c.compile</code></p>
+<p><code>c.compile</code>的工作是将语法树转换成指令表，并串联起来。</p>
+<p>实现上，<code>c.compile</code>自顶向下遍历语法树，
+对于每个节点，会在指令表中生成新的指令，
+如果有子节点的通常还会递归的调用<code>c.compile</code>编译子节点，
+下面具体的分析编译的实现。</p>
+<p><code>c.compile</code>中是一个大<code>switch</code>，
+首先根据是否有子节点分为两类来分析。</p>
+<ul>
+<li>
+<p>需要处理子节点</p>
+<ul>
+<li>
+<p>连接 <code>OpConcat</code></p>
+<p>遍历节点的子节点，
+调用<code>compiler.compile</code>递归的生成指令，获得片段；
+从第二个节点开始，会调用<code>compiler.cat(f1, f2 frag)</code>将指令连接起来。</p>
+<p><code>cat</code>的内容十分简单，
+如果两个片段有指向指令列表的第一个元素——意味着匹配失败——直接返回表示匹配失败的片段。
+其他的时候，调用第一个片段的<code>frag.out.patch</code>方法，
+将第一个片段的所有在<code>patchList</code>中的位置（<code>Inst.Out</code>和<code>Inst.Arg</code>）填充为<code>f2</code>表示的指令。
+返回一个新的片段，入口是<code>f1</code>的入口，<code>patchList</code>是<code>f2</code>的<code>patchList</code>。</p>
+<p>从本质上来说，<code>cat</code>起到类似于“合并”片段的作用。</p>
+</li>
+<li>
+<p>选择 <code>OpAlternate</code></p>
+<p>遍历子节点，首先用<code>compiler.compile</code>生成指令，获得片段，
+然后调用<code>compiler.alt(f1, f2 frag)</code>来生成一个分支。</p>
+<p><code>alt</code>生成一个新的<code>InstAlt</code>指令，
+<code>Inst.Out</code>指向<code>f1</code>的入口，<code>Inst.Arg</code>指向<code>f2</code>的入口。</p>
+<p>调用<code>f1.out.append(c.p, f2.out)</code>来将<code>f1</code>和<code>f2</code>的<code>patchList</code>合并起来，
+作为新的<code>InstAlt</code>指令的片段的<code>patchList</code>。</p>
+</li>
+<li>
+<p>重复 <code>*</code></p>
+<p>第一步生成子节点的指令，
+然后通过调用<code>compiler.star</code>实现重复匹配的功能。</p>
+<p><code>star</code>会生成一个<code>InstAlt</code>指令，
+根据是否贪婪，分别将重复的指令放在<code>Inst.Out</code>或<code>Inst.Arg</code>中，
+将另一个字段放置到<code>patchList</code>中，等待后续的填充。</p>
+<p>最后，将需要重复的单元的<code>patchList</code>用新的<code>InstAlt</code>节点填充，
+这样就生成了类似循环的指令循环，</p>
+</li>
+<li>
+<p>重复 <code>+</code></p>
+<p><code>+</code>的实现比较巧妙，功能由<code>compiler.plus</code>实现，可以实现上看到没有创建新的指令。</p>
+<p>通过简单的将返回的片段的开始下标由指向<code>InstAlt</code>转换为指向重复单元，就实现了“至少匹配一次”的目的。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">compiler</span><span class="p">)</span> <span class="nf">plus</span><span class="p">(</span><span class="nx">f1</span> <span class="nx">frag</span><span class="p">,</span> <span class="nx">nongreedy</span> <span class="kt">bool</span><span class="p">)</span> <span class="nx">frag</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">frag</span><span class="p">{</span><span class="nx">f1</span><span class="p">.</span><span class="nx">i</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nf">star</span><span class="p">(</span><span class="nx">f1</span><span class="p">,</span> <span class="nx">nongreedy</span><span class="p">).</span><span class="nx">out</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>重复 <code>?</code></p>
+<p>具体的由<code>compiler.quest</code>实现，对比<code>compiler.star</code>来看也十分巧妙。</p>
+<p>区别于<code>star</code>最后会将<code>InstAlt</code>指令填充到重复单元的<code>patchList</code>上，
+<code>quest</code>将重复单元的<code>patchList</code>和<code>InstAlt</code>的<code>patchList</code>合并起来，等待填充。</p>
+<p>这样就类似于实现了“匹配一次（走<code>InstAlt</code>的重复单元分支）或零次（直接走延迟填充的节点的分支）”的目标。</p>
+</li>
+<li>
+<p>捕获 Capture</p>
+<p>捕获功能比较特殊的是引入了新的指令<code>InstCapture</code>，
+在遇到<code>OpCapture</code>时，使用<code>compiler.cat</code>将两个<code>InstCapture</code>和子节点编译成的指令连接起来。</p>
+<p><code>InstCapture</code>指令由<code>compiler.cap</code>生成。
+过程比较简单：</p>
+<ol>
+<li>
+<p>将传入的参数保存到指令的<code>Inst.Arg</code>字段。</p>
+<p><code>Inst.Arg &gt;&gt; 1</code>是对应的捕获组的序数，
+<code>Inst.Arg &amp; 1</code>标记捕获组的开始（0）或结束（1）。</p>
+</li>
+<li>
+<p>将<code>compiler</code>的捕获组数量增加。</p>
+</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>
+<p>不需要处理子节点</p>
+<ul>
+<li>
+<p>匹配字符的节点</p>
+<p>对于<code>OpLiteral</code>/<code>OpCharClass</code>/<code>OpAnyCharNotNL</code>/<code>OpAnyChar</code>四种节点，
+会调用<code>compiler.rune(runeArrayNeedMatch, flags)</code>来生成指令。</p>
+<ol>
+<li>首先通过<code>compiler.inst(InstRune)</code>生成一个<code>InstRune</code>类型的指令，
+写入到指令表中。</li>
+<li>随后将传入的需要匹配的rune放置到指令中的<code>Inst.Rune</code>字段。</li>
+<li>过滤出标记中的<code>FlodCase</code>，处理后存储到<code>Inst.Arg</code></li>
+<li>将新指令的<code>Inst.out</code>加入到返回的片段的<code>patchList</code>中。</li>
+<li>最后将三种情况下的指令的类型修改为更特化的指令。
+<ul>
+<li>如果是匹配任意一个字符的时候，替换为<code>InstRuneAny</code>。</li>
+<li>如果是匹配除换行符的所有字符，替换为<code>InstRuneAnyNotNL</code>。</li>
+<li>如果匹配的只有一个字符，那么替换为<code>InstRune</code>。</li>
+</ul>
+</li>
+</ol>
+<p>特别的，对于<code>OpLiteral</code>，会遍历需要匹配的字符列表，
+重复执行上述的过程。对于返回的结果，会调用<code>compiler.cat</code>将若干匹配的指令连接起来。</p>
+</li>
+<li>
+<p>匹配空串</p>
+<p><code>compiler.nop</code>会生成一个<code>InstNop</code>指令。</p>
+</li>
+<li>
+<p>匹配失败</p>
+<p><code>compiler.fail</code>生成一个<code>Inst.Op</code>为0的指令实例。</p>
+</li>
+<li>
+<p>匹配位置</p>
+<p>对于<code>OpBeginLine</code>/<code>OpEndLine</code>/<code>OpBeginText</code>/
+<code>OpEndText</code>/<code>OpWordBoundary</code>/<code>OpNoWordBoundary</code>这类匹配位置的节点，
+会调用<code>compiler.empty</code>生成一个<code>InstEmptyWidth</code>指令，
+将要匹配的位置信息存储到指令的<code>Inst.Arg</code>中。
+最后，将<code>Inst.Out</code>连接进<code>patchList</code>。</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>增加程序的结尾</p>
+<p>根据实现，
+最后返回的<code>frag</code>对象的<code>frag.i</code>表示程序的开头，
+<code>frag.out</code>表示的是匹配运行的结尾处的“<code>Inst.Out</code>或<code>Inst.Arg</code>”，
+为了结束匹配，所以生成一个表示匹配完成的<code>InstMatch</code>指令并将它填充到最后的<code>patchList</code>上。
+这样，在匹配的程序运行到最后的时候，就会执行<code>InstMatch</code>指令，标志匹配的完成。</p>
+</li>
+<li>
+<p>最后，将程序开始的下标，存储到要返回的<code>Prog</code>实例中。</p>
+</li>
+</ol>
+<h2 id="收尾工作">收尾工作</h2>
+<h3 id="编译一趟匹配">编译一趟匹配</h3>
+<p>通过<code>compileOnePass</code>来检查前面编译产物<code>syntax.Prog</code>是否可以支持一趟匹配。
+只有当在<code>InstAlt</code>指令，可以无歧义的判断下一步分支时，才可能转换为一趟匹配的<code>Prog</code>。</p>
+<ol>
+<li>
+<p>检查是否可以转换为一趟匹配</p>
+<ol>
+<li>
+<p>首先检查了<code>Prog</code>是否是锚定的。</p>
+<p>如果<code>Prog</code>不是仅从匹配文本开头位置开始，那么就无法转换，返回nil。</p>
+</li>
+<li>
+<p>依次检查<code>Prog</code>指令表中的指令。</p>
+<p>如果发现任何匹配结束不是文本结束位置，那么就无法转换，返回nil。</p>
+</li>
+</ol>
+</li>
+<li>
+<p><code>onePassCopy</code>复制一份<code>prog</code>，在复制过程中，<strong>尝试</strong>重写指令为可以转换的形式。</p>
+</li>
+<li>
+<p><code>makeOnePass</code>尝试构建一份一趟匹配的<code>prog</code>，如果失败，返回nil。</p>
+<ol>
+<li>
+<p>如果过长，直接返回失败。</p>
+</li>
+<li>
+<p>深度优先扫描指令树。</p>
+<p>目标是检查指令树是否可以转换为一趟匹配，并完成转换。</p>
+<p>如果分支指令的两个分支在不再匹配任何字符后，
+均能完成匹配，返回失败，无法转换。
+我暂时还没想出来什么样的表达式会造成这种情况，
+简单猜测可能是捕获、位置匹配等。</p>
+<p>另外，在遇到分支指令时（<code>InstAlt</code>/<code>InstAltMatch</code>），
+先递归的检查两个分支，构建好他们各自的匹配的字符集合，
+然后利用<code>mergeRuneSets</code>来合并，
+该函数发现两个分支匹配的字符有重复时，
+会返回失败，标志该<code>prog</code>无法转换成一趟匹配；
+否则返回该指令匹配的字符。</p>
+<p>遇到匹配字符的指令时，会计算好该指令会匹配的字符集合，
+放置到<code>onePassRunes</code>中，等待后续的调用。</p>
+<p>另外，<code>onePassRunes</code>起到了指令的跳转表的作用。
+可以通过：如果字符匹配到了该指令的<code>onePassRunes</code>数组中的下标i的字符，
+到指令的<code>inst.Next[i/2]</code>数组查找到下一个需要执行的指令。</p>
+</li>
+</ol>
+</li>
+<li>
+<p>清理，并返回。</p>
+</li>
+</ol>
+<h1 id="一些收获">一些收获</h1>
+<h2 id="处理大小写不敏感的匹配">处理大小写不敏感的匹配</h2>
+<p>可以通过同样的化归方式来处理输入和模式。</p>
+<h2 id="运算符优先级">运算符优先级</h2>
+<p>定义运算符常量时，可以将常量的数值的大小与运算符的优先级关联起来。</p>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://swtch.com/~rsc/regexp/regexp1.html">Regular Expression Matching Can Be Simple And Fast</a></li>
+</ul>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-07-07
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/compilers-book/">compilers-book</a>
+          <a href="/tags/go/">go</a>
+          <a href="/tags/how/">how</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/daily-problems/goland_unexpected_syntax_error/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">Goland异常提示语法错误</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/other/realme_v15_unlock_bl/">
+            <span class="next-text nav-default">Realme V15解锁bootloader并刷入TWRP</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2021-07-07 23:05:42 \u002b0800 \u002b0800',
+        title: 'golang的regex实现 编译',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

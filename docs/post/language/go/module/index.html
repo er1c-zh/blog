@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>有关go module的一点点记录 - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="这是关于go的包管理的入门学习记录。
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/language/go/module/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="有关go module的一点点记录" />
+<meta property="og:description" content="这是关于go的包管理的入门学习记录。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/language/go/module/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-08-25T20:59:19+08:00" />
+<meta property="article:modified_time" content="2021-08-25T20:59:19+08:00" />
+<meta itemprop="name" content="有关go module的一点点记录">
+<meta itemprop="description" content="这是关于go的包管理的入门学习记录。"><meta itemprop="datePublished" content="2021-08-25T20:59:19+08:00" />
+<meta itemprop="dateModified" content="2021-08-25T20:59:19+08:00" />
+<meta itemprop="wordCount" content="2982">
+<meta itemprop="keywords" content="go,how,memo,go-command," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="有关go module的一点点记录"/>
+<meta name="twitter:description" content="这是关于go的包管理的入门学习记录。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">有关go module的一点点记录</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-25 </span>
+        
+          <span class="more-meta"> 约 2982 字 </span>
+          <span class="more-meta"> 预计阅读 6 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#指令速查">指令速查</a>
+      <ul>
+        <li><a href="#详细一点点的解释">详细一点点的解释</a>
+          <ul>
+            <li><a href="#关于vendor">关于vendor</a></li>
+          </ul>
+        </li>
+        <li><a href="#指令">指令</a></li>
+      </ul>
+    </li>
+    <li><a href="#根据包路径查找依赖的模块">根据包路径查找依赖的模块</a>
+      <ul>
+        <li><a href="#具体实现">具体实现</a></li>
+      </ul>
+    </li>
+    <li><a href="#gomod文件"><code>go.mod</code>文件</a>
+      <ul>
+        <li><a href="#从例子出发了解gomod的格式">从例子出发了解<code>go.mod</code>的格式</a></li>
+      </ul>
+    </li>
+    <li><a href="#最小版本选择-minimal-version-selection-算法"><strong>最小版本选择</strong> <em>(minimal version selection)</em> 算法</a>
+      <ul>
+        <li><a href="#replace">replace</a></li>
+        <li><a href="#exclusion">exclusion</a></li>
+      </ul>
+    </li>
+    <li><a href="#goproxy与访问相关">GOPROXY与访问相关</a>
+      <ul>
+        <li><a href="#goproxy协议">goproxy协议</a></li>
+        <li><a href="#与版本管理系统的交互">与版本管理系统的交互</a></li>
+        <li><a href="#私有库与鉴权">私有库与鉴权</a></li>
+      </ul>
+    </li>
+    <li><a href="#gosum">GOSUM</a></li>
+    <li><a href="#环境变量参数速查">环境变量参数速查</a></li>
+    <li><a href="#一些松散的信息">一些松散的信息</a>
+      <ul>
+        <li><a href="#内部包">内部包</a></li>
+        <li><a href="#私有的代码模块如何处理">私有的代码、模块如何处理</a></li>
+      </ul>
+    </li>
+    <li><a href="#解决日常开发可能会遇到的问题">解决日常开发可能会遇到的问题</a>
+      <ul>
+        <li><a href="#replace和相对路径引用来解决需要修改引用的模块的本地调试场景">replace和相对路径引用来解决需要修改引用的模块的本地调试场景</a></li>
+      </ul>
+    </li>
+    <li><a href="#名词表">名词表</a></li>
+    <li><a href="#参考">参考</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p>这是关于go的包管理的入门学习记录。</p>
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+            
+                <div class="serial-index">
+                    <p>系列列表</p>
+                    <ul>
+                    
+                        <li><a href="https://blog.er1c.dev/post/language/go/command/">go开发套件</a></li>
+                    
+                        <li><a href="https://blog.er1c.dev/post/language/go/module/">有关go module的一点点记录</a></li>
+                    
+                        <li><a href="https://blog.er1c.dev/post/language/go/go_compile/">go tool compile用法与编译指令</a></li>
+                    
+                    </ul>
+                </div>
+            
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+
+
+<h1 id="指令速查">指令速查</h1>
+<p>关联到依赖的go指令有两种执行模式：<code>module-aware</code>和<code>GOPATH</code>。
+决定了go指令会从哪里获取依赖。</p>
+<h2 id="详细一点点的解释">详细一点点的解释</h2>
+<p>大部分go指令都有运行在<code>module-aware</code>模式或<code>GOPATH</code>模式两种情况。
+在<code>module-aware</code>模式下，
+指令执行时会从<code>go.mod</code>文件读取已确定的依赖、
+加载需要的包、寻找能提供缺失的包的模块；
+在<code>GOPATH</code>模式下，
+指令忽略模块概念，从<code>vendor</code>目录和<code>GOPATH</code>下寻找依赖。</p>
+<p>从1.16之后，<code>module-aware</code>模式成为默认的模式；
+之前的版本根据当前模块是否有<code>go.mod</code>文件来决定是否开启<code>module-aware</code>模式。</p>
+<h3 id="关于vendor">关于vendor</h3>
+<p>vendor机制用来将编译所需的文件放在一个文件树下面，
+特别的，可以用来引用旧版没有开启模块机制的go代码。</p>
+<h2 id="指令">指令</h2>
+<ul>
+<li>
+<p><code>go get [-d] [-t] [-u] [build flags] [packages]</code></p>
+<p>更新主模块的<code>go.mod</code>文件中的依赖，然后构建并安装<code>packages</code>列出的包。</p>
+<p>首先，根据提供的<code>packages</code>来获得能够提供该包或符合该模式的包的模块，
+更新这些模块。
+特别的，<code>packages</code>参数可以是一个包名，一个指向包的模式，一个模块名。
+对于指向了一个不包含包的模块，指令只会更新这个模块，而不进行构建。
+<code>packages</code>参数也可以省略，指令会将当前路径<code>.</code>作为参数来处理。</p>
+<p>当查找到符合需要的模块时，
+会更新主模块的<code>go.mod</code>文件中的记录。
+对模块的更新，可能指增加依赖，升级、降级模块的版本。</p>
+<p>一些常见一点的参数：</p>
+<ul>
+<li><code>-d</code> 如果开启，表示不进行构建和安装。特别的，从1.18版本开始，<code>-d</code>标签将总是开启。</li>
+<li><code>-u</code> 升级指定的包直接或间接依赖的模块。</li>
+<li><code>-t</code> 也许要考虑指定的包中的测试依赖。</li>
+</ul>
+<p>未来，<code>go install</code>指令将会分担构建和安装包的职责，
+<code>go get</code>指令更多的聚焦于管理模块的依赖。</p>
+</li>
+<li>
+<p><code>go install [build flags] [packages]</code></p>
+<p>编译并安装<code>packages</code>。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 安装最新版本的程序</span>
+</span></span><span class="line"><span class="cl">$ go install golang.org/x/tools/gopls@latest
+</span></span><span class="line"><span class="cl"><span class="c1"># 安装指定版本的程序</span>
+</span></span><span class="line"><span class="cl">$ go install golang.org/x/tools/gopls@v0.6.4
+</span></span><span class="line"><span class="cl"><span class="c1"># 安装当前目录的模块指定的版本</span>
+</span></span><span class="line"><span class="cl">$ go install golang.org/x/tools/gopls
+</span></span><span class="line"><span class="cl"><span class="c1"># 安装目录下的所有程序</span>
+</span></span><span class="line"><span class="cl">$ go install ./cmd/...
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><code>go mod</code> 管理模块</p>
+<ul>
+<li>
+<p><code>go mod download [-json] [-x] [modules]</code></p>
+<p>指令会下载<code>modules</code>到模块缓存。</p>
+</li>
+<li>
+<p><code>go mod edit [editing flags] [-fmt|-print|-json] [go.mod]</code></p>
+<p>编辑、格式化<code>go.mod</code>文件的CLI程序。</p>
+</li>
+<li>
+<p><code>go mod graph</code></p>
+<p>输出一个文字版的模块依赖图。</p>
+</li>
+<li>
+<p><code>go mod init</code></p>
+<p>初始化一个<code>go.mod</code>文件。</p>
+</li>
+<li>
+<p><code>go mod tidy [-e] [-v] [-go=version] [-compat=version]</code></p>
+<p>在<code>go.mod</code>文件中，增加缺少的依赖，移除不需要的依赖。</p>
+</li>
+<li>
+<p><code>go mod why [-m] [-vendor] packages...</code></p>
+<p>展示主模块对<code>packages</code>的依赖路径。</p>
+</li>
+<li>
+<p><code>go mod vendor</code> 将依赖的module存储到<code>vendor</code>中</p>
+</li>
+<li>
+<p><code>go mod verify</code> 校验依赖的模块的内容是否符合预期。（防止预期之外的修改）</p>
+</li>
+</ul>
+</li>
+<li>
+<p><code>go clean -modcache</code></p>
+<p>清理整个模块缓存。</p>
+</li>
+</ul>
+<h1 id="根据包路径查找依赖的模块">根据包路径查找依赖的模块</h1>
+<p><code>go</code>指令会首先从<strong>build list</strong>来寻找符合包路径的前缀的模块。
+如果有且仅有一个<strong>build list</strong>中的模块能够提供符合要求的包，
+工作会正常继续；反之，会产生一个错误。
+可以向<code>go</code>指令增加参数<code>-mod=mod</code>来指示<code>go</code>指令尝试从可能的地方来获取能够提供缺失的包的模块，
+并更新<code>go.mod</code>和<code>go.sum</code>文件。
+特别的，对于<code>go get</code>和<code>go mod tidy</code>指令，会自动的进行这个操作。</p>
+<h2 id="具体实现">具体实现</h2>
+<p>当提供了<code>-mod=mod</code>参数时，<code>go</code>指令会尝试去寻找能够提供缺失的包的模块。</p>
+<ol>
+<li>
+<p>首先，检查环境变量<code>GOPROXY</code></p>
+<p><code>GOPROXY</code>的值是由逗号分割的字符串列表，
+可能的值有模块代理的地址、
+表明直接与版本控制系统交互的<code>direct</code>和不需要做任何操作的<code>off</code>。
+除此之外，环境变量<code>GOPRIVATE</code>和<code>GONOPROXY</code>也会影响查询模块的行为。</p>
+</li>
+<li>
+<p>遍历<code>GOPROXY</code>的所有项</p>
+<p>根据缺失的包的路径，尝试所有可能的模块路径来获取最近版本的模块代码。</p>
+<p>如果有多个模块能够提供需要的包，会按照最长匹配原则来选取模块；
+如果查找到了至少一个模块，但没有模块能够提供需要的包，返回一个错误；
+如果没有请求到模块，会尝试<code>GOPROXY</code>中下一项，如果没有下一项，返回错误。</p>
+</li>
+<li>
+<p>如果找到了符合要求的模块，会向<code>go.mod</code>文件中增加新的<code>require</code>记录</p>
+</li>
+</ol>
+<h1 id="gomod文件"><code>go.mod</code>文件</h1>
+<p><code>go.mod</code>文件保存了当前模块依赖的包和版本，并定义自身所在的文件夹的模块。</p>
+<p>文件以行为单位组织，
+每一行由指示的关键字和参数构成。</p>
+<h2 id="从例子出发了解gomod的格式">从例子出发了解<code>go.mod</code>的格式</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go.mod" data-lang="go.mod"><span class="line"><span class="cl"><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">cstyle的块注释
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// cstyle的行内注释
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">module</span> <span class="n">example</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">my</span><span class="o">/</span><span class="n">thing</span> <span class="o">//</span> <span class="n">module关键字定义了一个模块</span><span class="err">，第一个参数是模块路径</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">go</span> <span class="mf">1.12</span> <span class="o">//</span> <span class="n">go关键字指示模块使用的go版本</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">require</span> <span class="n">example</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">other</span><span class="o">/</span><span class="n">thing</span> <span class="n">v1</span><span class="p">.</span><span class="mf">0.2</span> <span class="o">//</span> <span class="err">指明主模块依赖的模块和最小的版本</span>
+</span></span><span class="line"><span class="cl"><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">indirect表明这个依赖没有被主模块的代码直接引用
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span><span class="line"><span class="cl"><span class="n">require</span> <span class="n">example</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">new</span><span class="o">/</span><span class="n">thing</span><span class="o">/</span><span class="n">v2</span> <span class="n">v2</span><span class="p">.</span><span class="mf">3.4</span> <span class="o">//</span> <span class="n">indirect</span>
+</span></span><span class="line"><span class="cl"><span class="n">exclude</span> <span class="n">example</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">old</span><span class="o">/</span><span class="n">thing</span> <span class="n">v1</span><span class="p">.</span><span class="mf">2.3</span> <span class="o">//</span> <span class="n">exclude</span> <span class="err">排除了这个版本</span> <span class="err">只有本文件是主模块的</span><span class="n">go</span><span class="p">.</span><span class="n">mod时生效</span>
+</span></span><span class="line"><span class="cl"><span class="n">require</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">example</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">new</span><span class="o">/</span><span class="n">thing</span><span class="o">/</span><span class="n">v2</span> <span class="n">v2</span><span class="p">.</span><span class="mf">3.4</span>
+</span></span><span class="line"><span class="cl">    <span class="n">example</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">old</span><span class="o">/</span><span class="n">thing</span> <span class="n">v1</span><span class="p">.</span><span class="mf">2.3</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">replace</span> <span class="n">example</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">bad</span><span class="o">/</span><span class="n">thing</span> <span class="o">=&gt;</span> <span class="n">example</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">good</span><span class="o">/</span><span class="n">thing</span> <span class="n">v1</span><span class="p">.</span><span class="mf">4.5</span> <span class="o">//</span> <span class="n">replace</span> <span class="err">利用后面的版本替换前面的</span> <span class="err">只有本文件是主模块的</span><span class="n">go</span><span class="p">.</span><span class="n">mod时生效</span>
+</span></span><span class="line"><span class="cl"><span class="n">replace</span> <span class="n">example</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">bad</span><span class="o">/</span><span class="n">thing</span> <span class="n">v1</span><span class="p">.</span><span class="mf">4.5</span> <span class="o">=&gt;</span> <span class="n">example</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">good</span><span class="o">/</span><span class="n">thing</span> <span class="n">v1</span><span class="p">.</span><span class="mf">4.5</span> <span class="o">//</span> <span class="n">replace</span> <span class="err">利用后面的版本替换前面的这个版本的依赖</span>
+</span></span><span class="line"><span class="cl"><span class="n">retract</span> <span class="p">[</span><span class="n">v1</span><span class="p">.</span><span class="mf">9.0</span><span class="p">,</span> <span class="n">v1</span><span class="p">.</span><span class="mf">9.5</span><span class="p">]</span> <span class="o">//</span> <span class="n">retract</span> <span class="err">指明该版本的模块不应该被依赖，用于处理有问题的版本</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h1 id="最小版本选择-minimal-version-selection-算法"><strong>最小版本选择</strong> <em>(minimal version selection)</em> 算法</h1>
+<p>go使用最小版本选择算法计算出每个依赖的模块的版本用于编译。</p>
+<p>最小版本选择算法从表示模块依赖关系的有向图中构建出编译需要的<strong>build list</strong>。
+图中的顶点表示一个模块与版本的组合。
+边表示<code>go.mod</code>文件中<code>require</code>关键字表明的对一个模块的依赖，以及依赖的最小版本。
+图会被<strong>主模块</strong>的<code>go.mod</code>文件中的<code>replace</code>和<code>exclude</code>关键字影响。</p>
+<p>最小版本选择算法从<strong>主模块</strong>顶点开始，
+遍历整个图，追踪所有依赖的模块的最大版本，
+最后输出这些版本作为<strong>build list</strong>。
+至于为什么叫做最小版本选择算法，
+因为输出的版本是满足<strong>主模块</strong>的“<strong>最小版本</strong>”。</p>
+<h2 id="replace">replace</h2>
+<p>可以在主模块的<code>go.mod</code>文件中增加<code>replace</code>关键字来替换某个模块的某个版本或某个模块的所有版本为指定的版本。</p>
+<h2 id="exclusion">exclusion</h2>
+<p>可以在主模块的<code>go.mod</code>文件中增加<code>exclude</code>关键字来排除某个模块的某个版本。</p>
+<h1 id="goproxy与访问相关">GOPROXY与访问相关</h1>
+<p>todo</p>
+<h2 id="goproxy协议">goproxy协议</h2>
+<p>todo</p>
+<h2 id="与版本管理系统的交互">与版本管理系统的交互</h2>
+<p>todo</p>
+<h2 id="私有库与鉴权">私有库与鉴权</h2>
+<p>todo</p>
+<h1 id="gosum">GOSUM</h1>
+<p>todo</p>
+<h1 id="环境变量参数速查">环境变量参数速查</h1>
+<p>TODO</p>
+<h1 id="一些松散的信息">一些松散的信息</h1>
+<h2 id="内部包">内部包</h2>
+<p><code>internal</code>文件夹下的代码只能够由包含这个文件的包引用。</p>
+<h2 id="私有的代码模块如何处理">私有的代码、模块如何处理</h2>
+<p><code>GOPRIVATE</code>环境变量控制哪些模块是非公开的。</p>
+<p>逗号分隔，模块路径前缀的模式，例子：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="nv">GOPRIVATE</span><span class="o">=</span>*.corp.example.com,rsc.io/private
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>对于非公开的模块，
+go指令会不再使用代理或校验和检查。</p>
+<p>更加细粒度的控制模块的下载和验证，
+<code>GONOPROXY</code>和<code>GONOSUMDB</code>两个环境变量可以完成。</p>
+<h1 id="解决日常开发可能会遇到的问题">解决日常开发可能会遇到的问题</h1>
+<h2 id="replace和相对路径引用来解决需要修改引用的模块的本地调试场景">replace和相对路径引用来解决需要修改引用的模块的本地调试场景</h2>
+<p>在本地调试时可以利用相对路径来使编译的时候使用本地修改的包。</p>
+<p>如下，使用本地的<code>mod2</code>而不是从线上拉取。</p>
+<pre tabindex="0"><code>module github.com/er1c-zh/go_test/mod1
+
+require github.com/er1c-zh/go_test/mod2 v1.0.0
+
+replace github.com/er1c-zh/go_test/mod2 v1.0.0 =&gt; ../mod2
+
+go 1.17
+</code></pre><h1 id="名词表">名词表</h1>
+<ul>
+<li>
+<p><strong>build list</strong> 编译指令使用的模块及版本列表，
+由主模块的<code>go.mod</code>文件和依赖的模块的<code>go.mod</code>文件通过<strong>最小版本选择</strong> <em>(minimal version selection)</em> 算法合并构成。</p>
+</li>
+<li>
+<p><strong>package</strong> 包，一组在相同目录的一同编译的源码文件集合。</p>
+</li>
+<li>
+<p><strong>package path</strong> 包路径，可以唯一标识一个包的路径，
+由<strong>模块路径</strong>拼接上包在模块的路径来构成。</p>
+</li>
+<li>
+<p><strong>module</strong> 模块，一组一同发版、分发的包的集合。</p>
+</li>
+<li>
+<p><strong>module path</strong> 模块路径，用于标识模块的路径，
+还被用来当作模块中的包的 <strong>引用路径</strong> <em>(import paths)</em> 的前缀。</p>
+</li>
+<li>
+<p><strong>module proxy</strong> 模块代理，实现了GOPROXY协议的网络服务器，
+<code>go</code>指令可以从模块代理下载模块的版本信息、<code>go.mod</code>文件和模块的压缩文件。</p>
+</li>
+</ul>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://golang.org/ref/mod">golang.org/ref/mod</a></li>
+</ul>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-25
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/go/">go</a>
+          <a href="/tags/how/">how</a>
+          <a href="/tags/memo/">memo</a>
+          <a href="/tags/go-command/">go-command</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/memo/docker/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">Docker备忘录</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/compile/compilers/golang-regex-execute/">
+            <span class="next-text nav-default">golang的regex实现 执行匹配</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2021-08-25 20:59:19 \u002b0800 \u002b0800',
+        title: '有关go module的一点点记录',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

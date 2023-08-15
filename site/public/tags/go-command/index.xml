@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>go-command on blog</title>
+    <link>https://blog.er1c.dev/tags/go-command/</link>
+    <description>Recent content in go-command on blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Mon, 24 Jan 2022 21:40:31 +0800</lastBuildDate><atom:link href="https://blog.er1c.dev/tags/go-command/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>go tool compile用法与编译指令</title>
+      <link>https://blog.er1c.dev/post/language/go/go_compile/</link>
+      <pubDate>Mon, 24 Jan 2022 21:40:31 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/language/go/go_compile/</guid>
+      <description>&lt;p&gt;记录&lt;code&gt;go tool compile&lt;/code&gt;的用法和编译指令。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>go开发套件</title>
+      <link>https://blog.er1c.dev/post/language/go/command/</link>
+      <pubDate>Mon, 03 Jan 2022 11:48:10 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/language/go/command/</guid>
+      <description>&lt;p&gt;记录go的指令的用法。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>有关go module的一点点记录</title>
+      <link>https://blog.er1c.dev/post/language/go/module/</link>
+      <pubDate>Wed, 25 Aug 2021 20:59:19 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/language/go/module/</guid>
+      <description>&lt;p&gt;这是关于go的包管理的入门学习记录。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

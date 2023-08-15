@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>ebpf on blog</title>
+    <link>https://blog.er1c.dev/tags/ebpf/</link>
+    <description>Recent content in ebpf on blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Thu, 30 Mar 2023 19:01:52 +0800</lastBuildDate><atom:link href="https://blog.er1c.dev/tags/ebpf/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>eBPF总览</title>
+      <link>https://blog.er1c.dev/post/linux/ebpf-intro/</link>
+      <pubDate>Thu, 30 Mar 2023 19:01:52 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/linux/ebpf-intro/</guid>
+      <description>&lt;p&gt;eBPF是一种Linux内核提供的，可以在操作系统内核这种需要权限的上下文中执行沙盒程序的技术。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>compilers-book on blog</title>
+    <link>https://blog.er1c.dev/tags/compilers-book/</link>
+    <description>Recent content in compilers-book on blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sun, 15 Aug 2021 19:21:07 +0800</lastBuildDate><atom:link href="https://blog.er1c.dev/tags/compilers-book/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>golang的regex实现 执行匹配</title>
+      <link>https://blog.er1c.dev/post/compile/compilers/golang-regex-execute/</link>
+      <pubDate>Sun, 15 Aug 2021 19:21:07 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/compile/compilers/golang-regex-execute/</guid>
+      <description>&lt;p&gt;本文是golang的正则表达式的学习笔记。&lt;/p&gt;
+&lt;p&gt;主要介绍了在编译完成后，匹配的实现细节。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>golang的regex实现 编译</title>
+      <link>https://blog.er1c.dev/post/compile/compilers/golang-regex/</link>
+      <pubDate>Wed, 07 Jul 2021 23:05:42 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/compile/compilers/golang-regex/</guid>
+      <description>&lt;p&gt;本文是golang的正则表达式的学习笔记。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>编译原理 第二章 笔记</title>
+      <link>https://blog.er1c.dev/post/compile/compilers/2/</link>
+      <pubDate>Mon, 31 May 2021 23:13:00 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/compile/compilers/2/</guid>
+      <description>&lt;p&gt;第二章通过实现一个将中序表达式转化为后续表达式的编译器，
+简单介绍了编译器前端实现需要的技术。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>编译原理 第一章 笔记</title>
+      <link>https://blog.er1c.dev/post/compile/compilers/1/</link>
+      <pubDate>Fri, 14 May 2021 16:54:42 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/compile/compilers/1/</guid>
+      <description>第一章介绍了将语言编译的整个流程与相关的工具集， 提出了若干概念。 系列列表 编译原理 第一章 笔记 编译原理 第二章 笔记 golang的regex实现 编译</description>
+    </item>
+    
+  </channel>
+</rss>

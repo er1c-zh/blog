@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>go on blog</title>
+    <link>https://blog.er1c.dev/tags/go/</link>
+    <description>Recent content in go on blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Mon, 24 Jan 2022 21:40:31 +0800</lastBuildDate><atom:link href="https://blog.er1c.dev/tags/go/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>go tool compile用法与编译指令</title>
+      <link>https://blog.er1c.dev/post/language/go/go_compile/</link>
+      <pubDate>Mon, 24 Jan 2022 21:40:31 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/language/go/go_compile/</guid>
+      <description>&lt;p&gt;记录&lt;code&gt;go tool compile&lt;/code&gt;的用法和编译指令。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>go开发套件</title>
+      <link>https://blog.er1c.dev/post/language/go/command/</link>
+      <pubDate>Mon, 03 Jan 2022 11:48:10 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/language/go/command/</guid>
+      <description>&lt;p&gt;记录go的指令的用法。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>有关go module的一点点记录</title>
+      <link>https://blog.er1c.dev/post/language/go/module/</link>
+      <pubDate>Wed, 25 Aug 2021 20:59:19 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/language/go/module/</guid>
+      <description>&lt;p&gt;这是关于go的包管理的入门学习记录。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>golang的regex实现 执行匹配</title>
+      <link>https://blog.er1c.dev/post/compile/compilers/golang-regex-execute/</link>
+      <pubDate>Sun, 15 Aug 2021 19:21:07 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/compile/compilers/golang-regex-execute/</guid>
+      <description>&lt;p&gt;本文是golang的正则表达式的学习笔记。&lt;/p&gt;
+&lt;p&gt;主要介绍了在编译完成后，匹配的实现细节。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>golang的regex实现 编译</title>
+      <link>https://blog.er1c.dev/post/compile/compilers/golang-regex/</link>
+      <pubDate>Wed, 07 Jul 2021 23:05:42 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/compile/compilers/golang-regex/</guid>
+      <description>&lt;p&gt;本文是golang的正则表达式的学习笔记。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>go channel原理分析</title>
+      <link>https://blog.er1c.dev/post/language/go/chan/</link>
+      <pubDate>Tue, 11 May 2021 16:30:05 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/language/go/chan/</guid>
+      <description>&lt;p&gt;从功能出发，分析channel的原理。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>go内存模型与sync包</title>
+      <link>https://blog.er1c.dev/post/language/go/memory_model/</link>
+      <pubDate>Sat, 01 May 2021 03:06:06 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/language/go/memory_model/</guid>
+      <description>&lt;p&gt;go中的Happen-before保证与&lt;code&gt;sync&lt;/code&gt;包原理的简单分析。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

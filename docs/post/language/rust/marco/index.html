@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>rust宏 - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="rust有declarative宏和procedural宏。
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/language/rust/marco/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="rust宏" />
+<meta property="og:description" content="rust有declarative宏和procedural宏。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/language/rust/marco/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-05-19T17:14:28+08:00" />
+<meta property="article:modified_time" content="2023-05-19T17:14:28+08:00" />
+<meta itemprop="name" content="rust宏">
+<meta itemprop="description" content="rust有declarative宏和procedural宏。"><meta itemprop="datePublished" content="2023-05-19T17:14:28+08:00" />
+<meta itemprop="dateModified" content="2023-05-19T17:14:28+08:00" />
+<meta itemprop="wordCount" content="1560">
+<meta itemprop="keywords" content="rust,what,how," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="rust宏"/>
+<meta name="twitter:description" content="rust有declarative宏和procedural宏。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">rust宏</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2023-05-19 </span>
+        
+          <span class="more-meta"> 约 1560 字 </span>
+          <span class="more-meta"> 预计阅读 4 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#宏与函数的区别">宏与函数的区别</a></li>
+    <li><a href="#declarative宏"><code>declarative</code>宏</a>
+      <ul>
+        <li><a href="#metavariables">Metavariables</a></li>
+        <li><a href="#repetitions">Repetitions</a></li>
+        <li><a href="#作用域引入和导出">作用域、引入和导出</a>
+          <ul>
+            <li><a href="#macro_use"><code>macro_use</code></a></li>
+            <li><a href="#基于path的作用域">基于path的作用域</a></li>
+          </ul>
+        </li>
+        <li><a href="#hygiene">Hygiene</a></li>
+        <li><a href="#一些避免歧义的限制">一些避免歧义的限制</a></li>
+      </ul>
+    </li>
+    <li><a href="#procedural宏-用来根据属性attributes生成代码"><code>procedural</code>宏: 用来根据属性(Attributes)生成代码</a>
+      <ul>
+        <li><a href="#一个例子">一个例子</a></li>
+        <li><a href="#custom-derive-marco">custom derive marco</a></li>
+        <li><a href="#attribute-like-macros">Attribute-like macros</a></li>
+        <li><a href="#function-like-macros">Function-like macros</a></li>
+      </ul>
+    </li>
+    <li><a href="#reference">Reference</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p>rust有<code>declarative</code>宏和<code>procedural</code>宏。</p>
+<h1 id="宏与函数的区别">宏与函数的区别</h1>
+<ul>
+<li>宏可以用于元编程。</li>
+<li>宏可维护性、可读性较差。</li>
+</ul>
+<h1 id="declarative宏"><code>declarative</code>宏</h1>
+<p>以一个简化的<code>vec</code>宏为例子：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="kd">let</span><span class="w"> </span><span class="n">v</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">u32</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="fm">vec!</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">];</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="cp">#[macro_export]</span><span class="w"> </span><span class="c1">// annotation表明这个宏在所处的crate被引入后可用。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">macro_rules</span><span class="o">!</span><span class="w"> </span><span class="n">vec</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// macro_rules! 表明这是一个declarative宏，名字是vec。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="p">(</span><span class="w"> </span><span class="cp">$(</span><span class="w"> </span><span class="cp">$x</span>:<span class="nc">expr</span><span class="w"> </span><span class="p">),</span><span class="o">*</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// ( $( $x:expr ),* ) 是一个模式
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">temp_vec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Vec</span>::<span class="n">new</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="cp">$(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">temp_vec</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="cp">$x</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">)</span><span class="o">*</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">temp_vec</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>自顶向下的分析：</p>
+<p><code>macro_rules! vec { ... }</code>定义了一个<code>vec</code>宏，其中<code>vec</code>是一个标识符。</p>
+<p>宏由若干<code>Matcher =&gt; Transcriber</code>组成。
+执行时，类似<code>match</code>，匹配<code>Matcher</code>，执行<code>Transcriber</code>。</p>
+<p><code>Matcher</code>是一个用来匹配rust代码结构的表达式。
+<code>( $( $x:expr ),* )</code>是一个<code>Matcher</code>。</p>
+<h2 id="metavariables">Metavariables</h2>
+<p>其中，<code>$x:expr</code>类似于正则表达式的capture group，
+捕获expr代码片段，存储到变量x中。</p>
+<ul>
+<li><code>item</code> <code>item</code>是crate的一个部分 <a href="https://doc.rust-lang.org/stable/reference/items.html">items</a>。</li>
+<li><code>block</code> 代码块。</li>
+<li><code>stmt</code> Statement。</li>
+<li><code>pat_param</code> PatternNoTopAlt。 Pattern用来匹配结构体的值或绑定变量到结构体的值，若干PatternNoTopAlt组成了Pattern。</li>
+<li><code>pat</code> 至少一个PatternNoTopAlt。</li>
+<li><code>expr</code> Expression。</li>
+<li><code>ty</code> Type。</li>
+<li><code>ident</code> IDENTIFIER_OR_KEYWORD or RAW_IDENTIFIER。</li>
+<li><code>path</code> TypePath。</li>
+<li><code>tt</code> TokenTree，token或者Delimiters与其中的tokens。</li>
+<li><code>meta</code> Attr的内容。</li>
+<li><code>lifetime</code> LIFETIME_TOKEN。</li>
+<li><code>vis</code> VISIBILITY QUALIFIER。</li>
+<li><code>literal</code> 字面量表达式。</li>
+</ul>
+<h2 id="repetitions">Repetitions</h2>
+<p>通过形如<code>$(...){可选的分隔符}{*|+|?}</code>来表示重复任意次数、至少一次、零或一次。</p>
+<h2 id="作用域引入和导出">作用域、引入和导出</h2>
+<p>因为历史原因，
+宏有两种作用域：</p>
+<ul>
+<li>文本作用域 取决于代码出现在文件中的顺序（多文件也如此）</li>
+<li>基于path的作用域 与rust module的path一致</li>
+</ul>
+<h3 id="macro_use"><code>macro_use</code></h3>
+<ul>
+<li>应用于module，使该module中的宏扩散出module。</li>
+<li>从其他crate引入宏。
+<ul>
+<li>只能引入<code>macro_export</code>的宏。</li>
+</ul>
+</li>
+</ul>
+<h3 id="基于path的作用域">基于path的作用域</h3>
+<p><code>#[macro_export]</code>修饰的宏被视作定义在crate根作用域中，
+也可以通过<code>#[macro_use(xxx)]</code>被其他crate引用。</p>
+<h2 id="hygiene">Hygiene</h2>
+<p>对宏的引用是只会搜寻已经出现的宏，且原样展开(expanded as-is)。</p>
+<p>可以通过<code>$crate::xxx!()</code>来引用还未定义的宏。</p>
+<h2 id="一些避免歧义的限制">一些避免歧义的限制</h2>
+<p>考虑到未来的语言特性可能引起的歧义，有一些额外的限制。</p>
+<h1 id="procedural宏-用来根据属性attributes生成代码"><code>procedural</code>宏: 用来根据属性(Attributes)生成代码</h1>
+<p>Procedural宏接受一些代码作为入参，
+产生另一些代码作为输出（而不是匹配模式和替换）。</p>
+<p>Procedural macro有三种类型：</p>
+<ul>
+<li>自定义derive</li>
+<li>类attribute</li>
+<li>类function</li>
+</ul>
+<h2 id="一个例子">一个例子</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="k">use</span><span class="w"> </span><span class="n">proc_macro</span><span class="p">;</span><span class="w"> </span><span class="c1">// procedural macro需要的lib
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="cp">#[some_attribute]</span><span class="w"> </span><span class="c1">// some_attribute 根据不同类型的macro替换为不同的attribute
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">macro_name</span><span class="p">(</span><span class="n">input</span>: <span class="nc">TokenStream</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">TokenStream</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="custom-derive-marco">custom derive marco</h2>
+<ol>
+<li>
+<p>声明crate是一个procedural macro crate。</p>
+<blockquote>
+<p>目前，procedural macro需要放在专属的crate中。</p>
+</blockquote>
+</li>
+<li>
+<p>编写macro。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="k">use</span><span class="w"> </span><span class="n">proc_macro</span>::<span class="n">TokenStream</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">use</span><span class="w"> </span><span class="n">quote</span>::<span class="n">quote</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">use</span><span class="w"> </span><span class="n">syn</span><span class="p">;</span><span class="w"> </span><span class="c1">// 将TokenStream编译
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 定义了 HelloMacro 宏
+</span></span></span><span class="line"><span class="cl"><span class="c1">// usage:
+</span></span></span><span class="line"><span class="cl"><span class="c1">// #[derive(HelloMacro)]
+</span></span></span><span class="line"><span class="cl"><span class="c1">// struct XXX;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cp">#[proc_macro_derive(HelloMacro)]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">macro_fn</span><span class="p">(</span><span class="n">input</span>: <span class="nc">TokenStream</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">TokenStream</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ol>
+<h2 id="attribute-like-macros">Attribute-like macros</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="cp">#[route(GET, </span><span class="s">&#34;/&#34;</span><span class="cp">)]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">fn</span> <span class="nf">index</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="cp">#[proc_macro_attribute]</span><span class="w"> </span><span class="c1">// 表明这是一个 Attribute-like macro
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">route</span><span class="p">(</span><span class="n">attr</span>: <span class="nc">TokenStream</span><span class="p">,</span><span class="w"> </span><span class="n">item</span>: <span class="nc">TokenStream</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">TokenStream</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>例子定义了一个<code>route</code>宏。
+入参<code>attr</code>是attribute的内容，即：<code>GET, &quot;/&quot;</code>。
+<code>item</code>是attribute <code>route</code> 关联到的对象的Token流，即：<code>fn index() { ... }</code>。</p>
+<h2 id="function-like-macros">Function-like macros</h2>
+<p>Function-like宏使用的样子看起来像函数调用。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="kd">let</span><span class="w"> </span><span class="n">sql</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="fm">sql!</span><span class="p">(</span><span class="no">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="no">FROM</span><span class="w"> </span><span class="n">posts</span><span class="w"> </span><span class="no">WHERE</span><span class="w"> </span><span class="n">id</span><span class="o">=</span><span class="mi">1</span><span class="p">;)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="cp">#[proc_macro]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">sql</span><span class="p">(</span><span class="n">input</span>: <span class="nc">TokenStream</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">TokenStream</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>input</code>接受到<code>SELECT * FROM posts WHERE id=1;</code>。</p>
+<h1 id="reference">Reference</h1>
+<ul>
+<li><a href="https://doc.rust-lang.org/stable/book/ch19-06-macros.html">rust doc</a></li>
+<li><a href="https://doc.rust-lang.org/stable/reference/macros-by-example.html">完整的宏定义语法</a></li>
+</ul>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2023-05-19
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/rust/">rust</a>
+          <a href="/tags/what/">what</a>
+          <a href="/tags/how/">how</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/other/hackintosh-13400f-b760m-rx6600/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">Hackintosh 13400F B760M RX6600</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/other/enhance-input-method/">
+            <span class="next-text nav-default">输入方式提升计划</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2023-05-19 17:14:28 \u002b0800 \u002b0800',
+        title: 'rust宏',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

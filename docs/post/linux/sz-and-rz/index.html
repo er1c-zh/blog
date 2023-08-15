@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>利用sz与nz发送和接收文件 - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="当访问线上机器有很严格的网络隔离时， 其他的方法如开一个HTTP服务器或者nc开启一个端口等因为网络的隔离而无法使用。 如果可以ssh到目标机器" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/linux/sz-and-rz/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="利用sz与nz发送和接收文件" />
+<meta property="og:description" content="当访问线上机器有很严格的网络隔离时， 其他的方法如开一个HTTP服务器或者nc开启一个端口等因为网络的隔离而无法使用。 如果可以ssh到目标机器" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/linux/sz-and-rz/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-03-01T09:35:27+08:00" />
+<meta property="article:modified_time" content="2022-03-01T09:35:27+08:00" />
+<meta itemprop="name" content="利用sz与nz发送和接收文件">
+<meta itemprop="description" content="当访问线上机器有很严格的网络隔离时， 其他的方法如开一个HTTP服务器或者nc开启一个端口等因为网络的隔离而无法使用。 如果可以ssh到目标机器"><meta itemprop="datePublished" content="2022-03-01T09:35:27+08:00" />
+<meta itemprop="dateModified" content="2022-03-01T09:35:27+08:00" />
+<meta itemprop="wordCount" content="612">
+<meta itemprop="keywords" content="linux,command,how," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="利用sz与nz发送和接收文件"/>
+<meta name="twitter:description" content="当访问线上机器有很严格的网络隔离时， 其他的方法如开一个HTTP服务器或者nc开启一个端口等因为网络的隔离而无法使用。 如果可以ssh到目标机器"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">利用sz与nz发送和接收文件</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-03-01 </span>
+        
+          <span class="more-meta"> 约 612 字 </span>
+          <span class="more-meta"> 预计阅读 2 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#tldr">TL;DR</a>
+      <ul>
+        <li><a href="#基于iterm2-trigger机制">基于iterm2 trigger机制</a></li>
+        <li><a href="#基于zssh">基于<code>zssh</code></a></li>
+      </ul>
+    </li>
+    <li><a href="#原理">原理</a>
+      <ul>
+        <li><a href="#关于基于iterm2-trigger机制">关于「基于iterm2 trigger机制」</a></li>
+        <li><a href="#关于zssh">关于<code>zssh</code></a></li>
+      </ul>
+    </li>
+    <li><a href="#为什么要选择sz和rz">为什么要选择<code>sz</code>和<code>rz</code></a></li>
+    <li><a href="#参考">参考</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p>当访问线上机器有很严格的网络隔离时，
+其他的方法如开一个HTTP服务器或者nc开启一个端口等因为网络的隔离而无法使用。</p>
+<p>如果可以ssh到目标机器（包括走跳板机），
+可以尝试使用sz和nz两个工具来实现发送和接受文件。</p>
+<h1 id="tldr">TL;DR</h1>
+<p><strong>前提是发送的机器需要安装<code>sz</code>，接收端需要安装<code>rz</code>。</strong></p>
+<h2 id="基于iterm2-trigger机制">基于iterm2 trigger机制</h2>
+<p>参考<a href="https://github.com/aikuyun/iterm2-zmodem">一个github的repo</a>。</p>
+<h2 id="基于zssh">基于<code>zssh</code></h2>
+<ol>
+<li>
+<p>安装sz和rz和zssh。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">brew install lrzsz zssh
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>利用<code>zssh</code>连接到远程机器。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 使用与ssh相同</span>
+</span></span><span class="line"><span class="cl">zssh root@192.168.1.1
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>传输文件</p>
+<ul>
+<li>
+<p>发送本地到remote</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 连接到远程机器上之后</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 按下ctrl-2 是zssh的触发键，会进入文件传输模式</span>
+</span></span><span class="line"><span class="cl">输入sz &lt;filename-to-send&gt;
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>从远程接收文件</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 在远程机器上执行</span>
+</span></span><span class="line"><span class="cl">sz &lt;filename-to-receive&gt;
+</span></span><span class="line"><span class="cl"><span class="c1"># 按下ctrl-2</span>
+</span></span><span class="line"><span class="cl">输入 rz
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+</li>
+</ol>
+<p><img src="https://dsm01pap001files.storage.live.com/y4mXeS47HglpvMN3iW9JMXtRVEZBid4c9BgsgNEYpkqf6axebTHw9Wu9YgfbKjwcP3u2FkqRVra97dOSEOdL1KJn-5BB2GqyWmVw1p1uFamMYIBtKeVRdHxDXqTbuo2KjjSXDnoD19FOy8M7t0-nSceqeY_DIQDHBiAkJ3pTVF6qgj8Lzv0hhYkI-HxOCLtxF4k?width=1024&amp;height=576&amp;cropmode=none" alt="sz-rz-by-zssh.gif"></p>
+<h1 id="原理">原理</h1>
+<p><code>sz</code>和<code>rz</code>中的s和r是send和receive的首字母，
+z表示的文件传输协议zmodem。</p>
+<p>以上的方法的原理都是在发送端运行sz按照协议发送文件内容，
+在接收端运行rz按照协议接收文件。</p>
+<p>这也是为什么需要在两端都安装好<code>sz</code>和<code>rz</code>。</p>
+<h2 id="关于基于iterm2-trigger机制">关于「基于iterm2 trigger机制」</h2>
+<p>iterm2提供了监听输出并做出相应动作的能力，
+在监听到<code>sz</code>或<code>rz</code>的关键字时，
+触发选择文件等流程，
+完成传输。</p>
+<h2 id="关于zssh">关于<code>zssh</code></h2>
+<p>是对<code>ssh</code>的一个包装，
+<code>ctrl-2</code>是激活文件传输模式的触发键。</p>
+<h1 id="为什么要选择sz和rz">为什么要选择<code>sz</code>和<code>rz</code></h1>
+<ul>
+<li>目标机器网络环境比较严苛，只能ssh上去。</li>
+<li>ssh上去需要经过复杂的跳板机制，不能使用scp或ssh等指令简单的跳板。</li>
+</ul>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://github.com/aikuyun/iterm2-zmodem">https://github.com/aikuyun/iterm2-zmodem</a></li>
+<li><a href="http://zssh.sourceforge.net/">zssh</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/ZMODEM">zmodem wiki</a></li>
+</ul>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-03-01
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/linux/">linux</a>
+          <a href="/tags/command/">command</a>
+          <a href="/tags/how/">how</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/mq/kafka/design/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">kafka设计</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/language/go/go_compile/">
+            <span class="next-text nav-default">go tool compile用法与编译指令</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-03-01 09:35:27 \u002b0800 \u002b0800',
+        title: '利用sz与nz发送和接收文件',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

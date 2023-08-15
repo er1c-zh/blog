@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>hackintosh on blog</title>
+    <link>https://blog.er1c.dev/tags/hackintosh/</link>
+    <description>Recent content in hackintosh on blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Mon, 19 Jun 2023 20:26:15 +0800</lastBuildDate><atom:link href="https://blog.er1c.dev/tags/hackintosh/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Hackintosh 13400F B760M RX6600</title>
+      <link>https://blog.er1c.dev/post/other/hackintosh-13400f-b760m-rx6600/</link>
+      <pubDate>Mon, 19 Jun 2023 20:26:15 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/other/hackintosh-13400f-b760m-rx6600/</guid>
+      <description>&lt;p&gt;Hackintosh on i5-13400F/B760M/RX6600.&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

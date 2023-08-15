@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>IPv6 - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="关于什么是 IPv6 和如何使用 IPv6 。
+（用来弄清楚如何配置路由器相关配置。）
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/network/ipv6/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="IPv6" />
+<meta property="og:description" content="关于什么是 IPv6 和如何使用 IPv6 。
+（用来弄清楚如何配置路由器相关配置。）" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/network/ipv6/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-07-17T20:19:47+08:00" />
+<meta property="article:modified_time" content="2023-07-17T20:19:47+08:00" />
+<meta itemprop="name" content="IPv6">
+<meta itemprop="description" content="关于什么是 IPv6 和如何使用 IPv6 。
+（用来弄清楚如何配置路由器相关配置。）"><meta itemprop="datePublished" content="2023-07-17T20:19:47+08:00" />
+<meta itemprop="dateModified" content="2023-07-17T20:19:47+08:00" />
+<meta itemprop="wordCount" content="2964">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="IPv6"/>
+<meta name="twitter:description" content="关于什么是 IPv6 和如何使用 IPv6 。
+（用来弄清楚如何配置路由器相关配置。）"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">IPv6</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2023-07-17 </span>
+        
+          <span class="more-meta"> 约 2964 字 </span>
+          <span class="more-meta"> 预计阅读 6 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#主要特性">主要特性</a></li>
+    <li><a href="#ipv6-地址结构">IPv6 地址结构</a>
+      <ul>
+        <li><a href="#地址模型-addressing-model">地址模型 Addressing Model</a></li>
+        <li><a href="#文本表示">文本表示</a></li>
+        <li><a href="#地址类型及区分">地址类型及区分</a></li>
+        <li><a href="#单播地址">单播地址</a>
+          <ul>
+            <li><a href="#接口标识符-和-eui-64-extended-unique-identifier">接口标识符 和 EUI-64 Extended Unique Identifier</a></li>
+            <li><a href="#未定义地址-unspecified-address">未定义地址 Unspecified Address</a></li>
+            <li><a href="#本地回环地址">本地回环地址</a></li>
+            <li><a href="#全局单播地址">全局单播地址</a></li>
+            <li><a href="#嵌入了-ipv4-地址的-ipv6-地址">嵌入了 IPv4 地址的 IPv6 地址</a></li>
+            <li><a href="#本地链接单播地址">本地链接单播地址</a></li>
+          </ul>
+        </li>
+        <li><a href="#anycast-address">Anycast Address</a></li>
+        <li><a href="#多播地址">多播地址</a></li>
+      </ul>
+    </li>
+    <li><a href="#与-ipv4-对比动机与起源">与 IPv4 对比、动机与起源</a></li>
+    <li><a href="#slaac--dhcpv6">SLAAC &amp; DHCPv6</a>
+      <ul>
+        <li><a href="#slaac">SLAAC</a>
+          <ul>
+            <li><a href="#重复地址检测">重复地址检测</a></li>
+            <li><a href="#地址生命周期">地址生命周期</a></li>
+          </ul>
+        </li>
+        <li><a href="#dhcpv6">DHCPv6</a>
+          <ul>
+            <li><a href="#四步交互法">四步交互法</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#reference">Reference</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p>关于什么是 IPv6 和如何使用 IPv6 。</p>
+<p><em>（用来弄清楚如何配置路由器相关配置。）</em></p>
+<h1 id="主要特性">主要特性</h1>
+<p>IPv6 是一个用于网络内包交换和跨 IP 网络点到点数据报传输能力的网络层协议，
+几乎遵循 IPv4 中的设计原则。</p>
+<p>在更大的地址空间之外，
+IPv6 也实现了 IPv4 没有的特性：</p>
+<ul>
+<li>address configuration</li>
+<li>network renumbering</li>
+<li>切换网络连接提供者时的路由声明</li>
+</ul>
+<p>IPv6 通过把分割包的工作分配给终端，简化了路由器处理包的过程。</p>
+<p>IPv6 子网的大小被固定为 64 bit 的主机标识符部分限制。</p>
+<p>IPv6 支持三种传输模式： unicast anycast multicast 。</p>
+<h1 id="ipv6-地址结构">IPv6 地址结构</h1>
+<p><a href="https://datatracker.ietf.org/doc/html/rfc4291">RFC 4291 IP Version 6 Adderssing Architecture</a></p>
+<p>128 位的、分配给一个或一组接口的标识符。</p>
+<p>有三种类型的地址：</p>
+<ul>
+<li>unicast 指向一个接口的标识符。</li>
+<li>anycast 指向（通常不在一个主机上的）一组接口。投递给 anycast 类型的地址意味着只需要投递给其中的一个节点。 （路由协议中的距离最近）</li>
+<li>multicast 指向一组接口。 发送给该类型的地址的包需要发送给集合中的所有接口。</li>
+</ul>
+<h2 id="地址模型-addressing-model">地址模型 Addressing Model</h2>
+<p>IPv6 地址分配的对象是接口。</p>
+<p>所有的接口都被要求有至少一个本地单播地址 ( Link-Local unicast address ) 。</p>
+<p>一个接口可以有多个不同的地址。</p>
+<p>如果多个物理接口在网络层被视作一个接口，
+一个地址也可以分配给多个物理接口。
+这个特性可以用作负载均衡。</p>
+<h2 id="文本表示">文本表示</h2>
+<p>三种格式：</p>
+<ul>
+<li>
+<p>最好 (prefered) 的格式是：8 个 4 位 16 进制数字，由冒号链接。 <code>ABCD:EF01:2345:6789:ABCD:EF01:2345:6789</code></p>
+</li>
+<li>
+<p>一些情况下可以省略 0</p>
+<ul>
+<li>
+<p>前导零</p>
+</li>
+<li>
+<p>多个连续的部分为0，可以用 <code>::</code> 代替。</p>
+<p><code>FF01:0:0:0:0:0:0:101</code> -&gt; <code>FF01::101</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p>一种可选的格式是 <code>x❌x❌x❌d.d.d.d</code> 。方便用于混用 IPv4 IPv6 的情况。</p>
+<p>如 <code>0:0:0:0:0:FFFF:129.144.52.38</code></p>
+</li>
+</ul>
+<p>和 IPv4 类似的格式来表示地址前缀的长度：</p>
+<p><code>ipv6-address/prefix-length</code></p>
+<h2 id="地址类型及区分">地址类型及区分</h2>
+<table>
+<thead>
+<tr>
+<th>Address type</th>
+<th>Binary prefix</th>
+<th>IPv6 notation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>未定义</td>
+<td>00&hellip;0  (128 bits)</td>
+<td>::/128</td>
+</tr>
+<tr>
+<td>本地回环</td>
+<td>00&hellip;1  (128 bits)</td>
+<td>::1/128</td>
+</tr>
+<tr>
+<td>多播</td>
+<td>1111 1111</td>
+<td>FF00::/8</td>
+</tr>
+<tr>
+<td>本地单播</td>
+<td>1111 1110 10</td>
+<td>FE80::/10</td>
+</tr>
+<tr>
+<td>全域单播</td>
+<td>(everything else)</td>
+<td>*</td>
+</tr>
+</tbody>
+</table>
+<p>anycast 使用单播的地址空间，语法上与单播无法区分。</p>
+<h2 id="单播地址">单播地址</h2>
+<p>IPV6 的单播地址通过任意长度的前缀聚合在一起。</p>
+<p>IPv6 有若干类型的单播地址：</p>
+<ul>
+<li>全局单播地址</li>
+<li>本地链接地址</li>
+<li>特殊用途的全局单播地址，如： 嵌在 IPv6 中的 IPv4 地址。</li>
+</ul>
+<h3 id="接口标识符-和-eui-64-extended-unique-identifier">接口标识符 和 EUI-64 Extended Unique Identifier</h3>
+<p>IPv6 地址中的接口标识符用与标记一个链接中的接口。
+在一个子网前缀下，接口标识符需要保持唯一。</p>
+<p>某些情况下，接口标识符通过链路层地址直接生成。
+（因此）相同的接口标识符在接入不同的子网的情况下可能被用于同一个节点上的多个接口。</p>
+<p>接口标识符的唯一性和 IPv6 地址的唯一性是不同的概念。</p>
+<p>对于所有的单播地址，
+除了开头是 000 的情况，
+接口标识符都需要是 64 位长并按照修 <strong>修改过的 EUI-64 地址</strong> <em>( Modified EUI-64 format )</em> 构建。
+<strong>修改过的</strong> 指的是，将符合 IEEE EUI-64 模式的标识符的 <strong>全局/本地位</strong> 反转。
+因此，全局/本地位为 1 时表示全局，反之表示本地。
+这么设计的目的是便于网络管理员处理硬件标识符不可用时非全局标识符的配置。</p>
+<blockquote>
+<p>通常来说，一种生成方法是节点利用 48 位的 MAC 地址给自己生成 IPv6 地址。
+具体的，将 MAC 地址分割为前后 24 位两个部分，中间插入 <code>FFFE</code> 拼接成 64 位。
+然后，将 <code>universal/local 位</code> 反转而成。</p>
+</blockquote>
+<p>IPv6 节点不需要验证标记为全局的接口标识符是否唯一。</p>
+<h3 id="未定义地址-unspecified-address">未定义地址 Unspecified Address</h3>
+<p>地址 <code>::</code> 被称作未定义地址。
+它不可用于任何节点。
+它表示地址的缺失。</p>
+<p>一个可能的应用是，
+一个节点在得知自身的地址前发送的 IPv6 包的源地址字段。</p>
+<h3 id="本地回环地址">本地回环地址</h3>
+<p><code>::1</code> 是本地回环地址，用于发送给自身的包。</p>
+<h3 id="全局单播地址">全局单播地址</h3>
+<p>全局单播地址的常见格式如下：</p>
+<ul>
+<li>前 n 位表示全局路由前缀，通常是层级化结构的，被授予给一个 site 。</li>
+<li>中间 m 位表示子网 ID。</li>
+<li>剩下的是接口标识符，在前文已经提到。</li>
+</ul>
+<p>除了开头为 <code>000</code> 的 IPv6 地址，
+其他的地址都拥有 64 位长的接口标识符。</p>
+<p>开头为 <code>000</code> 的地址的一个例子是嵌入在 IPv6 的 IPv4 地址。</p>
+<h3 id="嵌入了-ipv4-地址的-ipv6-地址">嵌入了 IPv4 地址的 IPv6 地址</h3>
+<p>IPv6 地址有两种格式携带 IPv4 地址：</p>
+<ul>
+<li>兼容 IPv4 的IPv6 地址：用于迁移到 IPv6 ，尾 32 位填充 IPv4 地址，其他位填0</li>
+<li>IPv4-Mapped IPv6 Address</li>
+</ul>
+<h3 id="本地链接单播地址">本地链接单播地址</h3>
+<p>本地链接地址用于诸如
+自动地址配置、邻居发现或路由器缺失的场景。</p>
+<p>路由器 <strong>MUST NOT</strong> 转发源地址或目的地址是本地链接地址的包到其他连接上。</p>
+<h2 id="anycast-address">Anycast Address</h2>
+<p>Anycast Address 与单播地址无法从语法的角度区分，
+当一个地址被分配给了多个接口，
+这个地址就成为了一个 Anycast Address 。</p>
+<p>一个节点如果被分配了 Anycast Address ，它一定需要知道自己被分配的是一个 Anycast Address 。</p>
+<p>一个 Anycast Adderss 总是有一个前缀指向了包含了所有该地址定位的接口的区域。
+在这个区域之外，所有该地址的路由可能会与该前缀聚合成一条；
+在区域之内，该地址需要单独处理。</p>
+<p>Anycast Address 的一种用途是标记一组路由属于某个提供互联网服务的组织。
+另一个可能的用途是标记一组路由链接到了一个特定的子网或者提供了一个特定路由域 <em>( routing domain )</em> 的入口。</p>
+<h2 id="多播地址">多播地址</h2>
+<p>多播地址是用于表示一组（通常分布在不同节点上的）接口的标识符。</p>
+<h1 id="与-ipv4-对比动机与起源">与 IPv4 对比、动机与起源</h1>
+<p>因为 IPv4 地址空间不能满足日益增长的需要，所以引入了地址空间更大的 IPv6 。</p>
+<p>除了更大的地址空间， IPv6 还有一些不同：</p>
+<ul>
+<li>
+<p>IPv6 默认支持多播。</p>
+</li>
+<li>
+<p>无状态地址自动配置技术 (Stateless address autoconfiguration, SLAAC)</p>
+<p>IPv6 主机自动配置地址。
+每个接口拥有一个自生成的本地连接的地址。
+除此之外，当设备联入互联网时，会进行冲突解决，路由器也会通过 router advertisement 提供地址前缀。
+除此之外，还可以通过 DHCPv6 进行有状态的地址分配和手动分配静态地址。</p>
+</li>
+<li>
+<p>IPsec</p>
+</li>
+<li>
+<p>简化路由器处理</p>
+<p>只保留包头中的必要的字段，特别的，去掉了转发的校验和机制。</p>
+</li>
+<li>
+<p>移动性：能够提供比 IPv4 更好地移动性， 允许整个子网在不 renumber 的情况下移动到另一个路由下。</p>
+</li>
+<li>
+<p>支持扩展包的 Header</p>
+</li>
+</ul>
+<h1 id="slaac--dhcpv6">SLAAC &amp; DHCPv6</h1>
+<h2 id="slaac">SLAAC</h2>
+<p>系统启动时，每个节点会为每个启用 IPv6 的接口自动生成一个本地链接的地址。
+就算 <strong>全局地址</strong> <em>( globally routable address )</em> 已经手动设置或者
+被通过 “设置协议” 获得（，也会生成这个本地链接地址）。</p>
+<p>这项工作通过 SLAAC 完成，不需要提前设置，
+使用了 <strong>邻居发现协议</strong> <em>( Neighbor Discovery Protocol )</em> 的一部分实现。</p>
+<p>主机向路由器发送一个“请求地址前缀的包”，
+IPv6 路由器会返回一个前缀作为响应。</p>
+<p>地址的低 64 位由接口标识符构成，
+出于隐私的原因，这个标识符应该是伪随机数。
+之前的 Modified EUI-64 格式的标识符因此被废弃。
+也是因为隐私的原因，
+每次生成的标识符需要与任何该接口自动生成的标识符不一致。</p>
+<h3 id="重复地址检测">重复地址检测</h3>
+<p>首先，节点为接口生成一个地址，
+然后开始监听所有节点的广播地址，因为如果一个节点已经使用了该地址，
+会在这个多播地址上发送 Neighbor Advertisement ( ICMPv6 Type 136 ) 包；
+并且开始监听这个地址的多播地址，
+用于处理其他节点也在尝试使用这个地址的情况。</p>
+<p>以上的操作完成后，
+向这个地址发送 Neighbor Solicitation ( ICMPv6 Type 135) 包。
+如果没有冲突，这个地址就可以被使用。</p>
+<h3 id="地址生命周期">地址生命周期</h3>
+<p>除非特别设置，地址的生命周期默认是无限期的。</p>
+<p>一个地址的状态由两个生命周期决定：优先生命周期 ( preferred lifetime ) 和生效生命周期。</p>
+<p>当一个地址的优先生命周期结束时，
+这个地址的状态变更为 <strong>废弃的</strong> ，之后不应在这个地址上建立新的链接 ；
+当生效生命周期过期时，地址的状态变更变更为 <strong>不可用</strong> ，
+这个地址从当前的接口移除。</p>
+<h2 id="dhcpv6">DHCPv6</h2>
+<p>DHCPv6 是一个客户端/服务器协议，
+用来为设备提供配置能力。
+最基本的协议能力为与服务器链接在一个网络中的客户端提供配置能力。
+可以通过中转代理为不是链接在同一网络的设备提供服务。</p>
+<p>DHCPv6 用于为 IPv6 主机配置地址、地址前缀、默认路由、本地段 MTU 、以及其他运转 IPv6 协议所需要的数据。</p>
+<p>DHCPv6 的信息交换通过 UDP 完成。
+客户端将信息发送到一个保留的、本地链接多播地址上，
+因此不需要配置客户端的 DHCPv6 服务端地址。
+如果需要发送到非本地链接的 DHCPv6 服务端上，
+需要一个在本地链接上的 DHCP 中转代理 <em>( DHCP relay agent )</em> 来完成中转。</p>
+<h3 id="四步交互法">四步交互法</h3>
+<p>为了分配一个或多个地址、和（或）协调前缀，
+客户端首先确定 DHCP 服务端，然后请求分配地址、协商地址前缀和其他配置信息。</p>
+<ol>
+<li>客户端向 All_DHCP_Relay_Agents_and_Servers 多播地址发送 Solicit 请求寻找可用的 DHCP 服务器。</li>
+<li>任何符合要求的服务端响应 Advertise 消息。</li>
+<li>客户端挑选一个服务端，发送 Request 消息来确认分配地址、协商地址前缀以及其他配置信息。</li>
+<li>服务端返回包含地址、地址前缀、配置的 Reply 消息。</li>
+</ol>
+<p>除此之外，也有适用于特殊场景的两步交互法。</p>
+<h1 id="reference">Reference</h1>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/IPv6">IPv6 wiki</a></li>
+<li><a href="https://en.wikipedia.org/wiki/IPv6_address">IPv6 Address wiki</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc4291">RFC 4291 IP Version 6 Adderssing Architecture</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc4862">RPC 4862 IPv6 Stateless Address Autoconfiguration</a></li>
+<li><a href="https://en.wikipedia.org/wiki/DHCPv6">DHCPv6 wiki</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc8415">RFC 8415 DHCPv6</a></li>
+</ul>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2023-07-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        
+        <a class="next" href="/post/linux/find/">
+            <span class="next-text nav-default">find</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2023-07-17 20:19:47 \u002b0800 \u002b0800',
+        title: 'IPv6',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

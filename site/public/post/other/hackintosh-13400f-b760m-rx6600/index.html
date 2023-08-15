@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Hackintosh 13400F B760M RX6600 - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="Hackintosh on i5-13400F/B760M/RX6600.
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/other/hackintosh-13400f-b760m-rx6600/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="Hackintosh 13400F B760M RX6600" />
+<meta property="og:description" content="Hackintosh on i5-13400F/B760M/RX6600." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/other/hackintosh-13400f-b760m-rx6600/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-06-19T20:26:15+08:00" />
+<meta property="article:modified_time" content="2023-06-19T20:26:15+08:00" />
+<meta itemprop="name" content="Hackintosh 13400F B760M RX6600">
+<meta itemprop="description" content="Hackintosh on i5-13400F/B760M/RX6600."><meta itemprop="datePublished" content="2023-06-19T20:26:15+08:00" />
+<meta itemprop="dateModified" content="2023-06-19T20:26:15+08:00" />
+<meta itemprop="wordCount" content="440">
+<meta itemprop="keywords" content="how,hackintosh," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Hackintosh 13400F B760M RX6600"/>
+<meta name="twitter:description" content="Hackintosh on i5-13400F/B760M/RX6600."/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Hackintosh 13400F B760M RX6600</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2023-06-19 </span>
+        
+          <span class="more-meta"> 约 440 字 </span>
+          <span class="more-meta"> 预计阅读 1 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#opencore-i5-13400fb760mrx6600-efi">OpenCore i5-13400F/B760M/RX6600 EFI</a>
+      <ul>
+        <li><a href="#feature">Feature</a></li>
+        <li><a href="#specs">Specs</a></li>
+        <li><a href="#img">IMG</a>
+          <ul>
+            <li><a href="#wifi--bluetooth">wifi &amp;&amp; bluetooth</a></li>
+            <li><a href="#sensor">sensor</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#memo">MEMO</a></li>
+    <li><a href="#reference">Reference</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p>Hackintosh on i5-13400F/B760M/RX6600.</p>
+<h1 id="opencore-i5-13400fb760mrx6600-efi">OpenCore i5-13400F/B760M/RX6600 EFI</h1>
+<h2 id="feature">Feature</h2>
+<ul>
+<li>OpenCore 0.9.2</li>
+<li>Ventura 13.4</li>
+<li>All kext release version</li>
+<li><input checked="" disabled="" type="checkbox"> 传感器 sensor
+<ul>
+<li><input checked="" disabled="" type="checkbox"> CPU temperature sensor
+<ul>
+<li>boot-args 增加 <code>lilucpu=17</code> ，覆盖cpu generation。</li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> GPU sensor
+<ul>
+<li>RadeonSensor.Kext</li>
+<li>SMCRadeonSensor.Kext</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> 睿频 turbo boost</li>
+<li><input checked="" disabled="" type="checkbox"> 休眠唤醒</li>
+<li><input checked="" disabled="" type="checkbox"> iService/AirDrop/etc</li>
+</ul>
+<h2 id="specs">Specs</h2>
+<ul>
+<li>CPU i5-13400F</li>
+<li><a href="https://www.maxsun.com.cn/2023/0104/5870.html">MS-终结者 B760M D4</a> / <a href="https://www.maxsun.com/products/terminator-b760m-d4">MAXSUN Terminator B760M D4</a></li>
+<li>RX6600</li>
+<li>Gloway光威 32GB DDR4 3200 台式机内存条 天策系列-皓月白 * 2</li>
+<li>ZHITAI TiPlus5000 1TB</li>
+<li>fenvi FV-T919</li>
+</ul>
+<h2 id="img">IMG</h2>
+<p><img src="https://github.com/er1c-zh/hackintosh-b760m-i5-13400f-EFI/raw/master/doc/system-info.png" alt="system-info"></p>
+<h3 id="wifi--bluetooth">wifi &amp;&amp; bluetooth</h3>
+<p><img src="https://github.com/er1c-zh/hackintosh-b760m-i5-13400f-EFI/raw/master/doc/wifi.png" alt="wifi">
+<img src="https://github.com/er1c-zh/hackintosh-b760m-i5-13400f-EFI/raw/master/doc/ble.png" alt="ble"></p>
+<h3 id="sensor">sensor</h3>
+<p><img src="https://github.com/er1c-zh/hackintosh-b760m-i5-13400f-EFI/raw/master/doc/sensor-bar.png" alt="sensor"></p>
+<p><img src="https://github.com/er1c-zh/hackintosh-b760m-i5-13400f-EFI/raw/master/doc/sensor.png" alt="sensor"></p>
+<h1 id="usage">Usage</h1>
+<ol>
+<li>
+<p>按照<a href="https://dortania.github.io/OpenCore-Install-Guide/">OpenCore-Install-Guide</a>构建OpenCore启动盘。</p>
+<ul>
+<li>可能需要生成USBMap。</li>
+<li>必要时增加一些<code>boot-args</code>输出日志。</li>
+</ul>
+</li>
+<li>
+<p><a href="https://github.com/luchina-gabriel/BASE-EFI-INTEL-DESKTOP-13THGEN-RAPTOR-LAKE">luchina-gabriel/BASE-EFI-INTEL-DESKTOP-13THGEN-RAPTOR-LAKE</a>中列出的BIOS设置项。</p>
+</li>
+<li>
+<p>进行安装，需要按空格键显示安装的选项。</p>
+<ul>
+<li>大概装了半个小时，ETA不准。</li>
+<li>会有3次（？）黑屏。</li>
+</ul>
+</li>
+<li>
+<p>按照<a href="https://dortania.github.io/OpenCore-Install-Guide/">OpenCore-Install-Guide</a>的<code>Post-Install</code>完善安装。</p>
+<ul>
+<li>最基本的，挂载EFI，将启动盘中的部分拷贝进去。</li>
+<li><strong>生成新的序列号避免问题。</strong></li>
+</ul>
+</li>
+<li>
+<p>Enjoy it!</p>
+</li>
+</ol>
+<h1 id="memo">MEMO</h1>
+<ul>
+<li>OpenCore的选择器按空格才会展示其他选项。 Some options won&rsquo;t show unless space pressed.</li>
+<li>字体图标渲染发虚，关闭hdr解决。 Disable HDR can solve font blurry for me.</li>
+</ul>
+<h1 id="reference">Reference</h1>
+<ul>
+<li><a href="https://github.com/er1c-zh/hackintosh-b760m-i5-13400f-EFI">EFI repo</a></li>
+<li><a href="https://dortania.github.io/OpenCore-Install-Guide/">OpenCore-Install-Guide</a></li>
+<li><a href="https://github.com/luchina-gabriel/BASE-EFI-INTEL-DESKTOP-13THGEN-RAPTOR-LAKE">luchina-gabriel/BASE-EFI-INTEL-DESKTOP-13THGEN-RAPTOR-LAKE</a></li>
+<li><a href="https://github.com/nsinm/13400F-B760M-EFI">nsinm/13400F-B760M-EFI</a></li>
+</ul>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2023-06-19
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/how/">how</a>
+          <a href="/tags/hackintosh/">hackintosh</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/distributed/gossip-protocol/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">Gossip Protocol</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/language/rust/marco/">
+            <span class="next-text nav-default">rust宏</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2023-06-19 20:26:15 \u002b0800 \u002b0800',
+        title: 'Hackintosh 13400F B760M RX6600',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

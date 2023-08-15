@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>go开发套件 - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="记录go的指令的用法。
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/language/go/command/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="go开发套件" />
+<meta property="og:description" content="记录go的指令的用法。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/language/go/command/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-01-03T11:48:10+08:00" />
+<meta property="article:modified_time" content="2022-01-03T11:48:10+08:00" />
+<meta itemprop="name" content="go开发套件">
+<meta itemprop="description" content="记录go的指令的用法。"><meta itemprop="datePublished" content="2022-01-03T11:48:10+08:00" />
+<meta itemprop="dateModified" content="2022-01-03T11:48:10+08:00" />
+<meta itemprop="wordCount" content="7177">
+<meta itemprop="keywords" content="go,how,memo,go-command," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="go开发套件"/>
+<meta name="twitter:description" content="记录go的指令的用法。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">go开发套件</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-01-03 </span>
+        
+          <span class="more-meta"> 约 7177 字 </span>
+          <span class="more-meta"> 预计阅读 15 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#intro">Intro</a>
+      <ul>
+        <li><a href="#指令">指令</a></li>
+      </ul>
+    </li>
+    <li><a href="#通用的">通用的</a>
+      <ul>
+        <li><a href="#指令中的packages参数如何被使用">指令中的<code>packages</code>参数如何被使用？</a></li>
+      </ul>
+    </li>
+    <li><a href="#go"><code>go</code></a>
+      <ul>
+        <li><a href="#编译包和依赖-go-build">编译包和依赖 <code>go build</code></a>
+          <ul>
+            <li><a href="#packages"><code>packages</code></a></li>
+            <li><a href="#build-flags-编译参数">build flags 编译参数</a></li>
+          </ul>
+        </li>
+        <li><a href="#格式化源码-gofmt--go-fmt">格式化源码 Gofmt / <code>go fmt</code></a></li>
+        <li><a href="#按照文件中的指令进行以生成更新go代码的工作-go-generate">按照文件中的指令进行以生成、更新go代码的工作 <code>go generate</code></a></li>
+        <li><a href="#增加当前模块的依赖并且安装这些依赖-go-get-和-go-install">增加当前模块的依赖并且安装这些依赖 <code>go get</code> 和 <code>go install</code></a>
+          <ul>
+            <li><a href="#go-install"><code>go install</code></a></li>
+          </ul>
+        </li>
+        <li><a href="#列出包或模块">列出包或模块</a></li>
+        <li><a href="#模块维护">模块维护</a></li>
+        <li><a href="#编译运行程序">编译、运行程序</a></li>
+        <li><a href="#测试">测试</a>
+          <ul>
+            <li><a href="#go-vet检测"><code>go vet</code>检测</a></li>
+            <li><a href="#两种执行模式">两种执行模式</a></li>
+            <li><a href="#go-test接受的参数"><code>go test</code>接受的参数</a></li>
+            <li><a href="#测试二进制文件接受的参数">测试二进制文件接受的参数</a></li>
+          </ul>
+        </li>
+        <li><a href="#执行指定的指令-go-tool-command">执行指定的指令 <code>go tool command</code></a></li>
+        <li><a href="#扫描可能的错误">扫描可能的错误</a></li>
+      </ul>
+    </li>
+    <li><a href="#更加详细的细节">更加详细的细节</a>
+      <ul>
+        <li><a href="#编译">编译</a>
+          <ul>
+            <li><a href="#编译约束-build-constraints">编译约束 build constraints</a></li>
+            <li><a href="#编译模式-build-mode">编译模式 build mode</a></li>
+            <li><a href="#编译和测试缓存">编译和测试缓存</a></li>
+          </ul>
+        </li>
+        <li><a href="#环境变量">环境变量</a></li>
+        <li><a href="#gofmt指令">gofmt指令</a></li>
+      </ul>
+    </li>
+    <li><a href="#参考">参考</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p>记录go的指令的用法。</p>
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+            
+                <div class="serial-index">
+                    <p>系列列表</p>
+                    <ul>
+                    
+                        <li><a href="https://blog.er1c.dev/post/language/go/command/">go开发套件</a></li>
+                    
+                        <li><a href="https://blog.er1c.dev/post/language/go/module/">有关go module的一点点记录</a></li>
+                    
+                        <li><a href="https://blog.er1c.dev/post/language/go/go_compile/">go tool compile用法与编译指令</a></li>
+                    
+                    </ul>
+                </div>
+            
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+
+
+<p>组织的思路是：</p>
+<ol>
+<li>首先按照<strong>使用场景</strong>来介绍<code>go</code>中一些常用的指令的使用方式。
+<ol>
+<li>编译</li>
+<li>格式化源码</li>
+<li>生成代码</li>
+<li>管理包的依赖</li>
+<li>维护包的依赖</li>
+<li>运行一个项目</li>
+<li>单元测试</li>
+<li>执行具体实现功能的指令</li>
+<li>扫描可能的错误</li>
+</ol>
+</li>
+<li>然后介绍更加细节的实现方式，有的会在这一篇中，有的会链接到其他的上。
+<ol>
+<li>编译相关</li>
+<li>环境变量</li>
+<li>gofmt</li>
+</ol>
+</li>
+</ol>
+<h1 id="intro">Intro</h1>
+<p>go开发套件包含一组编译和构建源码的指令和对应的程序。</p>
+<p>通常有三种方式来运行这些程序：</p>
+<ol>
+<li>
+<p>最普遍的，通过<code>go subcommand</code>的形式，如<code>go fmt</code>。</p>
+<p><code>go</code>在调用这些子命令对应的程序时，
+会传递用于处理<code>package</code>层次的参数，
+来使命令运行在所有的<code>package</code>上。</p>
+</li>
+<li>
+<p>另一种形式是<code>go tool subcommand</code>，被称为 <strong>独立运行</strong> <em>(stand-alone)</em> 。</p>
+<p>对于大多数指令来说，这种形式仅用来调试；
+对于<code>pprof</code>等某些指令，只能用这种形式来运行。</p>
+</li>
+<li>
+<p>最后，因为<code>gofmt</code>和<code>godoc</code>经常被使用，单独构建了二进制包。</p>
+</li>
+</ol>
+<h2 id="指令">指令</h2>
+<ul>
+<li><code>go</code> 管理go源码和运行其他的指令</li>
+<li><code>cgo</code> 支持cgo特性</li>
+<li><code>cover</code> 用于生成和分析单元测试的覆盖率文件</li>
+<li><code>fix</code> 用于将使用了语言或lib的旧特性的程序，改写成新特性。</li>
+<li><code>fmt</code> 格式化源码</li>
+<li><code>godoc</code> 导出并生成go代码中的文档</li>
+<li><code>vet</code> 检查代码中的可疑之处，比如<code>Printf</code>中格式化字符串和参数是否对应。</li>
+</ul>
+<p>本文主要记录了<code>go</code>的使用方法。</p>
+<p>更加完整的命令集在<a href="https://pkg.go.dev/cmd">标准库/cmd包的文档</a>中。</p>
+<h1 id="通用的">通用的</h1>
+<h2 id="指令中的packages参数如何被使用">指令中的<code>packages</code>参数如何被使用？</h2>
+<blockquote>
+<p><code>go help packages</code></p>
+</blockquote>
+<p>很多指令需要一个<code>packages</code>参数表示哪些包需要处理。</p>
+<p>package通常利用 <strong>引用路径</strong> <em>(import path)</em> 来定义。
+<strong>引用路径</strong>有两种形式，一个是绝对或相对路径指向的文件夹中的包；
+另一个是基于<code>GOPATH/src/</code>指向的包。</p>
+<p>如果没有传入<code>packages</code>，那么表示当前文件夹下的包。</p>
+<p>有四个<strong>引用路径</strong>是保留的：</p>
+<ul>
+<li><code>main</code> 表示独立可执行文件的最外的包。</li>
+<li><code>all</code> 表示在GOPATH中的所有的包。</li>
+<li><code>std</code> 表示所有的go标准库。</li>
+<li><code>cmd</code> 表示所有的go command和相关的内部包。</li>
+</ul>
+<p>对于一个<strong>引用路径</strong>，如果包含一个或多个的<code>...</code>通配符，
+表示是一个“模式”。<code>...</code>可以匹配任何字符串，包括空字符串和包含<code>/</code>的字符串。
+特别的，</p>
+<ol>
+<li><code>/...</code>结尾时，可以匹配空字符串。
+比如<code>net/...</code>可以匹配到<code>net</code>。</li>
+<li>包含斜杠的模式，如果没有<code>vendor</code>，是不会匹配<code>vendor</code>路径中的包。</li>
+</ol>
+<p>对于由<code>.</code>和<code>_</code>开头的或<code>testdata</code>，
+会被忽略。</p>
+<h1 id="go"><code>go</code></h1>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">go &lt;command&gt; <span class="o">[</span>arguments<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>command包含：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-plain" data-lang="plain"><span class="line"><span class="cl">bug         start a bug report
+</span></span><span class="line"><span class="cl">build       compile packages and dependencies
+</span></span><span class="line"><span class="cl">clean       remove object files and cached files
+</span></span><span class="line"><span class="cl">doc         show documentation for package or symbol
+</span></span><span class="line"><span class="cl">env         print Go environment information
+</span></span><span class="line"><span class="cl">fix         update packages to use new APIs
+</span></span><span class="line"><span class="cl">fmt         gofmt (reformat) package sources
+</span></span><span class="line"><span class="cl">generate    generate Go files by processing source
+</span></span><span class="line"><span class="cl">get         add dependencies to current module and install them
+</span></span><span class="line"><span class="cl">install     compile and install packages and dependencies
+</span></span><span class="line"><span class="cl">list        list packages or modules
+</span></span><span class="line"><span class="cl">mod         module maintenance
+</span></span><span class="line"><span class="cl">run         compile and run Go program
+</span></span><span class="line"><span class="cl">test        test packages
+</span></span><span class="line"><span class="cl">tool        run specified go tool
+</span></span><span class="line"><span class="cl">version     print Go version
+</span></span><span class="line"><span class="cl">vet         report likely mistakes in packages
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>go help &lt;command&gt;</code>可以获得每个指令更加详细的信息。</p>
+<p>除了指令，也可以用<code>go help</code>来查询下列的主题的帮助信息。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-plain" data-lang="plain"><span class="line"><span class="cl">buildconstraint build constraints
+</span></span><span class="line"><span class="cl">buildmode       build modes
+</span></span><span class="line"><span class="cl">c               calling between Go and C
+</span></span><span class="line"><span class="cl">cache           build and test caching
+</span></span><span class="line"><span class="cl">environment     environment variables
+</span></span><span class="line"><span class="cl">filetype        file types
+</span></span><span class="line"><span class="cl">go.mod          the go.mod file
+</span></span><span class="line"><span class="cl">gopath          GOPATH environment variable
+</span></span><span class="line"><span class="cl">gopath-get      legacy GOPATH go get
+</span></span><span class="line"><span class="cl">goproxy         module proxy protocol
+</span></span><span class="line"><span class="cl">importpath      import path syntax
+</span></span><span class="line"><span class="cl">modules         modules, module versions, and more
+</span></span><span class="line"><span class="cl">module-get      module-aware go get
+</span></span><span class="line"><span class="cl">module-auth     module authentication using go.sum
+</span></span><span class="line"><span class="cl">packages        package lists and patterns
+</span></span><span class="line"><span class="cl">private         configuration for downloading non-public code
+</span></span><span class="line"><span class="cl">testflag        testing flags
+</span></span><span class="line"><span class="cl">testfunc        testing functions
+</span></span><span class="line"><span class="cl">vcs             controlling version control with GOVCS
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="编译包和依赖-go-build">编译包和依赖 <code>go build</code></h2>
+<p><code>go build [-o output] [build flags] [packages]</code></p>
+<p><code>build</code>指令编译<code>packages</code>和对应的依赖，但是不会<strong>安装</strong>编译结果。</p>
+<h3 id="packages"><code>packages</code></h3>
+<ul>
+<li>如果传入了 <strong>在一个文件夹下的文件列表</strong> ，指令会将这些文件当作一个（只包含这些传入的文件）package来处理。</li>
+<li>忽略<code>_test.go</code>结尾的文件。</li>
+<li>如果在编译单独的<code>main</code>包，<code>build</code>指令会生成一个可执行文件；反之，只编译，丢弃编译结果，用来检查编译是否可以通过。
+<ul>
+<li>可执行文件的名称取决于：
+<ol>
+<li>（通过<code>-o</code>指定了路径或文件名）写入到指定的文件夹和指定的文件名</li>
+<li>（如果传入了文件列表）第一个文件的名字</li>
+<li>（没有指定文件列表）源码目录的名字</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="build-flags-编译参数">build flags 编译参数</h3>
+<ul>
+<li><code>-a</code> 强制重新编译（缓存的编译结果）已经是最新的包。</li>
+<li><code>-p n</code> 指定可以并行的数量，覆盖默认值<code>GOMAXPROCS</code>。</li>
+<li><code>-race</code> 开启数据竞争的检测。</li>
+<li><code>-msan</code> enable interoperation with memory sanitizer.</li>
+<li><code>-v</code> 在编译一个包时，打印包名。</li>
+<li><code>-work</code> 打印临时工作目录（temporary work directory），并且退出时不删除。</li>
+<li><code>-x</code> 打印指令？</li>
+<li><code>-asmfalgs '[pattern=]arg list'</code> 会传递给所有的<code>go tool asm</code>调用。</li>
+<li><code>buildmode mode</code> 编译模式，表明需要的编译结果，
+更多的可以通过<code>go help buildmode</code>查看，<a href="#%E7%BC%96%E8%AF%91%E6%A8%A1%E5%BC%8F-build-mode">也可以看这里</a>。
+<ul>
+<li><code>default</code>模式：输入的main包编译成可执行文件；
+其他包编译成<code>.a</code>文件。</li>
+<li><code>plugin</code>模式：编译为go插件。</li>
+</ul>
+</li>
+<li><code>-compiler name</code> 使用的编译器，gccgo/gc。</li>
+<li><code>-gccgoflags '[pattern=]arg list'</code> 传递给gccgo编译器和链接器的参数。</li>
+<li><code>-gcflags '[pattern=]arg list'</code> 传递给所有的<code>go tool compile</code>的参数。</li>
+<li><code>-installsuffix suffix</code></li>
+<li><code>-ldflags '[pattern=]arg list'</code> 传递给<code>go tool link</code>的参数。</li>
+<li><code>-linkshared</code> 将代码按照“会被与以buildmode=shared形式编译的库进行链接”的形式来编译。</li>
+<li><code>-mod mode</code> 用于控制“编译指令”是否要更新<code>go.mod</code>文件和是否使用<code>vendor</code>文件夹。
+默认的，如果<code>go.mod</code>中的版本大于等于1.14且存在<code>vendor</code>文件夹，那么会使用<code>-mod=vendor</code>；反之，使用<code>-mod=readonly</code>。
+<ul>
+<li><code>mod</code> 忽略<code>vendor</code>并更新<code>go.mod</code>，比如代码中增加了新的依赖，使用<code>go build -mod=mod</code>就会自动将新的依赖添加到<code>go.mod</code>文件。</li>
+<li><code>readonly</code>忽略<code>vendor</code>；如果<code>go.mod</code>文件需要跟新，那么报告错误。</li>
+<li><code>vendor</code> 使用<code>vendor</code>机制。（go指令不会使用网络和缓存的module）</li>
+</ul>
+</li>
+<li><code>-modcacherw</code> mod cache read-write</li>
+<li><code>-modfile file</code> <a href="/post/language/go/module/#详细一点点的解释">module-aware模式</a>下，
+指定要使用的<code>go.mod</code>文件。</li>
+<li><code>-overlay file</code> <code>overlay</code>文件提供了将编译中需要使用的文件映射到需要的路径的能力。</li>
+<li><code>-pkgdir dir</code> ？替换所有的安装和加载所有的包的路径。</li>
+<li><code>-tags tag,list</code> 逗号分割的编译tag列表，<a href="#%E7%BC%96%E8%AF%91%E7%BA%A6%E6%9D%9F-build-constraints">详细的用法在这里</a>。</li>
+<li><code>-trimpath</code> （用处？）将输出的可执行文件中的所有文件系统路径（前缀）移除，分别替代为：
+<ul>
+<li><code>go</code> 标准库</li>
+<li><code>module_path@version</code> 使用module机制</li>
+<li><code>plain import path</code> 使用GOPATH机制</li>
+</ul>
+</li>
+<li><code>-toolexec 'cmd args'</code></li>
+</ul>
+<p>对于<code>-asmflags/-gccgoflags/-gcflags/-ldflags</code>，每个都接受一组参数<code>arg list</code>用于传递给底层的程序。</p>
+<ul>
+<li><code>arg list</code>需要包含一个pakcage pattern用于指明这些参数在处理哪些包时要被传递给的底层的程序。</li>
+<li>默认的，只有在<code>go build packages</code>的<code>packages</code>中出现的包。</li>
+<li>这提供了一种为不同的包使用不同的参数的能力。</li>
+<li>如果需要传递给所有的包，可以使用如<code>go build -gcflags='all=-l -N' packages</code>的形式。</li>
+</ul>
+<h2 id="格式化源码-gofmt--go-fmt">格式化源码 Gofmt / <code>go fmt</code></h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">go fmt <span class="o">[</span>-n<span class="o">]</span> <span class="o">[</span>-x<span class="o">]</span> <span class="o">[</span>packages<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>go fmt</code>相当于在<code>packages</code>上执行<code>gofmt -l -w</code>，
+效果是将格式化之后的代码写回文件，并在标准输出列出修改过的文件。</p>
+<p>更多的关于<code>gofmt</code>参见<a href="#gofmt%E6%8C%87%E4%BB%A4">这里</a>。</p>
+<ul>
+<li><code>-n</code></li>
+</ul>
+<h2 id="按照文件中的指令进行以生成更新go代码的工作-go-generate">按照文件中的指令进行以生成、更新go代码的工作 <code>go generate</code></h2>
+<p><code>go generate</code>会扫描文件中形如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">//go:generate command argument list
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>的指令。</p>
+<p>其中<code>command</code>指明需要运行的程序，可以是如下的形式：</p>
+<ul>
+<li>在shell path中</li>
+<li>绝对路径</li>
+<li>指令的别名</li>
+</ul>
+<p><strong>特别的，<code>go generate</code>不会解析文件，
+所以在注释或者多行字符串中符合形式的字符串也会被认为是需要运行的指令。</strong></p>
+<p><code>argument list</code>是传递给<code>command</code>的参数，
+空格分隔的token或者双引号表示字符串参数。</p>
+<p>为了表明某些代码是生成的，
+需要在这些文件的开头注明符合以下格式的行作为标记：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-plain" data-lang="plain"><span class="line"><span class="cl">^// Code generated .* DO NOT EDIT\.$
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>go generate</code>会在调用<code>command</code>时设置一些环境变量，
+如<code>$GOARCH</code>执行的cpu架构等。</p>
+<p><code>//go:generate -command foo go tool foo</code> 可以将<code>foo</code>定义为<code>go tool foo</code>的别名，用于上述的<code>command</code>中。</p>
+<p><code>go generate</code>运行时会表明使用tag <code>generate</code> ，
+这样可以使得一些文件只被<code>go generate</code>识别，但在<code>build</code>时被忽略。</p>
+<p><code>go generate</code>接受<code>-run=&quot;&quot;</code>参数，指明要执行的指令的正则表达式。</p>
+<h2 id="增加当前模块的依赖并且安装这些依赖-go-get-和-go-install">增加当前模块的依赖并且安装这些依赖 <code>go get</code> 和 <code>go install</code></h2>
+<p>具体的指令使用<a href="/post/language/go/module/#指令">看这里</a>。</p>
+<p><code>go get</code>与<code>go install</code>的职责分别是“管理依赖”和“安装模块”。
+这一变化也是随着go版本的迭代会逐渐明确。</p>
+<h3 id="go-install"><code>go install</code></h3>
+<p><code>go install</code>也会将可执行文件安装到<code>GOBIN</code>目录下。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">go install <span class="o">[</span>build flags<span class="o">]</span> <span class="o">[</span>packages<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>出于消除歧义的目的，参数需要满足：</p>
+<ul>
+<li>packages需要是一下情况的一种：
+<ul>
+<li>包路径</li>
+<li>描述包的pattern</li>
+<li>不能是标准库的包，meta-patterns(std, cmd, all)，文件的相对路径或绝对路径。</li>
+</ul>
+</li>
+<li>所有的参数需要有相同的版本后缀。</li>
+<li>所有关联的在同一个模块的包需要使用同样版本的模块。</li>
+<li>所有关联的模块，在被认为是main与否时，不能有不同的表现。
+<ul>
+<li>如当一个模块是main时，go.mod文件中的<code>replace</code>指令会生效，导致这种情况。</li>
+</ul>
+</li>
+<li>使用“包路径”来描述时，一定要指向main包。</li>
+</ul>
+<h2 id="列出包或模块">列出包或模块</h2>
+<p><code>go list</code></p>
+<p>todo</p>
+<h2 id="模块维护">模块维护</h2>
+<p><code>go mod</code>指令提供维护模块的能力。</p>
+<p>具体的指令使用<a href="/post/language/go/module/#指令">看这里</a>。</p>
+<h2 id="编译运行程序">编译、运行程序</h2>
+<p><code>go run</code>编译并运行传入的main包。</p>
+<p><code>go run [build flags] [-exec xprog] package [arguments...]</code></p>
+<p>用法：</p>
+<ul>
+<li><code>build flags</code> 与[之前](&quot;#build flags 编译参数&quot;)相同</li>
+<li><code>-exec</code> 运行产物的方式：
+<ul>
+<li>默认的会直接执行。</li>
+<li>如果传入了<code>-exec {{executor}}</code>参数，会使用<code>executor a.out arguments</code>来执行。</li>
+<li>如果没有设置<code>-exec</code>，而且编译产物不是 <strong>GOOS</strong> 和 <strong>GOARCH</strong> ，
+而且<code>go_$GOOS_$GOARCH_exec</code>在path中存在，那么会使用
+<code>go_$GOOS_$GOARCH_exec a.out arguments</code>来执行。使用的场景是交叉编译。</li>
+</ul>
+</li>
+</ul>
+<h2 id="测试">测试</h2>
+<p><code>go test [build/test flags] [packages] [build/test flags &amp; test binary flags]</code></p>
+<p><code>go test</code>会重新编译每个包中的<code>*_test.go</code>文件。
+每个列出的包会生成一个单独的测试可执行文件。</p>
+<p>定义了<code>*_test</code>包的测试文件会被编译成单独的包，然后和主test包链接、执行。</p>
+<p><code>go tool</code>会忽略<code>testdata</code>文件夹。</p>
+<h3 id="go-vet检测"><code>go vet</code>检测</h3>
+<p>默认的，<code>go test</code>会执行<code>go vet</code>来检测明显的错误，
+如果<code>go vet</code>发现了错误，那么测试就会被提前中断，实际代码不会被执行。</p>
+<p><strong>如果想要关闭vet检测，可以使用参数<code>-vet=off</code>。</strong></p>
+<h3 id="两种执行模式">两种执行模式</h3>
+<p>第一种，本地目录模式。当没有设置<code>packages</code>参数时，会使用这种模式。</p>
+<ul>
+<li><code>go test</code>处理在当前目录下的测试</li>
+<li>不使用缓存</li>
+<li>输出测试结果的总结</li>
+</ul>
+<p>第二种，传递了包的模式。
+<code>go test</code>测试列出的包。</p>
+<ul>
+<li>如果没有问题，只显示ok；有问题或者传入了<code>-v</code>或者<code>-bench</code>，会打印出所有的输出。</li>
+<li>缓存成功的测试结果，来避免重复的测试。
+<ul>
+<li>判定是否命中缓存，由是否是同一个二进制测试文件和传入的参数是否是“可缓存的”来决定。</li>
+<li><strong>避免命中缓存，可以通过传入不可缓存的参数来实现，比如<code>-count=1</code>。</strong></li>
+</ul>
+</li>
+</ul>
+<h3 id="go-test接受的参数"><code>go test</code>接受的参数</h3>
+<p>这里列出的是只传递给<code>go test</code>的参数。</p>
+<ul>
+<li><code>-args</code> 该参数会被原封不动 (uninterpreted and unchanged) 的传递给测试二进制文件。
+<ul>
+<li>可以用来避免参数被<code>go test</code>解析和重写。</li>
+</ul>
+</li>
+<li><code>-c</code> 只编译不执行。</li>
+<li><code>-exec xprog</code> 使用xprog来执行测试二进制程序。</li>
+<li><code>-i</code> 安装测试依赖的包，不执行测试。</li>
+<li><code>-json</code> 将输出格式化为json格式，用于自动化处理结果。</li>
+<li><code>-o</code> 测试二进制文件的名字。</li>
+</ul>
+<h3 id="测试二进制文件接受的参数">测试二进制文件接受的参数</h3>
+<p><code>go test</code>与生成的测试可执行文件都接受一组参数，
+用来控制测试的运行方式。</p>
+<p>需要注意的：</p>
+<ol>
+<li>所有的下列的参数接受一个<code>test.</code>前缀，例如<code>-test.v</code>。<strong>如果直接执行生成的可执行文件，那么这个前缀是必须的。</strong></li>
+</ol>
+<p>常用的：</p>
+<ul>
+<li><code>-run regexp</code> 运行符合正则的测试。</li>
+<li><code>-bench regexp</code> 只运行匹配该正则的benchmark，<code>-bench .</code>或者<code>-bench=.</code>可以用来运行所有的benchmark。</li>
+<li><code>-vet list</code> 逗号分割的vet检测列表,<code>-vet off</code>关闭检测。</li>
+<li><code>-failfast</code> 快速失败，发现了错误就不再执行了。</li>
+<li><code>-count n</code> 运行每个test和benchmark n次。</li>
+<li><code>-cover</code> 开启覆盖分析。 <em>（因为会插入代码来计算覆盖率，所以出错时展示的行号可能不可信）</em></li>
+<li><code>-v</code> verbose模式。</li>
+</ul>
+<p>其他：</p>
+<ul>
+<li><code>-benchtime 1h30s</code> <code>-benchtime 100x</code> 使得每一个benchmark运行到1h30s或者100次。</li>
+<li><code>-covermode set,count,atomic</code> 覆盖分析的模式。
+<ul>
+<li><code>set</code> 每个语句是否运行。</li>
+<li><code>count</code> 每个语句运行的次数。</li>
+<li><code>atomic</code> 并发安全的<code>count</code>。</li>
+</ul>
+</li>
+<li><code>-coverpkg pattern1,pattern2</code> 为匹配模式的包运行覆盖分析。</li>
+<li><code>-cpu 1,2,4</code> 分别在<code>GOMAXPROCS</code>为1、2、4的情况下运行测试。</li>
+<li><code>-list regexp</code> 不执行，只列出符合正则的test/benchmark/example。</li>
+<li><code>-parallel n</code> 允许调用<code>t.Parallel</code>的测试执行。</li>
+<li><code>-short</code> ？</li>
+<li><code>-timeout d</code> 测试可执行文件如果运行超过d时，抛出panic。</li>
+</ul>
+<p>性能检测：</p>
+<ul>
+<li><code>-benchmem</code> 打印benchmark的内存分配统计信息。</li>
+<li><code>-blockprofile block.out</code> 将goroutine阻塞情况写到<code>block.out</code>中。</li>
+<li><code>-blockprofilerate n</code> 调整阻塞情况的采样率。</li>
+<li><code>-coverprofile cover.out</code> 将覆盖分析写入到<code>cover.out</code>。</li>
+<li><code>-cpuprofile cpu.out</code> 将CPU分析写入到<code>cpu.out</code>中。</li>
+<li><code>-memprofile mem.out</code> 内存分配分析。</li>
+<li><code>-memprofilerate n</code> 更精准的内存分配采样。</li>
+<li><code>-mutexprofile mutex.out</code> 互斥量竞争情况。</li>
+<li><code>-mutexprofilefraction n</code> 每n个采样一个获得发生竞争的互斥量的goroutine的堆栈信息。</li>
+<li><code>-outputdir directory</code> 所有的信息的输出目录。</li>
+<li><code>-trace trace.out</code> 将执行trace写入到<code>trace.out</code>。</li>
+</ul>
+<h2 id="执行指定的指令-go-tool-command">执行指定的指令 <code>go tool command</code></h2>
+<p><code>go tool [-n] command [args...]</code></p>
+<ul>
+<li><code>-n</code> 只打印指令，不执行。</li>
+</ul>
+<h2 id="扫描可能的错误">扫描可能的错误</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">go vet <span class="o">[</span>-n<span class="o">]</span> <span class="o">[</span>-x<span class="o">]</span> <span class="o">[</span>-vettool prog<span class="o">]</span> <span class="o">[</span>build flags<span class="o">]</span> <span class="o">[</span>vet flags<span class="o">]</span> <span class="o">[</span>packages<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h1 id="更加详细的细节">更加详细的细节</h1>
+<h2 id="编译">编译</h2>
+<h3 id="编译约束-build-constraints">编译约束 build constraints</h3>
+<p>aka build tag</p>
+<p>用于描述一个文件在什么情况下需要被包含在package中。</p>
+<p>例子：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">//go:build (linux &amp;&amp; 386) || (darwin &amp;&amp; !cgo)
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>约束了编译该文件的操作系统、指令集、cgo。</p>
+<p>要求：</p>
+<ul>
+<li>可以出现在所有的源码文件中（不仅是go）。</li>
+<li>需要在文件的靠前的位置，再之前只能有空白行或其他注释。</li>
+<li>为了区分编译约束和package文档，编译约束需要接一个空行。</li>
+<li>一个文件只能有一个编译约束。</li>
+</ul>
+<p>编译约束支持以下的类型：</p>
+<ul>
+<li>目标操作系统</li>
+<li>目标指令集</li>
+<li>使用的编译器，比如gc或者gccgo。</li>
+<li>是否支持cgo。</li>
+<li>go的版本，如<code>go.1.12</code>。</li>
+<li>通过<code>-tags</code>给出的其他tag。</li>
+</ul>
+<p>如果一个源码文件在去除扩展名和可能的<code>_test</code>后缀后，
+匹配到类似：<code>*_GOOS/*_GOARH/*_GOOS_GOARCH</code>的文件名时，
+等价于追加了操作系统或指令集的编译约束。</p>
+<p>对于1.16之前的版本，使用的是<code>//+build</code>作为编译约束的前缀。</p>
+<h3 id="编译模式-build-mode">编译模式 build mode</h3>
+<p><code>go build</code>和<code>go install</code>接受一个编译模式，
+用来控制输出产物的类型。</p>
+<ul>
+<li><code>archive</code> 构建给出的所有非main包为<code>.a</code>文件。</li>
+<li><code>c-archive</code> 构建给出的main包和所有它引用的包，产出C archive文件。
+导出的可调用符号 <em>(callable symbols)</em> 只有使用cgo的<code>//export</code>标记的函数。</li>
+<li><code>c-shared</code> 构建给出的main包和所有它引用的包，产出C共享lib。
+导出的可调用符号 <em>(callable symbols)</em> 只有使用cgo的<code>//export</code>标记的函数。</li>
+<li><code>default</code> 默认的参数。
+构建给出的main包，产出可执行文件。
+构建所有的非main包，产出<code>.a</code>文件。</li>
+<li><code>shared</code> 构建所有的非main包，产出后续用于<code>-linkshared</code>的单个共享lib。</li>
+<li><code>exe</code> 构建给出的main包，产出可执行文件。</li>
+<li><code>pie</code> 构建给出的main包和它引用的包，产出位置无关可执行文件(Position indenpendent executable)。</li>
+<li><code>plugin</code> 构建给出的main包和它引用的包，产出Go plugin。</li>
+</ul>
+<h3 id="编译和测试缓存">编译和测试缓存</h3>
+<p>go指令会缓存编译的输出并且尝试在未来的构建中使用。
+默认的位置在当前操作系统的用户缓存目录下的go-build子文件夹中。
+位置可以通过<code>GOCACHE</code>控制。</p>
+<p>缓存会周期性的清理，或者使用<code>go clean -cache</code>来清理。
+通常不会需要手动清理编译缓存，
+go指令会探知源文件的修改、编译选项的变更等会影响编译结果的变化，
+<strong>但C库的变化不会被感知</strong>，所以如果使用了C库，且发生了变动，
+需要手动的清理编译缓存。</p>
+<h2 id="环境变量">环境变量</h2>
+<p>go指令会通过环境变量来进行一些设置，
+如果相关的环境变量没有设置，
+那么会使用默认值。</p>
+<p>操作：</p>
+<ul>
+<li>
+<p>查看环境变量NAME <code>go env &lt;NAME&gt;</code></p>
+</li>
+<li>
+<p>修改环境变量NAME <code>go env -w &lt;NAME&gt;=&lt;VALUE&gt;</code></p>
+<ul>
+<li>默认的，保存到<code>GOENV</code>指向的文件中。</li>
+</ul>
+</li>
+<li>
+<p>通用的</p>
+<ul>
+<li><code>GO111MODULE</code> 控制是否运行在<code>module-aware</code>模式下。</li>
+<li><code>GCCGO</code> <code>go build -compiler=gccgo</code>使用的指令。？</li>
+<li><code>GOARCH</code> 目标指令集。</li>
+<li><code>GOBIN</code> <code>go install</code>的目标路径。</li>
+<li><code>GOCACHE</code> 构建缓存存放的文件夹。</li>
+<li><code>GOMODCACHE</code> 下载的模块的缓存的文件夹。</li>
+<li><code>GODEBUG</code> 激活多种调试机制。？</li>
+<li><code>GOENV</code> 存储go环境变量的文件。</li>
+<li><code>GOFLAGS</code> 空格分割的<code>-flag=value</code>列表，
+当要执行的go指令支持这些flag时，会传递给go指令。
+优先级低于直接在命令中给出的flag。</li>
+<li><code>GOINSECURE</code> 一组逗号分割的模块通配符，
+符合的模块会被使用不安全的方法来获取。
+只在直接获取的模块上生效。</li>
+<li><code>GOOS</code> 编译目标的操作系统。</li>
+<li><code>GOPATH</code> 指明需要从哪些地方来获取go代码，
+在使用模块时不再用于解析引入的包。
+<ul>
+<li>unix下，是冒号分割的字符串。</li>
+<li>windows下，是分号分割的字符串。</li>
+</ul>
+</li>
+<li><code>GOPROXY</code> go模块代理的地址。</li>
+<li><code>GOPRIVAGE,GONOPROXY,GONOSUMDB</code> 逗号分割的模块前缀通配模式，
+符合模式的模块会直接获取 <em>(be fetched directly)</em> ，
+也不会进行校验和校验。</li>
+<li><code>GOROOT</code> go树的根。？</li>
+<li><code>GOSUMDB</code> 需要使用的校验和数据库。</li>
+<li><code>GOTMPDIR</code> go指令使用的临时文件夹。</li>
+<li><code>GOVCS</code> 会用来尝试匹配服务器？的版本控制指令。</li>
+</ul>
+</li>
+<li>
+<p>用于<code>cgo</code>的 todo</p>
+<ul>
+<li>AR The command to use to manipulate library archives when building with the gccgo compiler. The default is &lsquo;ar&rsquo;.</li>
+<li>CC The command to use to compile C code.</li>
+<li>CGO_ENABLED Whether the cgo command is supported. Either 0 or 1.</li>
+<li>CGO_CFLAGS
+<ul>
+<li>Flags that cgo will pass to the compiler when compiling</li>
+<li>C code.</li>
+</ul>
+</li>
+<li>CGO_CFLAGS_ALLOW
+<ul>
+<li>A regular expression specifying additional flags to allow</li>
+<li>to appear in #cgo CFLAGS source code directives.</li>
+<li>Does not apply to the CGO_CFLAGS environment variable.</li>
+</ul>
+</li>
+<li>CGO_CFLAGS_DISALLOW
+<ul>
+<li>A regular expression specifying flags that must be disallowed</li>
+<li>from appearing in #cgo CFLAGS source code directives.</li>
+<li>Does not apply to the CGO_CFLAGS environment variable.</li>
+</ul>
+</li>
+<li>CGO_CPPFLAGS, CGO_CPPFLAGS_ALLOW, CGO_CPPFLAGS_DISALLOW
+<ul>
+<li>Like CGO_CFLAGS, CGO_CFLAGS_ALLOW, and CGO_CFLAGS_DISALLOW,</li>
+<li>but for the C preprocessor.</li>
+</ul>
+</li>
+<li>CGO_CXXFLAGS, CGO_CXXFLAGS_ALLOW, CGO_CXXFLAGS_DISALLOW
+<ul>
+<li>Like CGO_CFLAGS, CGO_CFLAGS_ALLOW, and CGO_CFLAGS_DISALLOW,</li>
+<li>but for the C++ compiler.</li>
+</ul>
+</li>
+<li>CGO_FFLAGS, CGO_FFLAGS_ALLOW, CGO_FFLAGS_DISALLOW
+<ul>
+<li>Like CGO_CFLAGS, CGO_CFLAGS_ALLOW, and CGO_CFLAGS_DISALLOW,</li>
+<li>but for the Fortran compiler.</li>
+</ul>
+</li>
+<li>CGO_LDFLAGS, CGO_LDFLAGS_ALLOW, CGO_LDFLAGS_DISALLOW
+<ul>
+<li>Like CGO_CFLAGS, CGO_CFLAGS_ALLOW, and CGO_CFLAGS_DISALLOW,</li>
+<li>but for the linker.</li>
+</ul>
+</li>
+<li>CXX
+<ul>
+<li>The command to use to compile C++ code.</li>
+</ul>
+</li>
+<li>FC
+<ul>
+<li>The command to use to compile Fortran code.</li>
+</ul>
+</li>
+<li>PKG_CONFIG
+<ul>
+<li>Path to pkg-config tool.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>用于特定的指令集的 todo</p>
+</li>
+<li>
+<p>特殊目的的 todo</p>
+<ul>
+<li>GCCGOTOOLDIR</li>
+<li>GOEXPERIMENT</li>
+<li>GOROOT_FINAL</li>
+<li>GO_EXTLINK_ENABLED</li>
+<li>GIT_ALLOW_PROTOCOL</li>
+</ul>
+</li>
+<li>
+<p>其他的<code>go env</code>提供的信息，但不是从环境变量读取的。</p>
+<ul>
+<li>GOEXE</li>
+<li>GOGCCFLAGS</li>
+<li>GOHOSTARCH</li>
+<li>GOHOSTOS</li>
+<li>GOMOD</li>
+<li>GOTOOLDIR</li>
+<li>GOVERSION</li>
+</ul>
+</li>
+</ul>
+<h2 id="gofmt指令">gofmt指令</h2>
+<p>Gofmt格式化go源码，使用tab缩进，空格对齐（注释、结构的字段类型等）。</p>
+<p>如果没有指定路径，那么gofmt处理标准输入。
+如果指定了一个文件，那么处理文件。
+如果指定了文件夹，那么递归的处理文件夹中的所有.go文件。</p>
+<p>默认的，gofmt将格式化之后的源码输出到标准输出（而不是直接写回）。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">gofmt <span class="o">[</span>flags<span class="o">]</span> <span class="o">[</span>path ...<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>参数：</p>
+<ul>
+<li><code>-d</code> 不输出格式化之后的源码，而是将格式化前后的diff输出到标准输出。</li>
+<li><code>-e</code> ？输出所有的异常。</li>
+<li><code>-l</code> 不输出格式化之后的源码，而是输出格式化前后不同的的文件名。</li>
+<li><code>-r rule</code> 在格式化之前将重写规则 <em>（rewrite rule）</em> 应用到源码上。</li>
+<li><code>-s</code> 尝试简化代码。</li>
+<li><code>-w</code> 不输出格式化之后的源码，而是将格式化之后的代码写回到文件。</li>
+</ul>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://go.dev/doc/cmd">Golang official document - Command Documentation</a></li>
+<li><a href="https://pkg.go.dev/cmd">标准库/cmd包的文档</a></li>
+<li><a href="https://go.dev/ref/mod#build-commands">关于<code>-mod</code>的文档</a></li>
+<li>[gofmt的文档]](<a href="https://pkg.go.dev/cmd/gofmt@go1.17.5">https://pkg.go.dev/cmd/gofmt@go1.17.5</a>)</li>
+</ul>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-01-03
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/go/">go</a>
+          <a href="/tags/how/">how</a>
+          <a href="/tags/memo/">memo</a>
+          <a href="/tags/go-command/">go-command</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/language/go/go_compile/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">go tool compile用法与编译指令</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/other/2022/">
+            <span class="next-text nav-default">2021总结与2022的开始</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-01-03 11:48:10 \u002b0800 \u002b0800',
+        title: 'go开发套件',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

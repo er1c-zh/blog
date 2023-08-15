@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>diary on blog</title>
+    <link>https://blog.er1c.dev/tags/diary/</link>
+    <description>Recent content in diary on blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sat, 01 Jan 2022 20:15:58 +0800</lastBuildDate><atom:link href="https://blog.er1c.dev/tags/diary/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>2021总结与2022的开始</title>
+      <link>https://blog.er1c.dev/post/other/2022/</link>
+      <pubDate>Sat, 01 Jan 2022 20:15:58 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/other/2022/</guid>
+      <description>2021总结 这是第一次尝试认真的、严肃的、坦诚的面对自己，确实有点困难。 2021，自己的变化其实不是很多： 精神上 计算机的书有两本算是“看过”</description>
+    </item>
+    
+    <item>
+      <title>About Me</title>
+      <link>https://blog.er1c.dev/about-me/</link>
+      <pubDate>Tue, 18 Aug 2020 22:35:15 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/about-me/</guid>
+      <description>About Me A coder. My friends 是JIN大佬</description>
+    </item>
+    
+  </channel>
+</rss>

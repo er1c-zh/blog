@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>rust on blog</title>
+    <link>https://blog.er1c.dev/tags/rust/</link>
+    <description>Recent content in rust on blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Fri, 19 May 2023 17:14:28 +0800</lastBuildDate><atom:link href="https://blog.er1c.dev/tags/rust/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>rust宏</title>
+      <link>https://blog.er1c.dev/post/language/rust/marco/</link>
+      <pubDate>Fri, 19 May 2023 17:14:28 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/language/rust/marco/</guid>
+      <description>&lt;p&gt;rust有&lt;code&gt;declarative&lt;/code&gt;宏和&lt;code&gt;procedural&lt;/code&gt;宏。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

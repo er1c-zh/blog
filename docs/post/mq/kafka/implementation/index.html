@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>kafka的实现 - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="kafka的实现。
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/mq/kafka/implementation/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="kafka的实现" />
+<meta property="og:description" content="kafka的实现。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/mq/kafka/implementation/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-10-26T07:22:26+08:00" />
+<meta property="article:modified_time" content="2022-10-26T07:22:26+08:00" />
+<meta itemprop="name" content="kafka的实现">
+<meta itemprop="description" content="kafka的实现。"><meta itemprop="datePublished" content="2022-10-26T07:22:26+08:00" />
+<meta itemprop="dateModified" content="2022-10-26T07:22:26+08:00" />
+<meta itemprop="wordCount" content="2128">
+<meta itemprop="keywords" content="mq,kafka,memo,what,way-to-kafka," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="kafka的实现"/>
+<meta name="twitter:description" content="kafka的实现。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">kafka的实现</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-10-26 </span>
+        
+          <span class="more-meta"> 约 2128 字 </span>
+          <span class="more-meta"> 预计阅读 5 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#网络层">网络层</a></li>
+    <li><a href="#消息">消息</a></li>
+    <li><a href="#消息格式">消息格式</a>
+      <ul>
+        <li><a href="#批量消息-recordbatch">批量消息 RecordBatch</a></li>
+        <li><a href="#消息-record">消息 Record</a></li>
+      </ul>
+    </li>
+    <li><a href="#log">Log</a>
+      <ul>
+        <li><a href="#写入">写入</a></li>
+        <li><a href="#读取">读取</a>
+          <ul>
+            <li><a href="#具体实现">具体实现</a></li>
+          </ul>
+        </li>
+        <li><a href="#删除">删除</a></li>
+        <li><a href="#保证">保证</a></li>
+      </ul>
+    </li>
+    <li><a href="#分发-distribution">分发 Distribution</a>
+      <ul>
+        <li><a href="#zookeeper如何协调consumer和broker">Zookeeper如何协调consumer和broker</a>
+          <ul>
+            <li><a href="#borcker节点注册">borcker节点注册</a></li>
+            <li><a href="#broker-topic-注册">broker topic 注册</a></li>
+            <li><a href="#cluster-id">cluster id</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#reference">Reference</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p>kafka的实现。</p>
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+            
+                <div class="serial-index">
+                    <p>系列列表</p>
+                    <ul>
+                    
+                        <li><a href="https://blog.er1c.dev/post/mq/kafka/introduction/">kafka基本概念</a></li>
+                    
+                        <li><a href="https://blog.er1c.dev/post/mq/kafka/design/">kafka设计</a></li>
+                    
+                        <li><a href="https://blog.er1c.dev/post/mq/kafka/implementation/">kafka的实现</a></li>
+                    
+                    </ul>
+                </div>
+            
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+
+
+<h1 id="网络层">网络层</h1>
+<p>网络层实现了简单的转发。</p>
+<p><code>sendfile</code>通过给<code>Message</code>增加<code>writeTo</code>接口来实现，
+这使得存储在文件中的<code>Message</code>可以通过<code>transferTo</code>来实现发送而不再需要使用额外的buffer和复制。</p>
+<p>线程模型是一个acceptor线程和N个处理固定链接数的工作线程。</p>
+<h1 id="消息">消息</h1>
+<p><code>Message</code>由：</p>
+<ol>
+<li>变长header</li>
+<li>变长opaque key byte array</li>
+<li>变长opaque value byte array</li>
+</ol>
+<p>将数据设置为opaque可以支持更多的用途和使用方式。</p>
+<h1 id="消息格式">消息格式</h1>
+<p>消息都被存储在<strong>批量消息</strong>(batch)中。
+一个批量消息包含一个或多个消息。
+批量消息和消息有各自的header。</p>
+<h2 id="批量消息-recordbatch">批量消息 RecordBatch</h2>
+<pre tabindex="0"><code>baseOffset: int64
+batchLength: int32
+partitionLeaderEpoch: int32
+magic: int8 (current magic value is 2)
+crc: int32
+attributes: int16
+    bit 0~2:
+        0: no compression
+        1: gzip
+        2: snappy
+        3: lz4
+        4: zstd
+    bit 3: timestampType
+    bit 4: isTransactional (0 means not transactional)
+    bit 5: isControlBatch (0 means not a control batch)
+    bit 6: hasDeleteHorizonMs (0 means baseTimestamp is not set as the delete horizon for compaction)
+    bit 7~15: unused
+lastOffsetDelta: int32
+baseTimestamp: int64
+maxTimestamp: int64
+producerId: int64
+producerEpoch: int16
+baseSequence: int32
+records: [Record]
+</code></pre><h2 id="消息-record">消息 Record</h2>
+<pre tabindex="0"><code>length: varint
+attributes: int8
+    bit 0~7: unused
+timestampDelta: varlong
+offsetDelta: varint
+keyLength: varint
+key: byte[]
+valueLen: varint
+value: byte[]
+Headers =&gt; [Header]
+</code></pre><pre tabindex="0"><code>// RecordHeader
+headerKeyLength: varint
+headerKey: String
+headerValueLength: varint
+Value: byte[]
+</code></pre><h1 id="log">Log</h1>
+<p>对于有两个partition的topic<code>mt</code>，
+有两个目录存储数据。
+(<code>mt_0</code>和<code>mt_1</code>)</p>
+<p>log_file由一系列log_entry构成。</p>
+<p>每个log文件名是文件中的第一个消息的offset。</p>
+<p>log_entry开头是4byte的长度信息。</p>
+<p>每个message由一个64位的offset来唯一标识。
+这个标识符是这个partition从开始以来发送的所有数据的byte为单位的offset。</p>
+<p>使用offset来唯一标记message是不同寻常的方案。
+考虑到使用全局唯一的id以及和offset的映射表来做，需要巨大的存储和性能成本。</p>
+<p>为了解决这个问题，一个自然的方案是，partition_id + node_id + per-partition atomic counter来作为id。
+那么，使用offset也就是一个自然的选择了。（同样是跟着消息的写入自增、且唯一。）</p>
+<h2 id="写入">写入</h2>
+<p>log文件支持从最后一个文件追加写入。
+根据配置，如果文件大小超过了，就会产生一个新的log文件。</p>
+<p>有两项配置用来控制可靠性：</p>
+<ul>
+<li>最多多少条message触发刷盘</li>
+<li>最多多长时间触发刷盘</li>
+</ul>
+<h2 id="读取">读取</h2>
+<p>读取操作的入参是offset和需要读取的数据size。</p>
+<p>如果超过了size，会不断的尝试翻倍size来尝试读取。
+可以配置上限来丢弃过大的消息。</p>
+<h3 id="具体实现">具体实现</h3>
+<p>定位到存储了这个offset的log segment file。
+根据offset来计算segment文件中的offset。
+搜索是在每个文件在内存中的范围上的简单的二分查找。</p>
+<h2 id="删除">删除</h2>
+<p>数据的删除按照segment为单位。
+log manager根据time和size来判断一个segment是否是可以删除的。
+时间策略会看一个segment中最新的消息作为；
+size策略默认关闭，如果开启，manager会持续的删除最旧的segment来保持所有的size不超过配置。</p>
+<p>同时开启时，任意条件满足都会删除。</p>
+<p>利用COW机制来实现读取和删除不冲突。</p>
+<h2 id="保证">保证</h2>
+<p>log提供一个配置项用来控制是否没有刷盘的最大message量。</p>
+<p>开始一个恢复过程中，遍历最新的segment，检查每个message entry</p>
+<h1 id="分发-distribution">分发 Distribution</h1>
+<p>消费者跟踪记录每个partition消费到的最大的offset，
+在重启的时候会继续消费。</p>
+<p>kafka提供一个可选的方案：
+将给定的consumer group的offset记录到一个特定的broker中，这个broker称作group coordinator。</p>
+<p>consumer可以向任意broker来查询自己group的coordinator是哪个broker。</p>
+<p>当coordinator变动时，consumer需要重新进行这个流程，来发现新的coordinator。</p>
+<p>offset可以被自动或者手动的提交。</p>
+<p>当coordinator收到了提交offset的请求时，
+会将这个请求append到一个特别的、压缩过的kafka topic(<em>__consumer_offsets</em>)。
+coordinator会在所有的分片返回写入成功之后，
+返回给consumer一个写入成功的响应。
+如果有任意分片写入失败，
+coordinator会返回失败，
+consumer可以重试提交。
+考虑到只需要维护每个partition最新的offset，broker会周期性的压缩offset topic。
+coordinator会将offset缓存下来，为了更快的查询。</p>
+<p>coordinator被查询offset时，会直接从cache中返回offset的vector。
+如果coordinator刚刚启动或者其他原因构建好cache，
+会返回失败，直到将offset topic的数据加载到cache；consumer可以重试查询。</p>
+<h2 id="zookeeper如何协调consumer和broker">Zookeeper如何协调consumer和broker</h2>
+<h3 id="borcker节点注册">borcker节点注册</h3>
+<pre tabindex="0"><code>/brokers/ids/[0...N] -&gt; {&#34;jmx_port&#34;:...,&#34;timestamp&#34;:...,&#34;endpoints&#34;:[...],&#34;host&#34;:...,&#34;version&#34;:...,&#34;port&#34;:...} (ephemeral node)
+</code></pre><p>每一项表示一个broker。
+broker的配置中会给出一个逻辑id来唯一标识这个broker。
+启动时，broker通过创建一个自己的逻辑id的znode来注册。
+逻辑id是为了在broker从不同的物理集群迁移时，
+不影响消费者。</p>
+<p>因为是ephemeral节点，所以当broker失联的时候，
+节点会消失。</p>
+<h3 id="broker-topic-注册">broker topic 注册</h3>
+<pre tabindex="0"><code>/brokers/topics/[topic]/partitions/[0...N]/state --&gt; {&#34;controller_epoch&#34;:...,&#34;leader&#34;:...,&#34;version&#34;:...,&#34;leader_epoch&#34;:...,&#34;isr&#34;:[...]} (ephemeral node)
+</code></pre><h3 id="cluster-id">cluster id</h3>
+<p>集群id是一个唯一、不可变更的字符串。</p>
+<h1 id="reference">Reference</h1>
+<ul>
+<li><a href="https://kafka.apache.org/documentation/#implementation">kafka IMPLEMENTATION</a></li>
+<li><a href="https://web.archive.org/web/20120619234320/http://sna-projects.com/blog/2009/08/introducing-the-nio-socketserver-implementation/">Introducing the NIO SocketServer Implementation</a></li>
+</ul>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-10-26
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/mq/">mq</a>
+          <a href="/tags/kafka/">kafka</a>
+          <a href="/tags/memo/">memo</a>
+          <a href="/tags/what/">what</a>
+          <a href="/tags/way-to-kafka/">way-to-kafka</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/http/rfc-7231-note/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">RFC7231笔记</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/mq/kafka/design/">
+            <span class="next-text nav-default">kafka设计</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-10-26 07:22:26 \u002b0800 \u002b0800',
+        title: 'kafka的实现',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>eBPF总览 - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="eBPF是一种Linux内核提供的，可以在操作系统内核这种需要权限的上下文中执行沙盒程序的技术。
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/linux/ebpf-intro/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="eBPF总览" />
+<meta property="og:description" content="eBPF是一种Linux内核提供的，可以在操作系统内核这种需要权限的上下文中执行沙盒程序的技术。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/linux/ebpf-intro/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-03-30T19:01:52+08:00" />
+<meta property="article:modified_time" content="2023-03-30T19:01:52+08:00" />
+<meta itemprop="name" content="eBPF总览">
+<meta itemprop="description" content="eBPF是一种Linux内核提供的，可以在操作系统内核这种需要权限的上下文中执行沙盒程序的技术。"><meta itemprop="datePublished" content="2023-03-30T19:01:52+08:00" />
+<meta itemprop="dateModified" content="2023-03-30T19:01:52+08:00" />
+<meta itemprop="wordCount" content="951">
+<meta itemprop="keywords" content="ebpf,linux,what," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="eBPF总览"/>
+<meta name="twitter:description" content="eBPF是一种Linux内核提供的，可以在操作系统内核这种需要权限的上下文中执行沙盒程序的技术。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">eBPF总览</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2023-03-30 </span>
+        
+          <span class="more-meta"> 约 951 字 </span>
+          <span class="more-meta"> 预计阅读 2 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#hook-overview">Hook Overview</a></li>
+    <li><a href="#如何开发ebpf程序">如何开发eBPF程序</a></li>
+    <li><a href="#加载与验证">加载与验证</a></li>
+    <li><a href="#maps">Maps</a></li>
+    <li><a href="#helper-calls">Helper Calls</a></li>
+    <li><a href="#tail--function-calls">Tail &amp; Function Calls</a></li>
+    <li><a href="#ebpf-safety">eBPF Safety</a>
+      <ul>
+        <li><a href="#verifier">Verifier</a></li>
+        <li><a href="#hardening">Hardening</a></li>
+        <li><a href="#抽象运行时">抽象运行时</a></li>
+      </ul>
+    </li>
+    <li><a href="#development-toolchains">Development Toolchains</a></li>
+    <li><a href="#reference">Reference</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p>eBPF是一种Linux内核提供的，可以在操作系统内核这种需要权限的上下文中执行沙盒程序的技术。</p>
+<h1 id="hook-overview">Hook Overview</h1>
+<p>eBPF程序是事件驱动来执行的。
+当系统运行到某个特定的节点时，注册的eBPF程序会被调用。</p>
+<p>预定义的节点(hooks)包含系统调用，
+函数进出、内核tracepoint，网络事件和其他的一些节点。</p>
+<p>可以通过<a href="https://docs.kernel.org/trace/kprobes.html">kernel probe</a>
+或者user probe来将eBPF程序链接在任意地方而不限于预定义的节点。</p>
+<h1 id="如何开发ebpf程序">如何开发eBPF程序</h1>
+<p>通常情况下，可以通过 <strong>Cilium</strong> , <strong>bcc</strong> 或者 <strong>bpftrace</strong> 等工具来开发。</p>
+<p>如果这种高层抽象无法满足需要，
+可以通过LLVM这种编译套件将c源码编译成eBPF需要的字节码(bytecode)。</p>
+<h1 id="加载与验证">加载与验证</h1>
+<p>eBPF程序可以通过系统调用加载到内核中，
+通常这个过程由eBPF库来完成。</p>
+<p><img src="https://ebpf.io/static/1a1bb6f1e64b1ad5597f57dc17cf1350/6515f/go.png" alt="eBPF-loader-and-verification-architecture"></p>
+<p>加载过程主要分为两步：</p>
+<ol>
+<li>
+<p><strong>验证</strong></p>
+<p>首先会验证eBPF程序是否安全：</p>
+<ul>
+<li>是否有权限加载。</li>
+<li>程序不会crash或者影响整个系统。</li>
+<li>程序会执行完成，而不是无限循环或者阻止系统继续运行。</li>
+</ul>
+</li>
+<li>
+<p><strong>JIT 编译</strong></p>
+<p>将字节码编译成机器指令，使eBPF程序能够以编译过的程序的性能运行。</p>
+</li>
+</ol>
+<h1 id="maps">Maps</h1>
+<p>eBPF maps提供存取各种结构的数据的能力。
+其中的数据可以从多种地方读取，比如通过用户空间发起系统调用。</p>
+<h1 id="helper-calls">Helper Calls</h1>
+<p>eBPF程序不能调用内核函数。</p>
+<p>因为这个会导致程序与特定的内核版本绑定，
+也会增加程序的复杂度。</p>
+<p>作为替代，可以调用helper functions，
+内核提供的稳定、众所周知的API。</p>
+<h1 id="tail--function-calls">Tail &amp; Function Calls</h1>
+<p>eBPF程序通过尾调用和函数调用组织在一起。
+函数调用允许在eBPF程序中定义并调用函数。
+尾调用可以调用另一个eBPF程序并且替换执行的上下文，
+类似<code>execve</code>在普通进程中的效果。</p>
+<h1 id="ebpf-safety">eBPF Safety</h1>
+<blockquote>
+<p>With greate power there must also come great responsibility.</p>
+</blockquote>
+<p>eBPF程序的安全性通过如下几个方法来实现：</p>
+<h2 id="verifier">Verifier</h2>
+<p>eBPF验证器保证程序本身的安全性：</p>
+<ul>
+<li>会完成而不是无限循环或者阻塞。</li>
+<li>不会使用未初始化的变量或者越界读取。</li>
+<li>程序不会过大。</li>
+<li>程序的复杂度可控。验证器会生成所有的执行路径，所以过于复杂的程序会导致分析失败。</li>
+</ul>
+<h2 id="hardening">Hardening</h2>
+<blockquote>
+<p>However, in the context of technology or computer security, hardening specifically refers to the process of making a system or application more secure and resistant to potential cyberattacks.</p>
+</blockquote>
+<p><em>From ChatGPT</em></p>
+<p>在验证后，eBPF程序会根据从授权或未授权的进程中加载来进行加固。</p>
+<ul>
+<li>执行保护：eBPF程序所在的内存只读。</li>
+<li>Mitigation against spectre</li>
+<li>constant blinding</li>
+</ul>
+<h2 id="抽象运行时">抽象运行时</h2>
+<p>程序不能直接访问任意内存，只能通过helper来访问进程上下文之外的内存。</p>
+<h1 id="development-toolchains">Development Toolchains</h1>
+<p>bcc/bpftrace/eBPF Go Library/libbpf C/C++ Library</p>
+<h1 id="reference">Reference</h1>
+<ul>
+<li><a href="https://ebpf.io/what-is-ebpf/">What is eBPF</a></li>
+</ul>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2023-03-30
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/ebpf/">ebpf</a>
+          <a href="/tags/linux/">linux</a>
+          <a href="/tags/what/">what</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/other/play-steam-deck/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">上手steamdeck</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/linux/linux-performance-analysis-in-60000-milliseconds/">
+            <span class="next-text nav-default">60,000ms分析Linux性能</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2023-03-30 19:01:52 \u002b0800 \u002b0800',
+        title: 'eBPF总览',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

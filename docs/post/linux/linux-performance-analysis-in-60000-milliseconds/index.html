@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>60,000ms分析Linux性能 - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="Linux Performance Analysis in 60,000 Milliseconds 翻译。
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/linux/linux-performance-analysis-in-60000-milliseconds/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="60,000ms分析Linux性能" />
+<meta property="og:description" content="Linux Performance Analysis in 60,000 Milliseconds 翻译。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/linux/linux-performance-analysis-in-60000-milliseconds/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-03-23T19:47:21+08:00" />
+<meta property="article:modified_time" content="2023-03-23T19:47:21+08:00" />
+<meta itemprop="name" content="60,000ms分析Linux性能">
+<meta itemprop="description" content="Linux Performance Analysis in 60,000 Milliseconds 翻译。"><meta itemprop="datePublished" content="2023-03-23T19:47:21+08:00" />
+<meta itemprop="dateModified" content="2023-03-23T19:47:21+08:00" />
+<meta itemprop="wordCount" content="5702">
+<meta itemprop="keywords" content="memo,linux,command,how-to,translation," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="60,000ms分析Linux性能"/>
+<meta name="twitter:description" content="Linux Performance Analysis in 60,000 Milliseconds 翻译。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">60,000ms分析Linux性能</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2023-03-23 </span>
+        
+          <span class="more-meta"> 约 5702 字 </span>
+          <span class="more-meta"> 预计阅读 12 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#总结-first-60-seconds-summary">总结 First 60 Seconds: Summary</a></li>
+    <li><a href="#uptime"><code>uptime</code></a></li>
+    <li><a href="#dmesg--tail"><code>dmesg | tail</code></a></li>
+    <li><a href="#vmstat-1"><code>vmstat 1</code></a></li>
+    <li><a href="#mapstat--p-all-1"><code>mapstat -P ALL 1</code></a></li>
+    <li><a href="#pidstat-1"><code>pidstat 1</code></a></li>
+    <li><a href="#iostat--xz-1"><code>iostat -xz 1</code></a></li>
+    <li><a href="#free--m"><code>free -m</code></a></li>
+    <li><a href="#sar--n-dev-1"><code>sar -n DEV 1</code></a></li>
+    <li><a href="#sar--n-tcpetcp-1"><code>sar -n TCP,ETCP 1</code></a></li>
+    <li><a href="#top"><code>top</code></a></li>
+    <li><a href="#follow-on-analysis">Follow-on Analysis</a></li>
+    <li><a href="#reference">Reference</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p><a href="https://netflixtechblog.com/linux-performance-analysis-in-60-000-milliseconds-accc10403c55">Linux Performance Analysis in 60,000 Milliseconds</a> 翻译。</p>
+<blockquote>
+<p>You log in to a Linux server with a performance issue: what do you check in the first minute?</p>
+</blockquote>
+<p>当登入有性能问题的linux服务器时，首先需要检查哪些方面呢？</p>
+<blockquote>
+<p>At Netflix we have a massive EC2 Linux cloud,
+and numerous performance analysis tools to monitor and investigate its performance.
+These include Atlas for cloud-wide monitoring, and Vector for on-demand instance analysis.
+While those tools help us solve most issues,
+we sometimes need to login to an instance and run some standard Linux performance tools.</p>
+</blockquote>
+<p>Netflix有很大的EC2 Linux集群，和很多用于监控、调查这个集群的性能问题的分析工具：
+Atlas用来监控集群级别的问题；Vector用来在需要时分析实例。</p>
+<p>尽管这些工具能帮助解决大多数问题，
+有的时候，我们还是需要登入一个实例并通过一些标准Linux性能工具（来排查问题）。</p>
+<h1 id="总结-first-60-seconds-summary">总结 First 60 Seconds: Summary</h1>
+<blockquote>
+<p>In this post, the Netflix Performance Engineering team will show you the first 60 seconds of an optimized performance investigation at the command line, using standard Linux tools you should have available. In 60 seconds you can get a high level idea of system resource usage and running processes by running the following ten commands. Look for errors and saturation metrics, as they are both easy to interpret, and then resource utilization. Saturation is where a resource has more load than it can handle, and can be exposed either as the length of a request queue, or time spent waiting.</p>
+</blockquote>
+<p>Netflix性能工程团队将会在本文中展示通过常见的标准Linux工具完成性能优化调查的第一步。
+可以通过下列的十个指令对整个系统的资源使用和当前运行中的进程有一个大概的了解。
+首先寻找异常和饱和的指标（因为较为容易理解），然后是资源的利用情况。
+饱和指一个资源已经被过度的使用，可以通过请求队列的长度（过长）或者（请求的）等待时间来发现。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">uptime
+</span></span><span class="line"><span class="cl">dmesg <span class="p">|</span> tail
+</span></span><span class="line"><span class="cl">vmstat <span class="m">1</span>
+</span></span><span class="line"><span class="cl">mpstat -P ALL <span class="m">1</span>
+</span></span><span class="line"><span class="cl">pidstat <span class="m">1</span>
+</span></span><span class="line"><span class="cl">iostat -xz <span class="m">1</span>
+</span></span><span class="line"><span class="cl">free -m
+</span></span><span class="line"><span class="cl">sar -n DEV <span class="m">1</span>
+</span></span><span class="line"><span class="cl">sar -n TCP,ETCP <span class="m">1</span>
+</span></span><span class="line"><span class="cl">top
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>Some of these commands require the sysstat package installed. The metrics these commands expose will help you complete some of the USE Method: a methodology for locating performance bottlenecks. This involves checking utilization, saturation, and error metrics for all resources (CPUs, memory, disks, e.t.c.). Also pay attention to when you have checked and exonerated a resource, as by process of elimination this narrows the targets to study, and directs any follow on investigation.</p>
+</blockquote>
+<p>一部分指令需要安装<code>sysstat</code>包。
+这些指令返回的指标可以帮助你完成USE方法：一个定位性能瓶颈的方法论。
+USE包括了检查所有资源（CPU、内存、磁盘等）的用量、饱和度、错误。
+在检查并排出一个资源（引起问题的可能性）时需要（额外的）小心，
+因为排除一个资源后会减小调查的范围，进而影响到后续的调查。</p>
+<blockquote>
+<p>The following sections summarize these commands, with examples from a production system. For more information about these tools, see their man pages.</p>
+</blockquote>
+<p>后续的章节会结合生产环境的例子来总结这些指令。
+通过manual来查看这些命令的更多的信息。</p>
+<h1 id="uptime"><code>uptime</code></h1>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ uptime 
+</span></span><span class="line"><span class="cl">23:51:26 up 21:31, <span class="m">1</span> user, load average: 30.02, 26.43, 19.02
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>This is a quick way to view the load averages, which indicate the number of tasks (processes) wanting to run. On Linux systems, these numbers include processes wanting to run on CPU, as well as processes blocked in uninterruptible I/O (usually disk I/O). This gives a high level idea of resource load (or demand), but can’t be properly understood without other tools. Worth a quick look only.</p>
+</blockquote>
+<p><code>uptime</code>是一个快捷的查看当前平均负载 <em>(load averages)</em> 的指令，
+平均负载反映了当前期待运行的进程。
+在Linux中，这些数字还包含了阻塞在不可中断IO中的进程，通常是磁盘IO。
+这个结果只能给到一个很高维度的资源负载情况，无法在不结合其他工具的情况下进行正确的解读。
+所以只用来当作一个简单的查看工具。</p>
+<blockquote>
+<p>The three numbers are exponentially damped moving sum averages with a 1 minute, 5 minute, and 15 minute constant. The three numbers give us some idea of how load is changing over time. For example, if you’ve been asked to check a problem server, and the 1 minute value is much lower than the 15 minute value, then you might have logged in too late and missed the issue.</p>
+</blockquote>
+<p>这三个数是一组以1min 5min 15min作为常数的指数下降滑动平均值三元组。
+可以通过这三个数值之间的大小关系来推测系统负载随着时间的变化情况。
+举个例子，如果在登入有问题的服务器时发现一分钟的数值远低于十五分钟的数值时，可能意味着登入过晚，已经错过了现场。</p>
+<blockquote>
+<p>In the example above, the load averages show a recent increase, hitting 30 for the 1 minute value, compared to 19 for the 15 minute value. That the numbers are this large means a lot of something: probably CPU demand; vmstat or mpstat will confirm, which are commands 3 and 4 in this sequence.</p>
+</blockquote>
+<p>上述的例子中可以看到系统的负载正在上升，意味着对cpu的需要不断的增加，
+可以通过<code>vmstat</code>或者<code>mpstat</code>来确定。</p>
+<h1 id="dmesg--tail"><code>dmesg | tail</code></h1>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ dmesg <span class="p">|</span> tail
+</span></span><span class="line"><span class="cl"><span class="o">[</span>1880957.563150<span class="o">]</span> perl invoked oom-killer: <span class="nv">gfp_mask</span><span class="o">=</span>0x280da, <span class="nv">order</span><span class="o">=</span>0, <span class="nv">oom_score_adj</span><span class="o">=</span><span class="m">0</span>
+</span></span><span class="line"><span class="cl"><span class="o">[</span>...<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="o">[</span>1880957.563400<span class="o">]</span> Out of memory: Kill process <span class="m">18694</span> <span class="o">(</span>perl<span class="o">)</span> score <span class="m">246</span> or sacrifice child
+</span></span><span class="line"><span class="cl"><span class="o">[</span>1880957.563408<span class="o">]</span> Killed process <span class="m">18694</span> <span class="o">(</span>perl<span class="o">)</span> total-vm:1972392kB, anon-rss:1953348kB, file-rss:0kB
+</span></span><span class="line"><span class="cl"><span class="o">[</span>2320864.954447<span class="o">]</span> TCP: Possible SYN flooding on port 7001. Dropping request.  Check SNMP counters.
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>This views the last 10 system messages, if there are any. Look for errors that can cause performance issues. The example above includes the oom-killer, and TCP dropping a request.</p>
+</blockquote>
+<p><code>dmesg | tail</code>展示最后10条系统信息。
+尝试在其中寻找造成性能问题的一场。
+例子中展示了两个问题，一个是OOM导致的进程退出；另一个是TCP丢弃了一个链接（因为可能是SYN洪泛攻击）。</p>
+<blockquote>
+<p>Don’t miss this step! dmesg is always worth checking.</p>
+</blockquote>
+<p>不要忽略这一步！<code>dmesg</code>值得查看一下。</p>
+<h1 id="vmstat-1"><code>vmstat 1</code></h1>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ vmstat <span class="m">1</span>
+</span></span><span class="line"><span class="cl">procs ---------memory---------- ---swap-- -----io---- -system-- ------cpu-----
+</span></span><span class="line"><span class="cl"> r  b swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+</span></span><span class="line"><span class="cl"><span class="m">34</span>  <span class="m">0</span>    <span class="m">0</span> <span class="m">200889792</span>  <span class="m">73708</span> <span class="m">591828</span>    <span class="m">0</span>    <span class="m">0</span>     <span class="m">0</span>     <span class="m">5</span>    <span class="m">6</span>   <span class="m">10</span> <span class="m">96</span>  <span class="m">1</span>  <span class="m">3</span>  <span class="m">0</span>  <span class="m">0</span>
+</span></span><span class="line"><span class="cl"><span class="m">32</span>  <span class="m">0</span>    <span class="m">0</span> <span class="m">200889920</span>  <span class="m">73708</span> <span class="m">591860</span>    <span class="m">0</span>    <span class="m">0</span>     <span class="m">0</span>   <span class="m">592</span> <span class="m">13284</span> <span class="m">4282</span> <span class="m">98</span>  <span class="m">1</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span>
+</span></span><span class="line"><span class="cl"><span class="m">32</span>  <span class="m">0</span>    <span class="m">0</span> <span class="m">200890112</span>  <span class="m">73708</span> <span class="m">591860</span>    <span class="m">0</span>    <span class="m">0</span>     <span class="m">0</span>     <span class="m">0</span> <span class="m">9501</span> <span class="m">2154</span> <span class="m">99</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span>  <span class="m">0</span>
+</span></span><span class="line"><span class="cl"><span class="m">32</span>  <span class="m">0</span>    <span class="m">0</span> <span class="m">200889568</span>  <span class="m">73712</span> <span class="m">591856</span>    <span class="m">0</span>    <span class="m">0</span>     <span class="m">0</span>    <span class="m">48</span> <span class="m">11900</span> <span class="m">2459</span> <span class="m">99</span>  <span class="m">0</span>  <span class="m">0</span>  <span class="m">0</span>  <span class="m">0</span>
+</span></span><span class="line"><span class="cl"><span class="m">32</span>  <span class="m">0</span>    <span class="m">0</span> <span class="m">200890208</span>  <span class="m">73712</span> <span class="m">591860</span>    <span class="m">0</span>    <span class="m">0</span>     <span class="m">0</span>     <span class="m">0</span> <span class="m">15898</span> <span class="m">4840</span> <span class="m">98</span>  <span class="m">1</span>  <span class="m">1</span>  <span class="m">0</span>  <span class="m">0</span>
+</span></span><span class="line"><span class="cl">^C
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>Short for virtual memory stat, vmstat(8) is a commonly available tool (first created for BSD decades ago). It prints a summary of key server statistics on each line.</p>
+</blockquote>
+<p><code>vmstat</code>通常是开箱即用的工具，名字来源于虚拟内存状态的缩写，
+该指令一行一行的打印出关键的系统统计数据。</p>
+<blockquote>
+<p>vmstat was run with an argument of 1, to print one second summaries. The first line of output (in this version of vmstat) has some columns that show the average since boot, instead of the previous second. For now, skip the first line, unless you want to learn and remember which column is which.</p>
+</blockquote>
+<p>参数<code>1</code>表示每秒钟打印一次一秒内的统计。
+第一行表示从启动以来的各项数据的平均值。
+现在先跳过这一行，除非你想了解每一列代表了什么含义。</p>
+<blockquote>
+<p>Columns to check:</p>
+</blockquote>
+<p>不同列表示不同的含义：</p>
+<blockquote>
+<p>r: Number of processes running on CPU and waiting for a turn. This provides a better signal than load averages for determining CPU saturation, as it does not include I/O. To interpret: an “r” value greater than the CPU count is saturation.</p>
+</blockquote>
+<p>r: 正在运行或等待运行的进程的数量。因为这个数据不包含IO中的进程，所以更加适合用来判断CPU负载的饱和程度。
+r值大于CPU数量时表示已经饱和。</p>
+<blockquote>
+<p>free: Free memory in kilobytes. If there are too many digits to count, you have enough free memory. The “free -m” command, included as command 7, better explains the state of free memory.</p>
+</blockquote>
+<p>free: 空闲内存，KB。如果数字很长的话，那么表示有足够的空闲内存。
+第七个指令<code>free -m</code>是一个更好的用来查看空闲内存的工具。</p>
+<blockquote>
+<p>si, so: Swap-ins and swap-outs. If these are non-zero, you’re out of memory.</p>
+</blockquote>
+<p>si, so: 交换入、交换出。如果这两个值不为0，意味着内存是瓶颈。</p>
+<blockquote>
+<p>us, sy, id, wa, st: These are breakdowns of CPU time, on average across all CPUs. They are user time, system time (kernel), idle, wait I/O, and stolen time (by other guests, or with Xen, the guest’s own isolated driver domain).</p>
+</blockquote>
+<p>us, sy, id, wa, st: 所有CPU时间的平均拆分细则，分别是用户态、内核态、空闲、等待IO、被（其他用户）窃取的。</p>
+<blockquote>
+<p>The CPU time breakdowns will confirm if the CPUs are busy, by adding user + system time. A constant degree of wait I/O points to a disk bottleneck; this is where the CPUs are idle, because tasks are blocked waiting for pending disk I/O. You can treat wait I/O as another form of CPU idle, one that gives a clue as to why they are idle.</p>
+</blockquote>
+<p>通过用户态与内核态时间相加可以判断CPU是否繁忙。
+等待IO的时间超过某些静态的值后表示磁盘是瓶颈，
+在等待IO的时间中，CPU是空闲的，因为任务被阻塞在等待磁盘完成IO。
+等待IO可以被认为是另一种空闲，只是有线索的空闲。</p>
+<blockquote>
+<p>System time is necessary for I/O processing. A high system time average, over 20%, can be interesting to explore further: perhaps the kernel is processing the I/O inefficiently.</p>
+</blockquote>
+<p>处理IO会占用内核态时间。超过20%的内核态时间暗示了内核在处理IO时可能性能不够好。</p>
+<blockquote>
+<p>In the above example, CPU time is almost entirely in user-level, pointing to application level usage instead. The CPUs are also well over 90% utilized on average. This isn’t necessarily a problem; check for the degree of saturation using the “r” column.</p>
+</blockquote>
+<p>上述例子中，CPU时间几乎全部在用户态，表示是应用级别消耗了CPU时间。
+使用率超过了90%，但是并不意味着引起了切实的问题，检查负载的饱和程度可以通过&quot;r&quot;列。</p>
+<h1 id="mapstat--p-all-1"><code>mapstat -P ALL 1</code></h1>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ mpstat -P ALL <span class="m">1</span>
+</span></span><span class="line"><span class="cl">Linux 3.13.0-49-generic <span class="o">(</span>titanclusters-xxxxx<span class="o">)</span>  07/14/2015  _x86_64_ <span class="o">(</span><span class="m">32</span> CPU<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">07:38:49 PM  CPU   %usr  %nice   %sys %iowait   %irq  %soft  %steal  %guest  %gnice  %idle
+</span></span><span class="line"><span class="cl">07:38:50 PM  all  98.47   0.00   0.75    0.00   0.00   0.00    0.00    0.00    0.00   0.78
+</span></span><span class="line"><span class="cl">07:38:50 PM    <span class="m">0</span>  96.04   0.00   2.97    0.00   0.00   0.00    0.00    0.00    0.00   0.99
+</span></span><span class="line"><span class="cl">07:38:50 PM    <span class="m">1</span>  97.00   0.00   1.00    0.00   0.00   0.00    0.00    0.00    0.00   2.00
+</span></span><span class="line"><span class="cl">07:38:50 PM    <span class="m">2</span>  98.00   0.00   1.00    0.00   0.00   0.00    0.00    0.00    0.00   1.00
+</span></span><span class="line"><span class="cl">07:38:50 PM    <span class="m">3</span>  96.97   0.00   0.00    0.00   0.00   0.00    0.00    0.00    0.00   3.03
+</span></span><span class="line"><span class="cl"><span class="o">[</span>...<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>This command prints CPU time breakdowns per CPU, which can be used to check for an imbalance. A single hot CPU can be evidence of a single-threaded application.</p>
+</blockquote>
+<p><code>mapstat</code>按照CPU核心拆分CPU时间，可以用来检查负载不均的问题。
+某个核心负载较高可能是一个单线程应用的问题的证据。</p>
+<h1 id="pidstat-1"><code>pidstat 1</code></h1>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ pidstat <span class="m">1</span>
+</span></span><span class="line"><span class="cl">Linux 3.13.0-49-generic <span class="o">(</span>titanclusters-xxxxx<span class="o">)</span>  07/14/2015    _x86_64_    <span class="o">(</span><span class="m">32</span> CPU<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">07:41:02 PM   UID       PID    %usr %system  %guest    %CPU   CPU  Command
+</span></span><span class="line"><span class="cl">07:41:03 PM     <span class="m">0</span>         <span class="m">9</span>    0.00    0.94    0.00    0.94     <span class="m">1</span>  rcuos/0
+</span></span><span class="line"><span class="cl">07:41:03 PM     <span class="m">0</span>      <span class="m">4214</span>    5.66    5.66    0.00   11.32    <span class="m">15</span>  mesos-slave
+</span></span><span class="line"><span class="cl">07:41:03 PM     <span class="m">0</span>      <span class="m">4354</span>    0.94    0.94    0.00    1.89     <span class="m">8</span>  java
+</span></span><span class="line"><span class="cl">07:41:03 PM     <span class="m">0</span>      <span class="m">6521</span> 1596.23    1.89    0.00 1598.11    <span class="m">27</span>  java
+</span></span><span class="line"><span class="cl">07:41:03 PM     <span class="m">0</span>      <span class="m">6564</span> 1571.70    7.55    0.00 1579.25    <span class="m">28</span>  java
+</span></span><span class="line"><span class="cl">07:41:03 PM <span class="m">60004</span>     <span class="m">60154</span>    0.94    4.72    0.00    5.66     <span class="m">9</span>  pidstat
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">07:41:03 PM   UID       PID    %usr %system  %guest    %CPU   CPU  Command
+</span></span><span class="line"><span class="cl">07:41:04 PM     <span class="m">0</span>      <span class="m">4214</span>    6.00    2.00    0.00    8.00    <span class="m">15</span>  mesos-slave
+</span></span><span class="line"><span class="cl">07:41:04 PM     <span class="m">0</span>      <span class="m">6521</span> 1590.00    1.00    0.00 1591.00    <span class="m">27</span>  java
+</span></span><span class="line"><span class="cl">07:41:04 PM     <span class="m">0</span>      <span class="m">6564</span> 1573.00   10.00    0.00 1583.00    <span class="m">28</span>  java
+</span></span><span class="line"><span class="cl">07:41:04 PM   <span class="m">108</span>      <span class="m">6718</span>    1.00    0.00    0.00    1.00     <span class="m">0</span>  snmp-pass
+</span></span><span class="line"><span class="cl">07:41:04 PM <span class="m">60004</span>     <span class="m">60154</span>    1.00    4.00    0.00    5.00     <span class="m">9</span>  pidstat
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>Pidstat is a little like top’s per-process summary, but prints a rolling summary instead of clearing the screen. This can be useful for watching patterns over time, and also recording what you saw (copy-n-paste) into a record of your investigation.</p>
+</blockquote>
+<p><code>pidstat</code>有一点像<code>top</code>的进程版统计，但是输出一个滚动的总结而不是清空整个屏幕。
+这对于查看时间维度上的指标变化和相应的查看、拷贝历史数据有帮助。</p>
+<blockquote>
+<p>The above example identifies two java processes as responsible for consuming CPU. The %CPU column is the total across all CPUs; 1591% shows that that java processes is consuming almost 16 CPUs.</p>
+</blockquote>
+<p>例子中表明两个java进程是消耗CPU的主要进程。
+<code>%CPU</code>列是所有核心的综合，1591%表示几乎16核。</p>
+<h1 id="iostat--xz-1"><code>iostat -xz 1</code></h1>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ iostat -xz <span class="m">1</span>
+</span></span><span class="line"><span class="cl">Linux 3.13.0-49-generic <span class="o">(</span>titanclusters-xxxxx<span class="o">)</span>  07/14/2015  _x86_64_ <span class="o">(</span><span class="m">32</span> CPU<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+</span></span><span class="line"><span class="cl">          73.96    0.00    3.73    0.03    0.06   22.21
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Device:   rrqm/s   wrqm/s     r/s     w/s    rkB/s    wkB/s avgrq-sz avgqu-sz   await r_await w_await  svctm  %util
+</span></span><span class="line"><span class="cl">xvda        0.00     0.23    0.21    0.18     4.52     2.08    34.37     0.00    9.98   13.80    5.42   2.44   0.09
+</span></span><span class="line"><span class="cl">xvdb        0.01     0.00    1.02    8.94   127.97   598.53   145.79     0.00    0.43    1.78    0.28   0.25   0.25
+</span></span><span class="line"><span class="cl">xvdc        0.01     0.00    1.02    8.86   127.79   595.94   146.50     0.00    0.45    1.82    0.30   0.27   0.26
+</span></span><span class="line"><span class="cl">dm-0        0.00     0.00    0.69    2.32    10.47    31.69    28.01     0.01    3.23    0.71    3.98   0.13   0.04
+</span></span><span class="line"><span class="cl">dm-1        0.00     0.00    0.00    0.94     0.01     3.78     8.00     0.33  345.84    0.04  346.81   0.01   0.00
+</span></span><span class="line"><span class="cl">dm-2        0.00     0.00    0.09    0.07     1.35     0.36    22.50     0.00    2.55    0.23    5.62   1.78   0.03
+</span></span><span class="line"><span class="cl"><span class="o">[</span>...<span class="o">]</span>
+</span></span><span class="line"><span class="cl">^C
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>This is a great tool for understanding block devices (disks), both the workload applied and the resulting performance. Look for:</p>
+</blockquote>
+<p><code>iostat</code>是一个了解块设备（比如磁盘）的很好的工具，比如申请的负载与性能表现。</p>
+<p>比如：</p>
+<blockquote>
+<ul>
+<li>r/s, w/s, rkB/s, wkB/s: These are the delivered reads, writes, read Kbytes, and write Kbytes per second to the device. Use these for workload characterization. A performance problem may simply be due to an excessive load applied.</li>
+<li>await: The average time for the I/O in milliseconds. This is the time that the application suffers, as it includes both time queued and time being serviced. Larger than expected average times can be an indicator of device saturation, or device problems.</li>
+<li>avgqu-sz: The average number of requests issued to the device. Values greater than 1 can be evidence of saturation (although devices can typically operate on requests in parallel, especially virtual devices which front multiple back-end disks.)</li>
+<li>%util: Device utilization. This is really a busy percent, showing the time each second that the device was doing work. Values greater than 60% typically lead to poor performance (which should be seen in await), although it depends on the device. Values close to 100% usually indicate saturation.</li>
+</ul>
+</blockquote>
+<ul>
+<li>r/s, w/s, rkB/s, wkB/s: 表示投递到设备的 读、写、读KB、写KB 请求按秒聚合数量。这些指标用来判断负载。性能问题的一个可能原因是太多的读写请求。</li>
+<li>await: 毫秒计数的IO平均时间。这个时间是应用切实体会到的IO耗时，包含等待时间和执行时间。大于预期的平均时间是设备饱和的一个线索，或者有可能是设备出现了问题。</li>
+<li>avgqu-sz: 被指派到设备的请求数的平均值。大于1表示设备已经饱和。尽管设备可以并行的处理请求，比如有多个后端磁盘的虚拟设备。</li>
+<li>%util: 设备使用率。是每秒中设备执行时间的比例。大于60%通常会引起性能问题（可以通过await来观察到），这个阈值还取决于设备。接近100%表示设备已经饱和。</li>
+</ul>
+<blockquote>
+<p>If the storage device is a logical disk device fronting many back-end disks, then 100% utilization may just mean that some I/O is being processed 100% of the time, however, the back-end disks may be far from saturated, and may be able to handle much more work.</p>
+</blockquote>
+<p>对于存储设备是一个有多个磁盘后端的前端虚拟设备，100%的使用率可能只是表示一些IO操作占用了所有的时间，但是后端磁盘还远远没有饱和，也许可以继续执行更多的工作。</p>
+<blockquote>
+<p>Bear in mind that poor performing disk I/O isn’t necessarily an application issue. Many techniques are typically used to perform I/O asynchronously, so that the application doesn’t block and suffer the latency directly (e.g., read-ahead for reads, and buffering for writes).</p>
+</blockquote>
+<p>谨记磁盘IO性能较差并不意味着一个切实的问题。许多技术经常被用来完成异步IO操作，所以应用并不会阻塞或者直接影响到延迟。
+比如预读或者缓存。</p>
+<h1 id="free--m"><code>free -m</code></h1>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ free -m
+</span></span><span class="line"><span class="cl">             total       used       free     shared    buffers     cached
+</span></span><span class="line"><span class="cl">Mem:        <span class="m">245998</span>      <span class="m">24545</span>     <span class="m">221453</span>         <span class="m">83</span>         <span class="m">59</span>        <span class="m">541</span>
+</span></span><span class="line"><span class="cl">-/+ buffers/cache:      <span class="m">23944</span>     <span class="m">222053</span>
+</span></span><span class="line"><span class="cl">Swap:            <span class="m">0</span>          <span class="m">0</span>          <span class="m">0</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>The right two columns show:</p>
+<ul>
+<li>buffers: For the buffer cache, used for block device I/O.</li>
+<li>cached: For the page cache, used by file systems.</li>
+</ul>
+</blockquote>
+<p>最右的两列分别表示：</p>
+<ul>
+<li>buffers: 用于块设备IO。</li>
+<li>cached: 页缓存，用于文件系统的。</li>
+</ul>
+<blockquote>
+<p>We just want to check that these aren’t near-zero in size, which can lead to higher disk I/O (confirm using iostat), and worse performance. The above example looks fine, with many Mbytes in each.</p>
+</blockquote>
+<p>这两个数据只要不是近乎0即可，如果接近0的话，有可能会导致更多的磁盘IO（可以通过<code>iostat</code>来确定）和更差的性能。
+例子看起来没什么问题，都有数MB的大小。</p>
+<blockquote>
+<p>The “-/+ buffers/cache” provides less confusing values for used and free memory. Linux uses free memory for the caches, but can reclaim it quickly if applications need it. So in a way the cached memory should be included in the free memory column, which this line does. There’s even a website, linuxatemyram, about this confusion.</p>
+</blockquote>
+<p>&ldquo;-/+ buffers/cache&quot;提供了更加不会被误解的使用的或空闲的内存数量。
+Linux使用空闲内存作为缓存，当需要时可以快速的被应用使用。
+通常来说，用于缓存的内存和空闲内存可以划等号，这一行就把用于缓存的内存当做了空闲内存。
+甚至有一个网站<a href="https://www.linuxatemyram.com/">linuxatemyram</a>来解释这个令人迷惑的情况。</p>
+<blockquote>
+<p>It can be additionally confusing if ZFS on Linux is used, as we do for some services, as ZFS has its own file system cache that isn’t reflected properly by the free -m columns. It can appear that the system is low on free memory, when that memory is in fact available for use from the ZFS cache as needed.</p>
+</blockquote>
+<p>当使用ZFS时会有另外的令人迷惑的情况，因为ZFS有自己的文件系统缓存，不会被<code>free -m</code>正确的反应。
+看起来系统短缺空闲内存，但是有一部分被标为使用了的内存会在需要时从ZFS的文件系统缓存中释放出来。</p>
+<h1 id="sar--n-dev-1"><code>sar -n DEV 1</code></h1>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ sar -n DEV <span class="m">1</span>
+</span></span><span class="line"><span class="cl">Linux 3.13.0-49-generic <span class="o">(</span>titanclusters-xxxxx<span class="o">)</span>  07/14/2015     _x86_64_    <span class="o">(</span><span class="m">32</span> CPU<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">12:16:48 AM     IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+</span></span><span class="line"><span class="cl">12:16:49 AM      eth0  18763.00   5032.00  20686.42    478.30      0.00      0.00      0.00      0.00
+</span></span><span class="line"><span class="cl">12:16:49 AM        lo     14.00     14.00      1.36      1.36      0.00      0.00      0.00      0.00
+</span></span><span class="line"><span class="cl">12:16:49 AM   docker0      0.00      0.00      0.00      0.00      0.00      0.00      0.00      0.00
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">12:16:49 AM     IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+</span></span><span class="line"><span class="cl">12:16:50 AM      eth0  19763.00   5101.00  21999.10    482.56      0.00      0.00      0.00      0.00
+</span></span><span class="line"><span class="cl">12:16:50 AM        lo     20.00     20.00      3.25      3.25      0.00      0.00      0.00      0.00
+</span></span><span class="line"><span class="cl">12:16:50 AM   docker0      0.00      0.00      0.00      0.00      0.00      0.00      0.00      0.00
+</span></span><span class="line"><span class="cl">^C
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>Use this tool to check network interface throughput: rxkB/s and txkB/s, as a measure of workload, and also to check if any limit has been reached. In the above example, eth0 receive is reaching 22 Mbytes/s, which is 176 Mbits/sec (well under, say, a 1 Gbit/sec limit).
+This version also has %ifutil for device utilization (max of both directions for full duplex), which is something we also use Brendan’s nicstat tool to measure. And like with nicstat, this is hard to get right, and seems to not be working in this example (0.00).</p>
+</blockquote>
+<p><code>sar</code>可以用来检查网络接口的吞吐量：rxkB/s和txkB/s。
+吞吐量可以用来衡量负载，并且可以来检查是否有触达某些限制。
+例子中，<code>eth0</code>接收22MB/s，换算为176Mbits/s。</p>
+<h1 id="sar--n-tcpetcp-1"><code>sar -n TCP,ETCP 1</code></h1>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ sar -n TCP,ETCP <span class="m">1</span>
+</span></span><span class="line"><span class="cl">Linux 3.13.0-49-generic <span class="o">(</span>titanclusters-xxxxx<span class="o">)</span>  07/14/2015    _x86_64_    <span class="o">(</span><span class="m">32</span> CPU<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">12:17:19 AM  active/s passive/s    iseg/s    oseg/s
+</span></span><span class="line"><span class="cl">12:17:20 AM      1.00      0.00  10233.00  18846.00
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">12:17:19 AM  atmptf/s  estres/s retrans/s isegerr/s   orsts/s
+</span></span><span class="line"><span class="cl">12:17:20 AM      0.00      0.00      0.00      0.00      0.00
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">12:17:20 AM  active/s passive/s    iseg/s    oseg/s
+</span></span><span class="line"><span class="cl">12:17:21 AM      1.00      0.00   8359.00   6039.00
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">12:17:20 AM  atmptf/s  estres/s retrans/s isegerr/s   orsts/s
+</span></span><span class="line"><span class="cl">12:17:21 AM      0.00      0.00      0.00      0.00      0.00
+</span></span><span class="line"><span class="cl">^C
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>This is a summarized view of some key TCP metrics. These include:
+active/s: Number of locally-initiated TCP connections per second (e.g., via connect()).
+passive/s: Number of remotely-initiated TCP connections per second (e.g., via accept()).
+retrans/s: Number of TCP retransmits per second.</p>
+</blockquote>
+<p>这些信息是一些关键的TCP指标，包括：</p>
+<ul>
+<li>active/s: 本地初始化的TCP链接数量。</li>
+<li>passive/s: 远端初始化的TCP链接数量。</li>
+<li>retrans/s: TCP重传的数量。</li>
+</ul>
+<blockquote>
+<p>The active and passive counts are often useful as a rough measure of server load: number of new accepted connections (passive), and number of downstream connections (active). It might help to think of active as outbound, and passive as inbound, but this isn’t strictly true (e.g., consider a localhost to localhost connection).</p>
+</blockquote>
+<p>主动或被动建立链接的数量可以粗略的用于衡量系统的负载。</p>
+<blockquote>
+<p>Retransmits are a sign of a network or server issue; it may be an unreliable network (e.g., the public Internet), or it may be due a server being overloaded and dropping packets. The example above shows just one new TCP connection per-second.</p>
+</blockquote>
+<p>重传是网络或系统出现问题的症状，可能是因为不可靠的网络、某个服务器过载并引起了丢包。</p>
+<p>例子中只有每秒一个新链接。</p>
+<h1 id="top"><code>top</code></h1>
+<blockquote>
+<p>The top command includes many of the metrics we checked earlier. It can be handy to run it to see if anything looks wildly different from the earlier commands, which would indicate that load is variable.</p>
+</blockquote>
+<p><code>top</code>指令包括了许多之前看到过的指标。
+可以通过<code>top</code>来总览并与之前的结果进行比较。</p>
+<blockquote>
+<p>A downside to top is that it is harder to see patterns over time, which may be more clear in tools like vmstat and pidstat, which provide rolling output. Evidence of intermittent issues can also be lost if you don’t pause the output quick enough (Ctrl-S to pause, Ctrl-Q to continue), and the screen clears.</p>
+</blockquote>
+<p><code>top</code>的缺点是无法进行时间维度上的对比。
+问题的证据如果没有及时的暂停很容易就会丢失。</p>
+<h1 id="follow-on-analysis">Follow-on Analysis</h1>
+<blockquote>
+<p>There are many more commands and methodologies you can apply to drill deeper. See Brendan’s Linux Performance Tools tutorial from Velocity 2015, which works through over 40 commands, covering observability, benchmarking, tuning, static performance tuning, profiling, and tracing.</p>
+</blockquote>
+<p>还有很多指令可以用来排查性能问题，可以参考《Linux Performance Tools tutorial》。</p>
+<p>Tackling system reliability and performance problems at web scale is one of our passions. If you would like to join us in tackling these kinds of challenges we are hiring!</p>
+<h1 id="reference">Reference</h1>
+<ul>
+<li>关于系统负载的考据 <a href="https://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html">Linux Load Averages: Solving the Mystery</a></li>
+</ul>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2023-03-23
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/memo/">memo</a>
+          <a href="/tags/linux/">linux</a>
+          <a href="/tags/command/">command</a>
+          <a href="/tags/how-to/">how-to</a>
+          <a href="/tags/translation/">translation</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/linux/ebpf-intro/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">eBPF总览</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/linux/lsof/">
+            <span class="next-text nav-default">lsof</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2023-03-23 19:47:21 \u002b0800 \u002b0800',
+        title: '60,000ms分析Linux性能',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

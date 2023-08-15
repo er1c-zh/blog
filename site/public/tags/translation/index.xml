@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>translation on blog</title>
+    <link>https://blog.er1c.dev/tags/translation/</link>
+    <description>Recent content in translation on blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Thu, 23 Mar 2023 19:47:21 +0800</lastBuildDate><atom:link href="https://blog.er1c.dev/tags/translation/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>60,000ms分析Linux性能</title>
+      <link>https://blog.er1c.dev/post/linux/linux-performance-analysis-in-60000-milliseconds/</link>
+      <pubDate>Thu, 23 Mar 2023 19:47:21 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/linux/linux-performance-analysis-in-60000-milliseconds/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;https://netflixtechblog.com/linux-performance-analysis-in-60-000-milliseconds-accc10403c55&#34;&gt;Linux Performance Analysis in 60,000 Milliseconds&lt;/a&gt; 翻译。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

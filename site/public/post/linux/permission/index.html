@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Linux用户权限 - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="linux通过User和Group机制提供简单的权限管理。
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/linux/permission/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="Linux用户权限" />
+<meta property="og:description" content="linux通过User和Group机制提供简单的权限管理。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/linux/permission/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-02-27T14:51:28+08:00" />
+<meta property="article:modified_time" content="2023-02-27T14:51:28+08:00" />
+<meta itemprop="name" content="Linux用户权限">
+<meta itemprop="description" content="linux通过User和Group机制提供简单的权限管理。"><meta itemprop="datePublished" content="2023-02-27T14:51:28+08:00" />
+<meta itemprop="dateModified" content="2023-02-27T14:51:28+08:00" />
+<meta itemprop="wordCount" content="971">
+<meta itemprop="keywords" content="linux,command,how,memo," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Linux用户权限"/>
+<meta name="twitter:description" content="linux通过User和Group机制提供简单的权限管理。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Linux用户权限</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2023-02-27 </span>
+        
+          <span class="more-meta"> 约 971 字 </span>
+          <span class="more-meta"> 预计阅读 2 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#权限检查的流程">权限检查的流程</a></li>
+    <li><a href="#用户与用户组">用户与用户组</a></li>
+    <li><a href="#文件与文件夹的权限配置">文件与文件夹的权限配置</a>
+      <ul>
+        <li><a href="#权限在文件上的表现">权限在文件上的表现</a></li>
+        <li><a href="#权限在文件夹上的表现">权限在文件夹上的表现</a></li>
+      </ul>
+    </li>
+    <li><a href="#一些常用操作">一些常用操作</a>
+      <ul>
+        <li><a href="#用户与组">用户与组</a></li>
+        <li><a href="#修改文件的权限配置">修改文件的权限配置</a></li>
+        <li><a href="#操作用户">操作用户</a></li>
+      </ul>
+    </li>
+    <li><a href="#reference">Reference</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p>linux通过User和Group机制提供简单的权限管理。</p>
+<h1 id="权限检查的流程">权限检查的流程</h1>
+<p>在用户执行操作时，
+系统通过读取用户拥有的权限与文件的权限配置，
+判断是否允许执行相应的操作。</p>
+<h1 id="用户与用户组">用户与用户组</h1>
+<p>用户(user)表示一个具体的用户账号。</p>
+<p>用户组是用户的集合，用来集中管理权限。</p>
+<p>每个账号都有一个primary group，可能拥有零个或多个secondary group。
+区别在于primary group作为“默认的”组，如创建文件时，会将用户的primary group作为文件的owner group。</p>
+<h1 id="文件与文件夹的权限配置">文件与文件夹的权限配置</h1>
+<p>权限有读写执行三种，分别用<code>R</code> <code>W</code> <code>X</code>表示。</p>
+<p>文件和文件夹将权限存储在一个位图上，可以通过<code>ls -l</code>进行查看。</p>
+<blockquote>
+<p>-rw-r&ndash;r&ndash;  1 eric eric     3792 Feb 24 11:49 .bashrc
+drwx&mdash;&mdash;  6 eric eric     4096 Feb 27 08:58 .cache</p>
+</blockquote>
+<p>其中<code>-rw-r--r--</code>表示了文件<code>.bashrc</code>的权限配置：</p>
+<ul>
+<li>
+<p>第一个字符 <code>-</code> file type。
+其中p表示命名管道文件，d表示目录文件，
+l表示符号连接文件，-表示普通文件，
+s表示socket文件，c表示字符设备文件，b表示块设备文件。</p>
+</li>
+<li>
+<p>第一组权限 <code>rw-</code> 表示有读、写权限，没有执行权限；第二、三组权限 <code>r--</code> 表示只有读权限。</p>
+</li>
+<li>
+<p>第一组权限表示文件拥有者的权限，第二组表示拥有该文件的组(group)的权限，第三组表示其他用户的权限。</p>
+</li>
+</ul>
+<p><code>drwx------</code> 表示<code>.cache</code>是一个文件夹(directory)，其他类似<code>.bashrc</code>。</p>
+<h2 id="权限在文件上的表现">权限在文件上的表现</h2>
+<ul>
+<li><code>r</code> 可以读取文件</li>
+<li><code>w</code> 可以修改文件</li>
+<li><code>x</code> 可以执行文件</li>
+</ul>
+<h2 id="权限在文件夹上的表现">权限在文件夹上的表现</h2>
+<ul>
+<li><code>r</code> 可以查看该文件夹的内容（如文件）。</li>
+<li><code>w</code> 可以在文件夹中增删文件。</li>
+<li><code>x</code> 可以“访问、使用”该文件夹(access)，可以理解成拥有<code>x</code>权限是对文件夹进行任何操作（包括读、写）的前提。</li>
+</ul>
+<h1 id="一些常用操作">一些常用操作</h1>
+<h2 id="用户与组">用户与组</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 查看当前执行的user</span>
+</span></span><span class="line"><span class="cl">whoami
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看当前user及group</span>
+</span></span><span class="line"><span class="cl">id
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看有哪些user</span>
+</span></span><span class="line"><span class="cl">cat /etc/passwd
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看有哪些group</span>
+</span></span><span class="line"><span class="cl">cat /etc/group
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 用户user_name加入组another_group</span>
+</span></span><span class="line"><span class="cl">usermod -a -G another_group user_name
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 新建用户username</span>
+</span></span><span class="line"><span class="cl">useradd username
+</span></span><span class="line"><span class="cl"><span class="c1"># 修改username的密码</span>
+</span></span><span class="line"><span class="cl">passwd username
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="修改文件的权限配置">修改文件的权限配置</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># a(ll) u(ser) g(roup) o(thers)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># r(ead) w(rite) x(execute)</span>
+</span></span><span class="line"><span class="cl">chmod a+x ./file <span class="c1"># 给user &amp;&amp; group &amp;&amp; others增加执行权限</span>
+</span></span><span class="line"><span class="cl">chmod ug+rwx ./file <span class="c1"># 给user &amp;&amp; group增加读写执行权限</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># --- --- ---</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># rwx rwx rwx</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 111 100 000</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#  7   4   0 </span>
+</span></span><span class="line"><span class="cl">chmod <span class="m">740</span> ./file <span class="c1"># user有rwx权限，group中的用户有读权限，others没有任何权限</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="操作用户">操作用户</h2>
+<h1 id="reference">Reference</h1>
+<ul>
+<li><a href="https://wiki.archlinux.org/title/users_and_groups">archlinux users_and_groups</a></li>
+<li><a href="https://www.linode.com/docs/guides/linux-users-and-groups/">lindoe linux-users-and-groups</a></li>
+<li><a href="https://www.redhat.com/sysadmin/linux-file-permissions-explained">Linux file permissions explained</a></li>
+</ul>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2023-02-27
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/linux/">linux</a>
+          <a href="/tags/command/">command</a>
+          <a href="/tags/how/">how</a>
+          <a href="/tags/memo/">memo</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/linux/lsof/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">lsof</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/http/rfc-7231-note/">
+            <span class="next-text nav-default">RFC7231笔记</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2023-02-27 14:51:28 \u002b0800 \u002b0800',
+        title: 'Linux用户权限',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

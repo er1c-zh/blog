@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>OSI7层模型 - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="Open System Interconnection model， 开放式系统互联模型是国际标准化组织为 “协调系统互联类型标准研发提供一个公共的基础”而提出的理论模型。
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/network/osi/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="OSI7层模型" />
+<meta property="og:description" content="Open System Interconnection model，
+开放式系统互联模型是国际标准化组织为
+“协调系统互联类型标准研发提供一个公共的基础”而提出的理论模型。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/network/osi/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-06-28T19:50:50+08:00" />
+<meta property="article:modified_time" content="2023-06-28T19:50:50+08:00" />
+<meta itemprop="name" content="OSI7层模型">
+<meta itemprop="description" content="Open System Interconnection model，
+开放式系统互联模型是国际标准化组织为
+“协调系统互联类型标准研发提供一个公共的基础”而提出的理论模型。"><meta itemprop="datePublished" content="2023-06-28T19:50:50+08:00" />
+<meta itemprop="dateModified" content="2023-06-28T19:50:50+08:00" />
+<meta itemprop="wordCount" content="1759">
+<meta itemprop="keywords" content="network,what," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="OSI7层模型"/>
+<meta name="twitter:description" content="Open System Interconnection model，
+开放式系统互联模型是国际标准化组织为
+“协调系统互联类型标准研发提供一个公共的基础”而提出的理论模型。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">OSI7层模型</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2023-06-28 </span>
+        
+          <span class="more-meta"> 约 1759 字 </span>
+          <span class="more-meta"> 预计阅读 4 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#layer-1-physical-layer">Layer 1: Physical layer</a></li>
+    <li><a href="#layer-2-data-link-layer">Layer 2: Data link layer</a></li>
+    <li><a href="#layer-3-network-layer">Layer 3: Network layer</a></li>
+    <li><a href="#layer-4-transport-layer">Layer 4: Transport layer</a></li>
+    <li><a href="#layer-5-session-layer">Layer 5: Session layer</a></li>
+    <li><a href="#layer-6-presentation-layer">Layer 6: Presentation layer</a></li>
+    <li><a href="#layer-7-application-layer">Layer 7: Application layer</a></li>
+    <li><a href="#跨层功能">跨层功能</a></li>
+    <li><a href="#与-tcp--ip-协议栈的比较">与 TCP / IP 协议栈的比较</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p><strong>O</strong>pen <strong>S</strong>ystem <strong>I</strong>nterconnection model，
+开放式系统互联模型是国际标准化组织为
+“协调系统互联类型标准研发提供一个公共的基础”而提出的理论模型。</p>
+<p>OSI分为七个抽象层，描述了网络交互从
+比特在交互媒介中传输到数据在分布式应用的展示。
+每一层都依赖下一层提供的能力来提供被上一层使用的能力。</p>
+<p>Internet protocol suite (TCP/IP) 是一个OSI模型同时代的网络模型。
+相比于OSI，TCP/IP模型更加的关注链接的上层、将物理层当作通用的物理链接来处理，有类似的分层结构但更加的粗泛。</p>
+<h1 id="layer-1-physical-layer">Layer 1: Physical layer</h1>
+<p>physcial layer负责在一个设备（网卡、以太网接口、网络交换机）和一个传输媒介间传递、接收非结构化的原生数据。
+物理层会将数字比特流转换为电 (electrical) 、频率 (radio) 或光 (optical) 信号。</p>
+<p>物理层的协议规定了电平 (voltage level) ，变更电压的时机，物理数据率，最大传输距离，调制解调格式，频道访问方法、物理连接结构。
+这些包括了针脚、电压、 line impedance （线路阻抗） 、线缆规格、无线设备的信号时机和频率。
+比特率 (bit rate) 由物理层进行控制，且可能定义了单工 (simplex) ，半双工 (half duplex) 和全双工 (full duplex) 。
+物理层的组成部分可以参照 network topology 进行描述。</p>
+<p>如 Bluetooth/Ethernet/USB 等常见的协议属于物理层协议，
+也有不常见的物理层协议，如 CAN 。</p>
+<p>物理层也定义了如何编码来在物理信号（如电压或光脉冲）上进行传递。
+比如，在铜缆上，可以通过电压0伏变为5伏传递比特值1；反之，表示比特值0。</p>
+<p>物理层上的问题通常与错误的媒介终端、 电磁干扰或噪声干扰、错误配置或无法正常工作的网卡或集线器。</p>
+<h1 id="layer-2-data-link-layer">Layer 2: Data link layer</h1>
+<p>链路层提供紧邻的两个节点的数据传输能力。
+会探测并尝试修正物理层发生地错误。
+链路层定义了在两个物理连接的设备之间建立、中断链接的协议。
+也定义了两者之间流量控制的协议。</p>
+<p>IEEE 802 将链路层划分为两个子层：</p>
+<ul>
+<li>Medium access control (MAC) 层： 负责控制网络中的设备如何访问媒介和获取传输数据的权限。</li>
+<li>Logical link control (LLC) 层：负责识别和封装 (encapsulating) 网络层协议，控制错误检查和帧同步。</li>
+</ul>
+<p>一些常见的链路层协议： 802.3 Ethernet / 802.11 Wi-Fi / 802.15.4 Zigbee 。</p>
+<h1 id="layer-3-network-layer">Layer 3: Network layer</h1>
+<p>网络层提供了功能和过程上的在连接在不同的“网络”上的节点间传递packet的能力。
+“网络”是一个媒介：
+允许多个节点接入且每个接入的节点有自己的地址。
+接入网络的节点可以通过提供消息的内容和目标节点的地址，将消息投递到目标节点。
+网络只需要目标节点的地址就能找到投递的路径，投递的过程中可能会需要中间节点进行转发。
+如果消息体对于链路层过大，网络层可能会通过将消息分割成多个分片进行投递，最后进行组装。
+网络也许会上报投递错误。</p>
+<p>网络层的投递可以不保证可靠性。</p>
+<h1 id="layer-4-transport-layer">Layer 4: Transport layer</h1>
+<p>传输层提供将变长数据序列从源主机的应用传递到目的主机的应用的功能和过程上的能力，
+提供服务质量的保障。
+传输层协议可以是面向链接的，也可以是无链接的。</p>
+<p>由于下层的协议有最大传输单元的问题，
+传输层协议可能需要将数据分割为被称作“段”的片段。
+段中的数据需要足够小，
+来使得加上传输层和网络层的协议头也不会超过 MTU 。</p>
+<p>传输层协议通过流量控制、错误处理、顺序和存在确认等手段
+实现源到目的主机的可靠传输。
+一些协议是面向状态或面向链接的。
+这意味着协议可以追踪每个段的情况，
+通过确认握手机制来实现在发生错误的时候重传。
+传输层协议也提供对成功传输的确认机制，
+并在没有错误的情况下发送下一份数据。</p>
+<p>可靠传输并不是传输层协议的硬性要求。</p>
+<p>OSI为面向链接的协议定义了五个等级，从提供最小能力的 TP0 ，
+到为低可靠性的网络设计的 TP4 。</p>
+<p>TCP 和 UDP 协议可以被看做是非标准的传输层协议。</p>
+<h1 id="layer-5-session-layer">Layer 5: Session layer</h1>
+<p>Session 层负责在多个计算机之间进行设置、控制链接、终止链接，
+通常被称作计算机网络。</p>
+<p>因为 DNS 或其他的 名称解析协议在 session 层工作，
+所以 session 层的常见能力有：
+用户登入、名称解析、用户登出。</p>
+<p>因此， session 层建立、管理和终止本地与远程的应用之间的链接。</p>
+<h1 id="layer-6-presentation-layer">Layer 6: Presentation layer</h1>
+<p>表现层在将数据打包写入网络栈时，
+按照应用层指定的格式进行处理；
+在接收到数据时执行相反地操作。</p>
+<p>表现层处理协议转换、数据加解密、数据压缩解压缩、操作系统之间的数据展现兼容问题和图形指令。</p>
+<h1 id="layer-7-application-layer">Layer 7: Application layer</h1>
+<p>应用层是 OSI 模型中最接近用户的一层，
+应用层和用户都直接和实现了网络交互的软件直接交互。</p>
+<h1 id="跨层功能">跨层功能</h1>
+<p>跨层功能指不止绑定在一个层上的服务，事实上，它们会影响多个层。</p>
+<p>一些管理或安全目的的功能，会影响所有层。</p>
+<h1 id="与-tcp--ip-协议栈的比较">与 TCP / IP 协议栈的比较</h1>
+<p>TCP / IP 中的协议，没有严格限制垂直方向上的包装和分层。</p>
+<p>TCP / IP 从实际操作的角度划分了四层：
+软件应用、主机间的传输路径、网际互联和本地网络上的节点互联。</p>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2023-06-28
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/network/">network</a>
+          <a href="/tags/what/">what</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/linux/find/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">find</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/distributed/gossip-protocol/">
+            <span class="next-text nav-default">Gossip Protocol</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2023-06-28 19:50:50 \u002b0800 \u002b0800',
+        title: 'OSI7层模型',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

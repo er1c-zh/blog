@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>find - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="search for files in a directory hierarchy
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/linux/find/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="find" />
+<meta property="og:description" content="search for files in a directory hierarchy" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/linux/find/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-06-29T16:43:06+08:00" />
+<meta property="article:modified_time" content="2023-06-29T16:43:06+08:00" />
+<meta itemprop="name" content="find">
+<meta itemprop="description" content="search for files in a directory hierarchy"><meta itemprop="datePublished" content="2023-06-29T16:43:06+08:00" />
+<meta itemprop="dateModified" content="2023-06-29T16:43:06+08:00" />
+<meta itemprop="wordCount" content="1833">
+<meta itemprop="keywords" content="memo,linux,command," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="find"/>
+<meta name="twitter:description" content="search for files in a directory hierarchy"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">find</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2023-06-29 </span>
+        
+          <span class="more-meta"> 约 1833 字 </span>
+          <span class="more-meta"> 预计阅读 4 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#tldr">TL;DR</a></li>
+    <li><a href="#intro">Intro</a></li>
+    <li><a href="#选项">选项</a>
+      <ul>
+        <li><a href="#如何处理链接">如何处理链接</a></li>
+        <li><a href="#测试选项--d-debugoptions">测试选项 <code>-D debugoptions</code></a></li>
+        <li><a href="#-olevel-开启查询优化">-Olevel 开启查询优化</a></li>
+      </ul>
+    </li>
+    <li><a href="#表达式">表达式</a>
+      <ul>
+        <li><a href="#options">OPTIONS</a></li>
+        <li><a href="#tests">TESTS</a></li>
+      </ul>
+    </li>
+    <li><a href="#actions">ACTIONS</a></li>
+    <li><a href="#operators">OPERATORS</a></li>
+    <li><a href="#refefrence">Refefrence</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p>search for files in a directory hierarchy</p>
+<h1 id="tldr">TL;DR</h1>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 1. 搜索 .md 文件</span>
+</span></span><span class="line"><span class="cl">find . -name <span class="s1">&#39;*.md&#39;</span> -print
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># ...</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ./readme.md</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 2. 以 egrep 正则来搜索</span>
+</span></span><span class="line"><span class="cl">find . -regextype posix-egrep -regex <span class="s1">&#39;.*/java.*.md&#39;</span> -print
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h1 id="intro">Intro</h1>
+<p>GNU <code>find</code> 遍历传入的文件树，
+在每个文件名上执行从左到右的匹配，
+直到本次匹配结束（短路匹配）。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">find <span class="o">[</span>-H<span class="o">]</span> <span class="o">[</span>-L<span class="o">]</span> <span class="o">[</span>-P<span class="o">]</span> <span class="o">[</span>-D debugopts<span class="o">]</span> <span class="o">[</span>-OLevel<span class="o">]</span> <span class="o">[</span>path...<span class="o">]</span> <span class="o">[</span>expression<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>其中 <code>-H -L -P</code> 控制如何处理链接。
+<code>path</code>是文件名或文件夹名，用于指定执行匹配的目标。
+直到遇到<code>- ( ~</code>之前，都作为<code>path</code>处理。
+剩下的都会作为<code>expression</code>处理。</p>
+<p><code>path</code>默认值是当前目录，
+<code>expression</code>默认值是 <code>-print</code> 。</p>
+<h1 id="选项">选项</h1>
+<h2 id="如何处理链接">如何处理链接</h2>
+<p><code>-P</code> 默认值，不追踪链接，使用链接的名称、属性匹配。</p>
+<p><code>-L</code> 追踪链接，使用链接指向的文件的名称、属性来匹配。</p>
+<p><code>-H</code> 除了处理参数时，不跟踪链接。</p>
+<h2 id="测试选项--d-debugoptions">测试选项 <code>-D debugoptions</code></h2>
+<p><code>tree</code> 输出表达式树原始和优化后的情况。</p>
+<p><code>stat</code> 打印使用<code>stat</code>和<code>lstat</code>系统调用的情况。</p>
+<p><code>opt</code> 打印表达式树的诊断信息。</p>
+<p><code>rates</code> 打印每个谓词（predicate）成功或失败的情况。</p>
+<h2 id="-olevel-开启查询优化">-Olevel 开启查询优化</h2>
+<h1 id="表达式">表达式</h1>
+<p>表达式由 options、tests 和 actions 的操作组成。</p>
+<p>如果除了 <code>-prune</code> 没有其他的 action，
+<code>-print</code> 会被应用于所有表达式为 true 的 file。</p>
+<h2 id="options">OPTIONS</h2>
+<p>所有的options都返回true。
+除了<code>-daystart</code> <code>-follow</code> <code>-regextype</code>，
+options都影响所有的tests，尽管options在tests后面给出。
+<code>-daystart</code> <code>-follow</code> <code>-regextype</code>只会影响后面的tests。</p>
+<p><code>-d</code> <code>-depth</code> 先处理目录的内容，然后处理目录本身。<code>-delete</code> 的表现也是如此。</p>
+<p><code>-daystart</code> 从今天的开始计算时间，而不是24小时之前。</p>
+<p><code>-follow</code> 被<code>-L</code>替代。</p>
+<p><code>-ignore_readdir_race</code> 关闭遍历文件夹时文件夹被删除的错误提醒。</p>
+<p><code>-maxdepth levels</code> 最多深入 <em>levels</em> 层。</p>
+<p><code>-mindepth levels</code> 小于 <em>levels</em> 时不执行任何 tests 和 actions。</p>
+<p><code>-mount</code> <code>-xdev</code> 不要进入其他文件系统。</p>
+<p><code>-noignore_readdir_race</code> 关闭<code>-ignore_readdir_race</code>。</p>
+<p><code>-noleaf</code> 关闭基于一个文件夹的子文件夹数量 = 文件夹硬链接 - 2 的优化。</p>
+<pre><code>&gt; 通常，Unix 文件系统拥有至少两个硬链接： `.` 和本身的名字。
+</code></pre>
+<p><code>-regextype type</code> 修改使用的 regex 类型，目前支持 emacs (default) / posix-awk / posix-basic / posix-egrep / posix-extended 。</p>
+<p><code>-xautofs</code> 不进入在 autofs 文件系统上的文件夹。</p>
+<h2 id="tests">TESTS</h2>
+<p>某些 tests 支持比较被遍历的文件和命令行指定的文件。
+其中，双方都会按照 <code>-H -L -P</code> 来获取信息，命令行指定的文件的信息只会获取一次。</p>
+<p>数值类型的参数可以以如下的格式给出：</p>
+<p><code>+n</code> 大于 n ， <code>-n</code> 小于 n ， <code>n</code> 等于 n。</p>
+<p><code>-amin n</code> 文件最后的访问时间位于 n 分钟之前。</p>
+<p><code>-anewer file</code> 文件被访问的时间比 file 更改的时间更近。</p>
+<p><code>-atime n</code> 文件最后访问时间 n*24 小时之前。需要注意的是，小数部分会被丢弃；换句话说， <code>-atime +1</code> 只匹配至少 <strong>2</strong> 天内没访问过的文件。</p>
+<p><code>-cmin n</code> <code>-cnewer file</code> <code>-ctime n</code> 文件的状态，类似 文件的最后访问时间。</p>
+<p><code>-empty</code> 文件是空的且是普通文件 (regular file) 或文件夹。</p>
+<p><code>-executable</code> 匹配可以执行的文件和可以被搜索的文件夹。</p>
+<p><code>- false</code> false 。</p>
+<p><code>-fstype type</code> 在 type 文件系统上的文件。</p>
+<p><code>-gid n</code> group ID 是 n 的文件。</p>
+<p><code>-group gname</code> 属于 gname 组的文件。</p>
+<p><code>-ilname pattern</code> 大小写敏感的 <code>-lname</code> 。</p>
+<p><code>-iname pattern</code> 大小写敏感的 <code>-name</code> 。</p>
+<p><code>-inum n</code> 文件的 inode 号码是 n 。通常可以使用 <code>-samefile</code> 来替代。</p>
+<p><code>-iregex pattern</code> 大小写敏感的 <code>-regex</code> 。</p>
+<p><code>-iwholename pattern</code> 大小写敏感的 <code>-wholename</code> 。</p>
+<p><code>-links n</code> 拥有 n 个链接的文件。</p>
+<p><code>-lname pattern</code> 匹配内容符合 pattern 的符号链接。</p>
+<p><code>-mmin n</code> 文件修改时间在 n 分钟之前。</p>
+<p><code>-mtime n</code> 文件修改时间在 n * 24 小时之前。类似 <code>-atime n</code>的处理逻辑。</p>
+<p><code>-name pattern</code> 文件名符合 pattern 的文件，不包括路径。</p>
+<p><code>-newer file</code> 文件修改时间比 file 更近。</p>
+<p><code>-newerXY reference</code> 比较当前文件的 timestamp 和 reference 。
+<code>reference</code> 可以是一个文件，也可以是一个描述绝对时间的字符串。
+<code>X</code> 和 <code>Y</code> 是一些字符的占位符，
+这些字符用来选择用于比较的时间。</p>
+<p><code>-nogroup</code> 用于筛选没有合法 group 的文件。</p>
+<p><code>-nouser</code> 没有合法的 user 。</p>
+<p><code>-path pattern</code> 文件名称符合 pattern 。</p>
+<p><code>-perm mode</code> 精准匹配权限 mode 。</p>
+<p><code>-perm -mode</code> 匹配有 mode 给出的所有权限的文件。</p>
+<p><code>-perm /mode</code> 匹配有 mode 给出的任意权限的文件。</p>
+<p><code>-readable</code> 匹配可读文件。</p>
+<p><code>-regex pattern</code> 完整路径匹配 pattern 的文件。</p>
+<p><code>-samefile name</code> 匹配指向 name 文件的所有引用。</p>
+<p><code>-size n[cwbkMG]</code> 占用了 n 个单元的文件。</p>
+<p><code>-true</code> true.</p>
+<p><code>-type C</code> 文件类型是 c 的文件。</p>
+<pre><code>- b 块文件
+- c 字符文件
+- d 文件夹
+- p 命名管道
+- f 普通文件
+- l 符号链接
+- s 套接字
+- D 门
+</code></pre>
+<p><code>-uid n</code> 文件 user ID 是 n 。</p>
+<p><code>-used n</code> 自从文件状态被修改之后 n 天被访问过。</p>
+<p><code>-user uname</code> 文件用拥有者是 uname 。</p>
+<p><code>-writable</code> 可修改的文件。</p>
+<p><code>-xtype c</code> 除了链接与 <code>-type</code> 相同。</p>
+<h1 id="actions">ACTIONS</h1>
+<p><code>-delete</code> 删除。</p>
+<p><code>-exec command ;</code> 执行命令，所有分号之前的字符串都作为 command 的参数。</p>
+<p><code>-exec command {} +</code> 类似 xargs 的 <code>-exec command ;</code></p>
+<p><code>-execdir command ;</code> <code>-execdix command {} +</code> 文件夹版本的 <code>-exec</code> 。</p>
+<p><code>-fls file</code> 将 <code>-ls</code> 输出到 <code>file</code> 中。</p>
+<p><code>-fprint file</code> 输出文件的全路径到 file 中。</p>
+<p><code>-fprint0 file</code> 输出到 file 的 <code>-print0</code> 。</p>
+<p><code>-fprintf file format</code> 输出到 file 的 <code>-fprint</code> 。</p>
+<p><code>-ls</code> 输出当前文件的 <code>ls -dils</code> 。</p>
+<p><code>-ok commond ;</code> <code>-okdir command ;</code> 需要确认的 <code>-exec</code> 。</p>
+<p><code>-print</code> 输出文件的路径 + 文件名 + 一个换行符。</p>
+<p><code>-print0</code> 空行替换为 null 字符的 <code>-print</code> 。</p>
+<p><code>-printf format</code> 输出 format 。</p>
+<p><code>-prune</code> 如果文件是一个文件夹，不进入。</p>
+<p><code>-quit</code> 立即退出。</p>
+<h1 id="operators">OPERATORS</h1>
+<p>按照优先级下降的列出。</p>
+<p><code>( expr )</code> 强制优先级。</p>
+<p><code>! expr</code></p>
+<p><code>-not expr</code></p>
+<p><code>expr1 expr2</code> 短路的 and 链接。</p>
+<p><code>expr1 -a expr2</code> and.</p>
+<p><code>expr1 -and expr2</code> and.</p>
+<p><code>expr1 -o expr2</code> or.</p>
+<p><code>expr1 -or expr2</code> or.</p>
+<p><code>expr1 , expr2</code> 两个表达式都会执行， expr1 的返回值会被丢弃，将 expr2 的返回值作为表达式的返回值。</p>
+<h1 id="refefrence">Refefrence</h1>
+<ul>
+<li><a href="https://linux.die.net/man/1/find">find(1) manual</a></li>
+</ul>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2023-06-29
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/memo/">memo</a>
+          <a href="/tags/linux/">linux</a>
+          <a href="/tags/command/">command</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/network/ipv6/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">IPv6</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/network/osi/">
+            <span class="next-text nav-default">OSI7层模型</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2023-06-29 16:43:06 \u002b0800 \u002b0800',
+        title: 'find',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

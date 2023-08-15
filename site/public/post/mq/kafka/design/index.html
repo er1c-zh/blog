@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>kafka设计 - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="kafka的设计思路。
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/mq/kafka/design/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="kafka设计" />
+<meta property="og:description" content="kafka的设计思路。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/mq/kafka/design/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-10-24T20:08:12+08:00" />
+<meta property="article:modified_time" content="2022-10-24T20:08:12+08:00" />
+<meta itemprop="name" content="kafka设计">
+<meta itemprop="description" content="kafka的设计思路。"><meta itemprop="datePublished" content="2022-10-24T20:08:12+08:00" />
+<meta itemprop="dateModified" content="2022-10-24T20:08:12+08:00" />
+<meta itemprop="wordCount" content="5223">
+<meta itemprop="keywords" content="mq,kafka,memo,what,way-to-kafka," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="kafka设计"/>
+<meta name="twitter:description" content="kafka的设计思路。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">kafka设计</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-10-24 </span>
+        
+          <span class="more-meta"> 约 5223 字 </span>
+          <span class="more-meta"> 预计阅读 11 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#kafka的设计目标与动机-motivation">kafka的设计目标与动机 <em>(Motivation)</em></a></li>
+    <li><a href="#持久化-persistence">持久化 Persistence</a>
+      <ul>
+        <li><a href="#使用磁盘与操作系统的文件系统">使用磁盘与操作系统的文件系统</a></li>
+        <li><a href="#常数时间复杂度">常数时间复杂度</a></li>
+      </ul>
+    </li>
+    <li><a href="#更好的效率">更好的效率</a></li>
+    <li><a href="#生产者">生产者</a>
+      <ul>
+        <li><a href="#负载均衡">负载均衡</a></li>
+        <li><a href="#异步发送">异步发送</a></li>
+      </ul>
+    </li>
+    <li><a href="#消费者">消费者</a>
+      <ul>
+        <li><a href="#推或者拉">推或者拉？</a>
+          <ul>
+            <li><a href="#push-based-system">push-based system</a></li>
+            <li><a href="#pull-based-system">pull-based system</a></li>
+            <li><a href="#store-and-forward-生产者">store-and-forward 生产者</a></li>
+          </ul>
+        </li>
+        <li><a href="#消费位置-consumer-position">消费位置 consumer position</a>
+          <ul>
+            <li><a href="#kafka的方案">kafka的方案</a></li>
+          </ul>
+        </li>
+        <li><a href="#offline-data-load">Offline Data Load</a></li>
+        <li><a href="#static-membership">Static Membership</a></li>
+      </ul>
+    </li>
+    <li><a href="#消息投递语义">消息投递语义</a>
+      <ul>
+        <li><a href="#写入">写入</a>
+          <ul>
+            <li><a href="#producer没有收到提交message的response">producer没有收到提交message的response</a></li>
+          </ul>
+        </li>
+        <li><a href="#消费">消费</a>
+          <ul>
+            <li><a href="#at-least-once">At least once</a></li>
+            <li><a href="#at-most-once">At most once</a></li>
+            <li><a href="#exactly-once">Exactly once</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#副本-replication">副本 Replication</a>
+      <ul>
+        <li><a href="#副本log-quorums-isrs-and-state-machines">副本log Quorums, ISRs, and State Machines</a>
+          <ul>
+            <li><a href="#如何选出拥有所有committed消息的新leader">如何选出拥有所有committed消息的新leader</a></li>
+          </ul>
+        </li>
+        <li><a href="#kafka不要求崩溃的节点将所有的数据带回来">kafka不要求崩溃的节点将所有的数据带回来</a></li>
+        <li><a href="#所有isr节点失败后会发生什么">所有ISR节点失败后会发生什么？</a></li>
+        <li><a href="#可用性与持久性">可用性与持久性</a></li>
+        <li><a href="#副本管理">副本管理</a></li>
+      </ul>
+    </li>
+    <li><a href="#日志压缩">日志压缩</a></li>
+    <li><a href="#quotas">Quotas</a></li>
+    <li><a href="#参考">参考</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p>kafka的设计思路。</p>
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+            
+                <div class="serial-index">
+                    <p>系列列表</p>
+                    <ul>
+                    
+                        <li><a href="https://blog.er1c.dev/post/mq/kafka/introduction/">kafka基本概念</a></li>
+                    
+                        <li><a href="https://blog.er1c.dev/post/mq/kafka/design/">kafka设计</a></li>
+                    
+                        <li><a href="https://blog.er1c.dev/post/mq/kafka/implementation/">kafka的实现</a></li>
+                    
+                    </ul>
+                </div>
+            
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+
+
+<h1 id="kafka的设计目标与动机-motivation">kafka的设计目标与动机 <em>(Motivation)</em></h1>
+<blockquote>
+<p>We designed Kafka to be able to
+act as a unified platform for
+handling all the real-time data feeds a large company might have.</p>
+</blockquote>
+<p>一句话概括：kafka被设计为一个能够处理大公司产出的实时数据流的统一平台。
+这意味着：</p>
+<ul>
+<li>足够大的吞吐量，用来支持大流量的数据流，比如实时日志聚合。</li>
+<li>优雅地支持较大数据量的积压 <em>(backlog)</em> ，比如周期性的离线数据的导入。</li>
+<li>低延迟，用来满足传统的消息组件的功能。</li>
+</ul>
+<p>除此之外，kafka还被希望能够：</p>
+<ul>
+<li>支持实时的从分片、分布式的流中创建新的下游流。</li>
+<li>良好的容灾机制，处理好机器失效等问题。</li>
+</ul>
+<p><strong>这些目标使得kafka更像一个数据库日志系统而不是一个传统的消息系统。</strong></p>
+<h1 id="持久化-persistence">持久化 Persistence</h1>
+<h2 id="使用磁盘与操作系统的文件系统">使用磁盘与操作系统的文件系统</h2>
+<blockquote>
+<p>Don&rsquo;t fear the filesystem!</p>
+</blockquote>
+<p>考虑几个因素：</p>
+<ul>
+<li>
+<p>硬盘顺序写的带宽足够大。</p>
+<blockquote>
+<p>As a result the performance of linear writes on a JBOD configuration with six 7200rpm SATA
+RAID-5 array is about 600MB/sec but the performance of random writes is only about
+100k/sec—a difference of over 6000X.</p>
+</blockquote>
+</li>
+<li>
+<p>操作系统面向块存储设备提供的预读 <em>(read ahead)</em> 和批量写 <em>(write behind)</em> 机制、页缓存机制以及页缓存与磁盘中的一致性保证。</p>
+</li>
+<li>
+<p>（基于JVM）在内存中维护数据结构会增加内存占用（甚至翻倍），以及内存占用增大导致垃圾回收导致的性能问题。</p>
+</li>
+</ul>
+<p>又考虑，可以将缓存的一致性以及维护的问题交给操作系统来实现，
+来降低kafka本身的复杂度。</p>
+<p>所以kafka被设计为以页缓存 <em>(pagecache)</em> 为存储消息的核心的形式。
+参考了<a href="http://varnish-cache.org/wiki/ArchitectNotes">Varnish</a>的设计。</p>
+<h2 id="常数时间复杂度">常数时间复杂度</h2>
+<p>考虑上述使用磁盘的情况，
+O(logN)的存储数据结构（如BTree/B+Tree）不能像在内存中一样当作常数时间复杂度来处理，
+另外考虑读写的并发问题。
+所以选择将消息当作一个日志文件来存储，
+消费消息是从日志文件头读取，
+写入消息是追加数据。
+同时实现了读写操作在常数时间复杂度内完成、
+读写操作解耦无并发问题、
+以及利用磁盘的顺序读写能力，
+更低的存储成本与更高的读写性能（消息可以更久的被存储）。</p>
+<p>这种实现相比BTree等的实现不足在于实现搜索等功能较复杂。</p>
+<h1 id="更好的效率">更好的效率</h1>
+<p>考虑到通常有至少一个消费者会消费到消息，
+设计上将“消费”的消耗尽量的降低。</p>
+<p>在使用机械硬盘的情况下，
+有两种产生性能问题的情况：</p>
+<ol>
+<li>
+<p>很多次小的IO操作。</p>
+<p>这个问题会在消费者、生产者以及服务端持久化消息时发生。
+为了解决这个问题，
+构造了 <strong>消息集合</strong> <em>(message set)</em> 的概念。
+这可以增加网络报文的大小，
+持久化时可以减少IO的次数，
+消费者也可以减少请求的次数。</p>
+</li>
+<li>
+<p>过多的数据拷贝。</p>
+<p>kafka定义了一个生产者、服务器、消费者三方共用的二进制格式来存储、传输消息。</p>
+<p>首先是能够跨越消息来进行压缩，
+这种机制被称作 <strong>端到端的批量压缩</strong> <em>(end-to-end batch compression)</em> 。
+举个例子，批量压缩可以将多个消息中相同的json的字段名称压缩，
+而在单个消息中进行压缩时无法进行这种压缩。</p>
+<p>另一项收益是，
+服务器操作消息时不需要解析消息的格式。
+具体的，
+服务器可以将一个个消息集合当作文件来处理，
+利用Linux操作系统提供的<code>sendfile</code>调用，
+将文件的内容直接放到socket的发送缓冲区中，
+减少了数据的拷贝。</p>
+<blockquote>
+<p>现代unix操作系统提供高效的方法用来将pagecache的数据传递给一个socket。</p>
+</blockquote>
+<p>常见的操作路径是：</p>
+<ol>
+<li>操作系统从Disk读取数据到内核空间的pagecache。</li>
+<li>应用从内核空间将数据读取（产生复制）到用户空间的buffer。</li>
+<li>应用将用户空间的buffer的数据写入到（产生复制）在内核空间中的socket缓冲区。</li>
+<li>操作系统从socket的缓冲区写入（产生复制）到NIC的缓冲区来完成发送。</li>
+</ol>
+<p>包含了四次复制和两次系统调用。
+改用<code>sendfile</code>之后，只需要一次系统调用和一次复制：从pagecache复制到NIC缓冲区。</p>
+</li>
+</ol>
+<h1 id="生产者">生产者</h1>
+<h2 id="负载均衡">负载均衡</h2>
+<p>生产者总是将数据发送给该分片的的leader broker。
+为了帮助生产者完成这个设计，
+每个kafka的节点都能回答所有节点的活性以及partition的leader。</p>
+<p>生产者client决定将消息发送到那个partition。
+负载均衡工作可以在这里完成，
+支持随机或者按照语意进行划分。</p>
+<p>一个实用的case：</p>
+<p>生产者可以根据比如uid来选择分片发送，
+这可以使得一个uid的消息都发送到一个分片中。
+这使得consumer可以进行本地敏感*(locality-sensitive)*的处理。</p>
+<h2 id="异步发送">异步发送</h2>
+<p>开启批量发送之后，生产者会尝试在内存中聚合数据并通过一个批量请求来提交。
+可以设置不超过某个大小或者不等待超过某个时间。</p>
+<p>这项设置可以实现通过牺牲一点延迟来换取更好的吞吐。</p>
+<h1 id="消费者">消费者</h1>
+<p>消费者通过发送 <strong>fetch请求</strong> 给想要消费的partition的leading broker来完成消费。
+每个请求中，消费者设定想要开始消费的offset，接收到从该位置开始的一组数据。</p>
+<p>显然易见的，消费者可以控制消费的位置以及如果需要的话，可以重新消费。</p>
+<h2 id="推或者拉">推或者拉？</h2>
+<p>kafka选择了传统的消息系统的设计方式：生产者推，消费者拉。</p>
+<h3 id="push-based-system">push-based system</h3>
+<p>缺点：</p>
+<ul>
+<li>难以处理多个消费者的消费速率。</li>
+</ul>
+<h3 id="pull-based-system">pull-based system</h3>
+<p>优势：</p>
+<ul>
+<li>消费者自行控制消费的速率</li>
+<li>broker能够更激进的batch消息，
+相比于push-based实现，需要在立即推送和聚合推送之间做出取舍。</li>
+</ul>
+<p>不足：</p>
+<ul>
+<li>
+<p>如果没有数据的话会产生大量的无用轮询。</p>
+<p>解决方案：通过 <strong>long poll</strong> 请求，来等待数据的到来。
+<em>（这里也可以等待到足够的数据来实现batch）</em></p>
+</li>
+</ul>
+<h3 id="store-and-forward-生产者">store-and-forward 生产者</h3>
+<p>指生产者写入数据到local log，当consumer从broker尝试拉取数据时，
+broker从producer拉取数据。</p>
+<p>对于kafka的使用场景，有时需要支持数千的生产者。
+数据分布在这么多的磁盘上将会是一个维护上的灾难。</p>
+<h2 id="消费位置-consumer-position">消费位置 consumer position</h2>
+<p><strong>追踪消息被消费到哪个位置是消息系统的一个很关键的性能点。</strong></p>
+<p>通常，消费情况的元数据被存储在borker上。
+这是符合直觉的的方案：</p>
+<ol>
+<li>broker能知道消费的发生以及ack，并且对于单一server的实现，没有其他合适的地方来存储。</li>
+<li>传统的消息系统没有很好的可伸缩性，broker可以将消费过的数据清除来保持较小的存储。</li>
+</ol>
+<p>问题：如何在broker和consumer之间对于消费情况达成一致是一个不小的问题。</p>
+<p>发送即标记消费实现最多一次会丢消息。</p>
+<p>通过接受ACK来实现至少一次成本比较高：</p>
+<ul>
+<li>如broker要维护每个消息的状态机：发送、消费完成、锁（不重复消费）。</li>
+<li>如果永远没有收到ack，如何处理。</li>
+</ul>
+<h3 id="kafka的方案">kafka的方案</h3>
+<p>每个topic划分为有序的若干分片，
+对于一个consumer group，一个分片同时有且只有一个consumer会消费。</p>
+<p>因此consumer position只会有一个数字，不管是存储还是ack都非常的方便。</p>
+<p>同时有一个side benefit，
+消费者可以主动的回滚consumer position，
+重复消费之前消费过的数据。</p>
+<h2 id="offline-data-load">Offline Data Load</h2>
+<h2 id="static-membership">Static Membership</h2>
+<p><strong>静态成员</strong> 用来帮助在 consumer group rebalance 协议上的程序提升可用性。</p>
+<p>rebalance protocol依赖于group coordinator为group中的成员分配id。
+这个id是临时的，每次成员重启或者重新加入会产生变化。</p>
+<p>对于消费者类型的服务，这种变化会导致消息的大量reassign。
+对于有状态的服务，这种调整会导致local的优化失效，进而导致系统部分或全部不可用。</p>
+<p>为了解决这种问题，设计了Static Member机制。</p>
+<h1 id="消息投递语义">消息投递语义</h1>
+<ul>
+<li><em>At most once</em></li>
+<li><em>At least once</em></li>
+<li><em>Exactly once</em></li>
+</ul>
+<p>可以分割为两个问题：</p>
+<ol>
+<li>pub消息的可靠性</li>
+<li>消费消息的保证</li>
+</ol>
+<h2 id="写入">写入</h2>
+<p>当一个消息写入的分片返回了 <strong>committed</strong> ，
+只要有一个拥有该分片副本的borker是<em>alive</em>的，
+那么这个消息就不会丢失。</p>
+<h3 id="producer没有收到提交message的response">producer没有收到提交message的response</h3>
+<p>从0.11.0.0之后，kafka支持了幂等发送，
+producer可以重复发送消息，但不会产生多个消息记录。</p>
+<p>broker为每个producer赋予一个ID，
+生产者发送消息的时候，会为每个消息带上一个序列号。</p>
+<p>也是从0.11.0.0之后，producer支持使用类似事务的语义，
+将消息发送到多个topic分片中：
+要么都写入成功，要么都失败。</p>
+<p>要求不是那么高的场景下，
+也可以配置等待若干时间用来提交消息。
+也可以，完全的异步发送，或者等待到只有leader分片（相对于follower分片）
+拥有这个消息。</p>
+<h2 id="消费">消费</h2>
+<h3 id="at-least-once">At least once</h3>
+<p>消费完成之后，记录消费的offset。</p>
+<h3 id="at-most-once">At most once</h3>
+<p>开始消费之前，就记录消费的offset。</p>
+<h3 id="exactly-once">Exactly once</h3>
+<p>对于kafka内部的场景，消费一个topic然后写入到另一个topic。
+那么可以利用kafka提供的事务机制。
+将offset和产生的结果作为一个原子写入到topic中。</p>
+<p>对于消费topic写入外部系统中，
+也需要使得记录offset和输出结果原子化的执行。
+通常的实现方式，比如两步提交。
+作为替代，可以将offset和输出存储到同一个地方。</p>
+<h1 id="副本-replication">副本 Replication</h1>
+<p>kafka根据配置的参数来控制每个分片的副本数量。</p>
+<p>副本机制的运行单元是topic的分片。</p>
+<p>Followers和普通的消费者一样，
+从leader消费消息，应用到自身的日志中。</p>
+<p>在分布式系统中，为了自动处理失败，需要一个精确的“存活”定义。
+在kafka中，是这样定义的：</p>
+<ol>
+<li>broker维持一个与controller的活跃session来接受元数据更新。
+<ul>
+<li>kRaft集群中，需要周期性的与controller发送心跳。</li>
+<li>Zookeeper集群中，间接通过broker在初始化与zookeeper的会话时建立的虚节点。</li>
+</ul>
+</li>
+<li>broker保持维护的作为follower的分片与leader不会落后太远。</li>
+</ol>
+<p>使用<strong>in sync</strong>来表示<strong>alive</strong>和<strong>failed</strong>之间的状态。
+kafka维护一个ISR(in-sync replica)集合，
+如果没有维持活跃session或者落后太多，那么这个broker就会被从ISR中移除。</p>
+<p><strong>committed的含义</strong>：
+（如果消息是committed的，）
+不需要担心如果leader fail之后，会丢失消息。
+生产者需要权衡latency和可靠性来选择是否要等待message成为committed。</p>
+<p>kafka保证committed的消息，在有至少一个in sync副本的情况下，
+不会丢失。</p>
+<p>kafka不解决网络分区问题。</p>
+<h2 id="副本log-quorums-isrs-and-state-machines">副本log Quorums, ISRs, and State Machines</h2>
+<p>副本log是kafka分片的核心。
+在分布式数据系统中，副本日志是一个很常见的基本元素。
+副本log可以被其他的系统以状态机风格来实现其他的分布式系统。</p>
+<p>副本日志实现了将一系列数据的顺序达成共识的过程。
+最简单的方式是选出一个leader来决断所有的输入。</p>
+<h3 id="如何选出拥有所有committed消息的新leader">如何选出拥有所有committed消息的新leader</h3>
+<p>当leader无法正常工作时，我们需要选出一个up-to-date的follower。
+kafka提供的保证需要分片复制算法能够在leader无法工作之后，
+保证选出的leader拥有所有committed的消息。</p>
+<p>考虑，如果在写入等待a个副本返回写入成功，选举需要检查b个副本，
+a和b中保证有overlap，这个过程就是Quorum。</p>
+<p>一个常见的方法是在写入和选举是都等待/检查超过半数的副本（以下称为过半选举）。
+特别的，这种方法有一个天然的优势：
+操作取决于latency最小的若干实例。
+实现这种检查，有若干算法及其变种：ZAB, kRaft etc。</p>
+<p><strong>过半选举</strong>的不足在于只能容忍较少的节点失败或者需要更大的存储成本。</p>
+<p>实践上，kafka选择了一个权衡之后的方案。
+相比于过半选举，kafka动态维护了一个称作ISR(in-sync replicas)的集合来作为
+quorum set。
+ISR中的成员的数据与leader保持同步，也只有ISR中的成员有资格被选为新的leader。
+所有写入只有在被所有的ISR副本处理才被认为是committed。
+ISR成员维护在集群元数据中。
+通过ISR模型和f+1个（ISR）副本，
+kafka topic可以容忍f个节点失败而不丢失committed的消息。</p>
+<p>ISR模型与过半选举在支持相同失败容忍度的时候，写入需要等待相同数量的副本的ack。
+对于过半选举的只依赖低延迟实例的天然优点，
+kafka选择通过让producer来决定是否等待follower ack来解决。
+ISR模型的优势在于节省了很多带宽和存储，是值得的。</p>
+<h2 id="kafka不要求崩溃的节点将所有的数据带回来">kafka不要求崩溃的节点将所有的数据带回来</h2>
+<p>不同于普通的副本算法，kafka支持基于不可靠的存储运行。</p>
+<p>实践中，磁盘错误是非常常见的情况。
+另外，为了提高性能，kafka无法容忍每次都调用fsync来刷盘。</p>
+<h2 id="所有isr节点失败后会发生什么">所有ISR节点失败后会发生什么？</h2>
+<p>kafka提供了两个对于一致性和可用性不同倾向的方案：</p>
+<ol>
+<li>等待任意ISR节点重新接入。</li>
+<li>选择一个ISR外的节点作为leader。</li>
+</ol>
+<h2 id="可用性与持久性">可用性与持久性</h2>
+<p>写入时，producer可以选择等待0、1、所有的（ISR）副本返回ack。</p>
+<p>提供两个选项来提升持久性：</p>
+<ol>
+<li>禁用使用ISR外的节点作为主。</li>
+<li>设置最小ISR size。</li>
+</ol>
+<h2 id="副本管理">副本管理</h2>
+<p>因为有很多副本，如果在broker之间进行选主会带来性能困扰。
+许哦咦kafka选择使用controller进行选主，
+controller自身失败，会自行选主。</p>
+<h1 id="日志压缩">日志压缩</h1>
+<p>TBD</p>
+<h1 id="quotas">Quotas</h1>
+<p>TBD</p>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://kafka.apache.org/documentation/#design">kafka DESIGN</a></li>
+<li><a href="https://queue.acm.org/detail.cfm?id=1563874">The Pathologies of Big Data</a></li>
+<li><a href="http://varnish-cache.org/docs/trunk/phk/notes.html">Notes from the Architect</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/534821258">一个关于磁盘的介绍</a></li>
+</ul>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-10-24
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/mq/">mq</a>
+          <a href="/tags/kafka/">kafka</a>
+          <a href="/tags/memo/">memo</a>
+          <a href="/tags/what/">what</a>
+          <a href="/tags/way-to-kafka/">way-to-kafka</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/mq/kafka/implementation/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">kafka的实现</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/linux/sz-and-rz/">
+            <span class="next-text nav-default">利用sz与nz发送和接收文件</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-10-24 20:08:12 \u002b0800 \u002b0800',
+        title: 'kafka设计',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

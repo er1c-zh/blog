@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>rfc on blog</title>
+    <link>https://blog.er1c.dev/tags/rfc/</link>
+    <description>Recent content in rfc on blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Fri, 28 Oct 2022 23:06:56 +0800</lastBuildDate><atom:link href="https://blog.er1c.dev/tags/rfc/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>RFC7231笔记</title>
+      <link>https://blog.er1c.dev/post/http/rfc-7231-note/</link>
+      <pubDate>Fri, 28 Oct 2022 23:06:56 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/http/rfc-7231-note/</guid>
+      <description>&lt;p&gt;本文根据RFC文档的章节划分记录相关笔记，
+是HTTP/1.1定义的的第二篇，
+内容主题是语义 &lt;em&gt;(semantics)&lt;/em&gt; 和内容 &lt;em&gt;(content)&lt;/em&gt; 。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>RFC7230笔记</title>
+      <link>https://blog.er1c.dev/post/http/rfc-7230-note/</link>
+      <pubDate>Thu, 22 Jul 2021 14:55:02 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/http/rfc-7230-note/</guid>
+      <description>&lt;p&gt;本文根据RFC文档的章节划分记录相关笔记，
+是HTTP/1.1定义的的第一篇。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

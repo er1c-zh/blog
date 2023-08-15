@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>mq on blog</title>
+    <link>https://blog.er1c.dev/tags/mq/</link>
+    <description>Recent content in mq on blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Wed, 26 Oct 2022 07:22:26 +0800</lastBuildDate><atom:link href="https://blog.er1c.dev/tags/mq/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>kafka的实现</title>
+      <link>https://blog.er1c.dev/post/mq/kafka/implementation/</link>
+      <pubDate>Wed, 26 Oct 2022 07:22:26 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/mq/kafka/implementation/</guid>
+      <description>&lt;p&gt;kafka的实现。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>kafka设计</title>
+      <link>https://blog.er1c.dev/post/mq/kafka/design/</link>
+      <pubDate>Mon, 24 Oct 2022 20:08:12 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/mq/kafka/design/</guid>
+      <description>&lt;p&gt;kafka的设计思路。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>kafka基本概念</title>
+      <link>https://blog.er1c.dev/post/mq/kafka/introduction/</link>
+      <pubDate>Thu, 30 Sep 2021 10:39:50 +0800</pubDate>
+      
+      <guid>https://blog.er1c.dev/post/mq/kafka/introduction/</guid>
+      <description>&lt;p&gt;关于kafka的基本概念。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

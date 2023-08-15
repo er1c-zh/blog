@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>RFC7230笔记 - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="本文根据RFC文档的章节划分记录相关笔记， 是HTTP/1.1定义的的第一篇。
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/http/rfc-7230-note/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="RFC7230笔记" />
+<meta property="og:description" content="本文根据RFC文档的章节划分记录相关笔记，
+是HTTP/1.1定义的的第一篇。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/http/rfc-7230-note/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-07-22T14:55:02+08:00" />
+<meta property="article:modified_time" content="2021-07-22T14:55:02+08:00" />
+<meta itemprop="name" content="RFC7230笔记">
+<meta itemprop="description" content="本文根据RFC文档的章节划分记录相关笔记，
+是HTTP/1.1定义的的第一篇。"><meta itemprop="datePublished" content="2021-07-22T14:55:02+08:00" />
+<meta itemprop="dateModified" content="2021-07-22T14:55:02+08:00" />
+<meta itemprop="wordCount" content="15894">
+<meta itemprop="keywords" content="http,rfc,memo,http-1_1-rfc," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="RFC7230笔记"/>
+<meta name="twitter:description" content="本文根据RFC文档的章节划分记录相关笔记，
+是HTTP/1.1定义的的第一篇。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">RFC7230笔记</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-07-22 </span>
+        
+          <span class="more-meta"> 约 15894 字 </span>
+          <span class="more-meta"> 预计阅读 32 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#第一节-简介">第一节 简介</a></li>
+    <li><a href="#2-architecture-结构">2 Architecture 结构</a>
+      <ul>
+        <li><a href="#21-客户端服务端与报文">2.1 客户端、服务端与报文</a></li>
+        <li><a href="#22-实现的分歧">2.2 实现的分歧</a></li>
+        <li><a href="#23-intermediaries-中间件">2.3 Intermediaries 中间件</a>
+          <ul>
+            <li><a href="#代理-proxy">代理 proxy</a></li>
+            <li><a href="#网关-也称反向代理-gateway-aka-reverse-proxy">网关 也称反向代理 gateway a.k.a. reverse proxy</a></li>
+            <li><a href="#隧道-tunnel">隧道 tunnel</a></li>
+            <li><a href="#其他中间件">其他中间件</a></li>
+          </ul>
+        </li>
+        <li><a href="#24-缓存">2.4 缓存</a></li>
+        <li><a href="#25-一致性与异常处理">2.5 一致性与异常处理</a></li>
+        <li><a href="#26-协议版本">2.6 协议版本</a>
+          <ul>
+            <li><a href="#header">Header</a></li>
+            <li><a href="#中间件">中间件</a></li>
+            <li><a href="#客户端">客户端</a></li>
+            <li><a href="#服务端">服务端</a></li>
+          </ul>
+        </li>
+        <li><a href="#27-统一资源标识符-uri">2.7 统一资源标识符 URI</a>
+          <ul>
+            <li><a href="#http的uri模式">http的URI模式</a></li>
+            <li><a href="#https的uri模式">https的URI模式</a></li>
+            <li><a href="#http与https的简化">http与https的简化</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#3-报文格式">3 报文格式</a>
+      <ul>
+        <li><a href="#31-起始行-start-line">3.1 起始行 Start Line</a>
+          <ul>
+            <li><a href="#311-请求行">3.1.1 请求行</a></li>
+            <li><a href="#312-状态行">3.1.2 状态行</a></li>
+          </ul>
+        </li>
+        <li><a href="#32-首部字段">3.2 首部字段</a>
+          <ul>
+            <li><a href="#321-字段的扩展性">3.2.1 字段的扩展性</a></li>
+            <li><a href="#322-字段顺序">3.2.2 字段顺序</a></li>
+            <li><a href="#323-空白字符">3.2.3 空白字符</a></li>
+            <li><a href="#324-首部字段的解析">3.2.4 首部字段的解析</a></li>
+            <li><a href="#325-字段的各种限制">3.2.5 字段的各种限制</a></li>
+            <li><a href="#326-字段值的构成部分">3.2.6 字段值的构成部分</a></li>
+          </ul>
+        </li>
+        <li><a href="#33-报文体">3.3 报文体</a>
+          <ul>
+            <li><a href="#331-传输编码-transfer-encoding">3.3.1 传输编码 Transfer-Encoding</a></li>
+            <li><a href="#332-content-length">3.3.2 Content-Length</a></li>
+            <li><a href="#333-报文体的长度">3.3.3 报文体的长度</a></li>
+          </ul>
+        </li>
+        <li><a href="#34-处理不完整的报文">3.4 处理不完整的报文</a></li>
+        <li><a href="#35-解析报文的鲁棒性">3.5 解析报文的鲁棒性</a></li>
+      </ul>
+    </li>
+    <li><a href="#4-传输编码-transfer-codings">4 传输编码 <em>Transfer Codings</em></a>
+      <ul>
+        <li><a href="#41-分块传输编码-chunked-transfer-coding">4.1 分块传输编码 <em>Chunked Transfer Coding</em></a>
+          <ul>
+            <li><a href="#411-附加信息-chunk-ext">4.1.1 附加信息 <code>chunk-ext</code></a></li>
+            <li><a href="#412-分块的追加部分-chunked-trailer-part">4.1.2 分块的追加部分 <em>Chunked Trailer Part</em></a></li>
+            <li><a href="#413-解码分块">4.1.3 解码分块</a></li>
+          </ul>
+        </li>
+        <li><a href="#42-压缩编码">4.2 压缩编码</a>
+          <ul>
+            <li><a href="#421-compress-coding">4.2.1 Compress Coding</a></li>
+            <li><a href="#422-deflate-coding">4.2.2 Deflate Coding</a></li>
+            <li><a href="#423-gzip-coding">4.2.3 Gzip Coding</a></li>
+          </ul>
+        </li>
+        <li><a href="#43-te">4.3 TE</a></li>
+        <li><a href="#44-trailer">4.4 Trailer</a></li>
+      </ul>
+    </li>
+    <li><a href="#5-报文路由-message-routing">5 报文路由 Message Routing</a>
+      <ul>
+        <li><a href="#51-区分出目标资源">5.1 区分出目标资源</a></li>
+        <li><a href="#52-建立到服务器的链接">5.2 建立到服务器的链接</a></li>
+        <li><a href="#53-请求目标-request-target">5.3 请求目标 Request Target</a>
+          <ul>
+            <li><a href="#531-origin-form">5.3.1 origin-form</a></li>
+            <li><a href="#532-absolute-form">5.3.2 absolute-form</a></li>
+            <li><a href="#533-authority-form">5.3.3 authority-form</a></li>
+            <li><a href="#534-asterisk-form">5.3.4 asterisk-form</a></li>
+          </ul>
+        </li>
+        <li><a href="#54-host">5.4 Host</a></li>
+        <li><a href="#55-有效的请求uri">5.5 有效的请求URI</a></li>
+        <li><a href="#56-将响应关联到请求上">5.6 将响应关联到请求上</a></li>
+        <li><a href="#57-报文转发">5.7 报文转发</a>
+          <ul>
+            <li><a href="#571-via字段">5.7.1 Via字段</a></li>
+            <li><a href="#572-transformations">5.7.2 Transformations</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#6-链接管理">6 链接管理</a>
+      <ul>
+        <li><a href="#61-connection首部字段">6.1 Connection首部字段</a></li>
+        <li><a href="#62-建立">6.2 建立</a></li>
+        <li><a href="#63-持久化链接">6.3 持久化链接</a>
+          <ul>
+            <li><a href="#631-重试请求">6.3.1 重试请求</a></li>
+            <li><a href="#632-流水线-pipelining">6.3.2 流水线 pipelining</a></li>
+          </ul>
+        </li>
+        <li><a href="#64-并发">6.4 并发</a></li>
+        <li><a href="#65-失败与超时">6.5 失败与超时</a></li>
+        <li><a href="#66-拆除-tear-down">6.6 拆除 Tear-down</a></li>
+        <li><a href="#67-升级">6.7 升级</a></li>
+      </ul>
+    </li>
+    <li><a href="#7-abnf-list-extension-rule">7 ABNF List Extension: #rule</a></li>
+    <li><a href="#8-iana-considerations">8 IANA Considerations</a></li>
+    <li><a href="#9-security-considerations">9 Security Considerations</a></li>
+    <li><a href="#参考">参考</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p>本文根据RFC文档的章节划分记录相关笔记，
+是HTTP/1.1定义的的第一篇。</p>
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+            
+                <div class="serial-index">
+                    <p>系列列表</p>
+                    <ul>
+                    
+                        <li><a href="https://blog.er1c.dev/post/http/rfc-7231-note/">RFC7231笔记</a></li>
+                    
+                        <li><a href="https://blog.er1c.dev/post/http/rfc-7230-note/">RFC7230笔记</a></li>
+                    
+                    </ul>
+                </div>
+            
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+
+
+<h1 id="第一节-简介">第一节 简介</h1>
+<p>HTTP协议是一种无状态的、应用层的、基于请求/响应构建的协议，
+通过可扩展的语义的自描述的载荷来满足多变的基于网络的超文本信息系统的交互需求。</p>
+<p>rfc7230是完整介绍HTTP/1.1的一系列文档的第一篇，
+主要介绍了消息内容的语法和路由相关的内容。</p>
+<p>HTTP协议是一个用于信息系统的通用性接口协议，
+这意味着使用协议的双方不需要关心和了解对方的具体实现，
+除此之外，HTTP协议的任意请求可以被看作是独立的，
+这也是无状态性质的体现。</p>
+<p>除了直接的连接客户端与服务端，
+HTTP也被设计作为任意的其他协议的中间协议，
+可以连接支持不同协议的信息系统。</p>
+<p>因为这种多变性，所以协议无法详细的定义如何处理一个请求，
+作为取代，
+转而定义信息的语法、每次交流的目的、以及接收者被期望作出的响应。</p>
+<p>稍为具体的，本文档介绍了协议会引用的结构，
+定义了http、https和URI，
+描述了总体的网络操作和链接管理，
+以及定义了每个报文切分与转发的规则。</p>
+<p>这些工作的目的是希望在独立于报文内容的情况下，
+定义所有用于处理报文的必要的机制。
+具体的，就是定义了处理报文和转发报文的所有要求。</p>
+<h1 id="2-architecture-结构">2 Architecture 结构</h1>
+<h2 id="21-客户端服务端与报文">2.1 客户端、服务端与报文</h2>
+<p>HTTP协议是一个无状态的请求响应协议，
+通过交换报文来完成交互操作，
+依赖底层的可靠传输链接。</p>
+<p>HTTP的<strong>客户端</strong>指能够出于向服务端发送若干HTTP请求的目的而建立链接的程序；
+<strong>服务端</strong>指能够接受链接来为HTTP请求提供服务，发送响应的程序。</p>
+<p><strong>用户代理</strong> <em>(User-Agent)</em> 指的是任意的能够发送请求的HTTP客户端程序。</p>
+<p><strong>源服务器</strong> <em>(Origin Server)</em> 指的是最源头、权威的能够服务该请求的资源的服务端程序。</p>
+<p>HTTP依赖<strong>统一资源描述符</strong> <em>(Uniform Resource Identifier, URI)</em> 来指明请求的资源；
+报文的格式类似于<strong>Multipurpose Internet Mail Extensions, MIME</strong>使用的格式。</p>
+<h2 id="22-实现的分歧">2.2 实现的分歧</h2>
+<h2 id="23-intermediaries-中间件">2.3 Intermediaries 中间件</h2>
+<p>协议允许使用若干中间件和链接来服务一个请求，
+（因为<strong>无状态</strong>，）多个请求不要求也不保证经历相同的通路。</p>
+<p>首先给出定义：</p>
+<ul>
+<li><strong>上游</strong>指数据的来源方，<strong>下游</strong>反之。</li>
+<li><strong>inbound</strong>指朝向<strong>源服务器</strong>的方向，<strong>outbound</strong>反之。</li>
+</ul>
+<p>下面介绍了中间件的分类。</p>
+<h3 id="代理-proxy">代理 proxy</h3>
+<p>代理是客户端选择使用的消息转发代理 <em>(agent)</em> ，
+代理有的时候会做一些转换的操作（协议的转换等），
+有的时候会进行简单的转发。</p>
+<h3 id="网关-也称反向代理-gateway-aka-reverse-proxy">网关 也称反向代理 gateway a.k.a. reverse proxy</h3>
+<p>网关对于<strong>outbound</strong>的链接的客户端来说，是一个<strong>源服务器</strong>；
+对于<strong>inbound</strong>，会将请求按照一定的规则转发到下游服务器。</p>
+<p>通常网关会用来做一些负载均衡、安全检查、加速缓存等功能。</p>
+<p>网关与<strong>inbound</strong>的服务器的交互协议是自由的。</p>
+<h3 id="隧道-tunnel">隧道 tunnel</h3>
+<p>隧道是连接两个链接的信道，对于HTTP链接来说，隧道是透明的。</p>
+<h3 id="其他中间件">其他中间件</h3>
+<p>以上提到的三个中间件是会参与到HTTP协议中的，
+还存在很多不参与HTTP协议的中间件，如运输层的中间件，
+这些中间件也可以控制HTTP协议的流量。</p>
+<p>这也提出了一个要求：<strong>不能假定来自同一个链接的HTTP请求是同一个客户端发来的。</strong></p>
+<h2 id="24-缓存">2.4 缓存</h2>
+<p><strong>缓存</strong>是对于之前的响应的本地存储，
+子系统控制缓存的存储、获取和删除。</p>
+<p>任何参与HTTP的组件都有可能 <em>(MAY)</em> 实现缓存机制。</p>
+<p>一个响应如果是 <strong>可缓存的</strong> ，意味着可以被缓存来应答以后的请求。
+更多的信息可以参考rfc7234。</p>
+<h2 id="25-一致性与异常处理">2.5 一致性与异常处理</h2>
+<p>首先区分<strong>生成</strong>与<strong>发送</strong>：
+<strong>生成</strong>表示产生一个新的协议元素 <em>(protocol element)</em> ，
+<strong>发送</strong>表示简单的转发收到的报文到下游。</p>
+<p><strong>一致性</strong>的约定会按照参与HTTP的角色来定义。</p>
+<p><strong>一致性</strong>由协议元素的语法和语义两部分的规定组成。</p>
+<blockquote>
+<p><strong>协议元素</strong>指的是HTTP报文中的一个组件。</p>
+</blockquote>
+<ol>
+<li>
+<p>发送者MUST NOT生成一个自己认为是错误的协议元素。</p>
+</li>
+<li>
+<p>发送者MUST NOT生成一个不符合语法定义的协议元素。</p>
+</li>
+<li>
+<p>给定一个报文，发送者MUST NOT生成一个不能由自己的角色生成的协议元素。</p>
+</li>
+<li>
+<p>当接受一个协议元素并解析完成时，
+接收者一定要能够解析所有长度合理、
+内容符合接收者角色要求的、
+语法正确的数据。</p>
+</li>
+<li>
+<p>关于长度</p>
+<p>考虑到根据不同的场景，协议元素的长度会在很大的范围内变动，
+<strong>HTTP没有规定协议元素的长度</strong>。
+最低限度，接收者需要能够解析它会生成的该类型协议元素的长度的协议元素。
+举个例子，如果一个源服务器会生成很长的URI来指明资源的位置，
+那么它需要支持解析来自其他请求的相同长度的URI。</p>
+</li>
+<li>
+<p>除非接收者（根据配置或历史等）判定接受到的协议元素相对本文档定义的语法是错误的，
+它MUST按照本文档定义的语法来解释这个协议元素。</p>
+</li>
+</ol>
+<p>关于错误处理，接收者MAY尝试从一个错误的结构中恢复正确的协议元素。
+HTTP没有专门的定义错误处理相关的内容，
+因为不同的场景会有不同的错误处理策略。</p>
+<h2 id="26-协议版本">2.6 协议版本</h2>
+<p>HTTP的版本，会在报文的第一行指出，
+由<code>&quot;&lt;major&gt;.&lt;minor&gt;&quot;</code>形式构成。</p>
+<p>在通讯中，版本号指明了报文发出者遵循的约定。</p>
+<p>版本号中的<strong>主版本号</strong>表明了报文的语法，
+<strong>次版本号</strong>指明了在该<strong>主版本</strong>中，
+发送者支持了的最高<strong>次版本</strong>，
+和在未来能够理解的最高<strong>次版本</strong>。</p>
+<p>设计上，主版本号只会在加入了一个不兼容的语法定义时才会增加；
+子版本号只会在增多了报文的语义或增加了发送者的能力时增加。</p>
+<p>特别的，
+对于HTTP/1.1，
+设计上可以在去掉所有的新特性之后，
+被HTTP/1.0的客户端或服务端解析。
+（考虑这个因素，）HTTP/1.1有一些新特性会要求接受者的版本号，
+换句话说，只有当发送者确定了接受者支持的版本号能够满足该特性的要求时，
+才可以使用该特性。</p>
+<p>当接受者接受到了一个主版本号可以支持，但有更高的次版本号的请求时，
+SHOULD将其当作自身能够解析的最高的次版本号的请求来解析。
+一个接受者可以假定一个由不清楚接受者是否支持该次版本号的发送者发送的更高次版本号的请求，
+是可以向后兼容来支持由实现了任何相同主版本号的接受者来解析的。</p>
+<h3 id="header">Header</h3>
+<p>对于<strong>报文的头</strong>部分，在一个主版本中，解析的方式不应改变，
+但可以因为某些Header字段的缺失，作出不同的响应。
+除非特别指出，HTTP/1.1的Header字段定义也是对于HTTP/1.x的定义。
+特别的，不管HTTP/1.x是否与HTTP/1.1兼容，
+<code>Host</code>和<code>Connection</code>字段应该被所有HTTP/1.x的具体实现支持。</p>
+<p>如果一个Header字段语义上可以被接受者“无法识别 <em>(do not recognize them)</em> ”，
+那么就可以在不修改协议版本的情况下增加。</p>
+<h3 id="中间件">中间件</h3>
+<p>处理报文的中间件，MUST用自己支持的HTTP版本号来转发信息，
+这可以避免中间件与通信两端支持的版本号不一致时导致的错误。</p>
+<h3 id="客户端">客户端</h3>
+<p>客户端SHOULD使用自己能够支持的、主版本号不高于服务端支持的主版本号的最高版本。</p>
+<p>客户端MUST NOT发送一个自己不支持的版本号。</p>
+<p>当且仅当客户端发送过一个更高版本号的请求到服务端后，
+（收到错误的响应，）确定服务端没有正确的实现该版本后，
+MAY发送一个较低的版本的请求。</p>
+<h3 id="服务端">服务端</h3>
+<p>服务端SHOULD返回一个服务端支持的、主版本号小于等于接受到的请求中的主版本号的最大的版本号。</p>
+<p>服务端MUST NOT返回一个不支持的版本号。</p>
+<p>如果需要，
+服务端可以返回505 <em>(HTTP Version Not Supported)</em> 错误来表明因为客户端的主版本号而拒绝服务。</p>
+<p>当服务器确定或者怀疑客户端没有正确的实现协议，
+并且不能解析后续的版本时，MAY发送一个HTTP/1.0的响应。
+除非某些客户端发送的字段的值已知是错误的，这种协议降级SHOULD NOT被执行。</p>
+<h2 id="27-统一资源标识符-uri">2.7 统一资源标识符 URI</h2>
+<p>URI在HTTP协议中用来指明资源，格式在RFC3986中定义。</p>
+<h3 id="http的uri模式">http的URI模式</h3>
+<blockquote>
+<p>http-URI = &ldquo;http:&rdquo; &ldquo;//&rdquo; authority path-abempty [ &ldquo;?&rdquo; query ]
+[ &ldquo;#&rdquo; fragment ]</p>
+</blockquote>
+<ul>
+<li><code>authority</code> 表明了源服务器。</li>
+<li><code>path-abempty</code>和可选的<code>query</code>部分指明了源服务器上的潜在资源。</li>
+<li>可选的<code>fragment</code>部分独立于URI形式，可以用来非直接的指明次要的资源。</li>
+</ul>
+<p>发送者MUST NOT生成一个没有host标识符的http URI；
+接受者MUST以不合规拒绝这种请求。</p>
+<p><code>authority</code>决定了谁有权力来应答请求的资源。
+这里提到了一个比较有意思的点，
+类似域名这种registered names和IP地址，
+因为存在层层委托的情况 <em>（比如DNS会将对更小的域名的搜索委托、授权到其他的DNS服务器）</em>，
+所以其实它们构成了一个个命名空间。
+至于响应请求的“权威”性，是由这些“委托”决定的，
+这种过程称作 <strong>名称委托过程</strong> <em>(name delegation process)</em>，
+这里也有一些安全性上的设计与考虑，在文档的第九节有讨论。</p>
+<p>当htp URI用于访问一个指明的资源，
+客户端MAY尝试解析host为IP地址，在目标IP地址和端口上建立TCP链接，
+发送包含验证（？）信息的HTTP请求报文。
+如果服务端使用非临时的 <em>(non-interim)</em> 、符合RFC7231第六节的响应来回应请求，
+那么这个响应被认为是回应客户端的请求的权威的应答。</p>
+<p>尽管协议是独立于传输层协议的，
+但http的形式还是特定于基于TCP的服务。
+这是因为前述的 <strong>名称委托过程</strong> 依赖于TCP建立其权威。
+如果一个HTTP服务基于其他的底层协议，
+那么它可能由不同于<code>http</code>的URI形式来标明，
+比如<code>https</code>依赖于一个端到端的安全链接。</p>
+<h3 id="https的uri模式">https的URI模式</h3>
+<p>除了默认端口更换为443，https的模式需要满足http的要求。
+另外，客户端MUST保证强加密、端到端的用于通讯的链接在第一个报文发送前就建立起来。</p>
+<blockquote>
+<p>https-URI = &ldquo;https:&rdquo; &ldquo;//&rdquo; authority path-abempty [ &ldquo;?&rdquo; query ]
+[ &ldquo;#&rdquo; fragment ]</p>
+</blockquote>
+<p>这里提到了一些同源的观点。
+对于https和http两者，不能够因为两者的相同的域名相同的端口便共享“身份 <em>(identity)</em> ”。
+它们被认为是不同的命名空间，
+也被认为是不同的源服务器。
+不过有一些HTTP的扩展协议，比如Cookie的协议RFC6265，
+可以允许来自不同的服务器的信息在限定的范围内影响客户端与其他特定服务器的通信。</p>
+<p>https的授权过程在RFC2818中定义。</p>
+<h3 id="http与https的简化">http与https的简化</h3>
+<ul>
+<li>
+<p>默认端口可以省略</p>
+</li>
+<li>
+<p>如果路径是空，可以省略</p>
+<p><code>https://www.baidu.com/</code> -&gt; <code>https://www.baidu.com</code></p>
+</li>
+<li>
+<p>host部分是大小写不敏感的，其他部分是大小写敏感的。</p>
+</li>
+</ul>
+<h1 id="3-报文格式">3 报文格式</h1>
+<p>HTTP报文由一个<strong>起始行</strong> <em>(start line)</em> 开始，
+后续是类似于<strong>因特网报文格式</strong> <em>(Internet Message Format, RFC5322)</em> 的字符序列。
+字符序列包含：</p>
+<ol>
+<li>首先是零个或多个<strong>首部字段</strong>，合并称为<strong>首部</strong> <em>(headers or header section)</em>。</li>
+<li>一个空行表示<strong>首部</strong>的结束。</li>
+<li>最后是可选的报文体。</li>
+</ol>
+<blockquote>
+<p>HTTP-message   = start-line
+*( header-field CRLF )
+CRLF
+[ message-body ]</p>
+</blockquote>
+<p>通常解析报文的流程是：</p>
+<ol>
+<li>读取<strong>起始行</strong>。</li>
+<li>一次读取<strong>首部字段</strong>，根据<strong>字段名称</strong>写入到一个哈希表中，直到遇到空行。</li>
+<li>根据<strong>首部</strong>的信息，判断是否需要存在报文体。
+如果存在，那么将报文体作为一个流读入，直到读取了足够多的字符或链接被关闭为止。</li>
+</ol>
+<p>由于解析多字节字符的库面对不合法的、包含换行符的序列时的不确定性，
+如果将HTTP报文作为一个Unicode字符流来处理，会导致安全问题。
+因此，接受者MUST将HTTP报文作为一个使用了US-ASCII超集的编码的字节流来处理。
+当拆分报文完成后，便可使用基于字符串的解析器 <em>(string-based parser)</em> 。</p>
+<p>发送者MUST NOT在<strong>起始行</strong>和第一个<strong>首部字段</strong>之间写入空白字符；
+接受者在收到这种请求时，MUST因不合法而拒绝这个请求，
+或直接丢弃掉所有空白字符之前的行。
+这种情况可能是攻击者希望服务器忽略一些字段或将后续的数据当作一个新的请求来处理，
+这些都有可能导致安全上的问题。</p>
+<h2 id="31-起始行-start-line">3.1 起始行 Start Line</h2>
+<p>语法上，请求与响应报文的区别仅在于它们的开始行，一个称为<strong>请求行</strong> <em>(request-line)</em> ，
+另一个称为<strong>状态行</strong> <em>(status-line)</em> 。</p>
+<blockquote>
+<p>start-line     = request-line / status-line</p>
+</blockquote>
+<h3 id="311-请求行">3.1.1 请求行</h3>
+<p>请求行的构成：</p>
+<blockquote>
+<p>request-line   = method SP request-target SP HTTP-version CRLF</p>
+</blockquote>
+<ul>
+<li><code>method</code>表明要对资源执行的操作，大小写敏感。</li>
+<li><code>request-target</code>表明目标资源。</li>
+</ul>
+<p>接受者通常可以使用空白字符切分请求行，因为空白字符不应该也不允许出现在这三个部分中。
+但一些客户端没有正确的实现，导致<code>request-target</code>中可能存在空白字符。
+对于这种不合法的请求行，接受者SHOULD返回400 <em>(Bad Request)</em> 错误，
+或者一个指向正确的<code>request-target</code>的301 <em>(Moved Permanently)</em> 响应。
+接受者SHOULD NOT不重定向而自动修正<code>request-target</code>并处理请求，
+因为这可能导致安全问题。</p>
+<p>协议没有预定请求行的长度限制，
+如果服务器接收到了过长的<code>method</code>，那么SHOULD返回501 <em>(Not Implemented)</em> 响应；
+如果接收到了过长的<code>request-target</code>，应该MUST返回414 <em>(URI Too Long)</em> 错误。</p>
+<p>RECOMMENDED，所有的HTTP协议的发送者和接受者，请求行最少支持8000字符长度。</p>
+<h3 id="312-状态行">3.1.2 状态行</h3>
+<p>状态行的构成：</p>
+<blockquote>
+<p>status-line = HTTP-version SP status-code SP reason-phrase CRLF</p>
+</blockquote>
+<ul>
+<li><code>status-code</code>是一个三位数字，用来描述服务端处理客户端请求的结果。
+更详细的介绍在RFC7231第六节。</li>
+<li><code>reason-phrase</code>用于解释<code>status-code</code>。</li>
+</ul>
+<h2 id="32-首部字段">3.2 首部字段</h2>
+<p>每个首部字段由：</p>
+<ol>
+<li>大小写无关的字段名称</li>
+<li>紧随其后的冒号</li>
+<li>可选的空白字符</li>
+<li>字段的值</li>
+<li>可选的空白字符</li>
+</ol>
+<p>字段名称指明了字段值的语义。</p>
+<h3 id="321-字段的扩展性">3.2.1 字段的扩展性</h3>
+<p>首部的字段可以任意的扩展。</p>
+<p>新的首部字段可以被定义为覆盖之前定义的字段的语义。</p>
+<p><strong>代理</strong> <em>(Proxy)</em> MUST转发自己不能识别的首部字段，
+除非这个字段是列出的<strong>链接首部字段</strong> *(Connection header field, Section 6.1)，
+或者该<strong>代理</strong>被设置为过滤或转换这种字段。
+其他的接受者SHOULD忽略未识别的首部字段。
+这些要求能够允许HTTP协议在不要求已经部署的中间件生气的情况下，改进新功能。</p>
+<h3 id="322-字段顺序">3.2.2 字段顺序</h3>
+<p>对于不同的首部字段名的字段来说，
+首部中字段的顺序是不重要的。</p>
+<p>首先发送包含“控制”信息的数据是好的实践，
+比如请求报文的<code>Host</code>和响应报文的<code>Date</code>，
+这样可以尽快的让接受者决定是否处理该请求。</p>
+<p>服务端MUST NOT在接受到全部的请求报文的首部之前，
+实际的处理请求。
+这是因为后续的首部字段可能会包含影响处理请求的条件、权限或者有意误导的重复首部字段。</p>
+<p>发送者MUST NOT生成多个首部字段名相同的首部字段，
+除非：</p>
+<ul>
+<li>
+<p>该字段的值被定义为逗号分割的列表</p>
+</li>
+<li>
+<p>该字段是一个众所周知的特殊字段</p>
+<p>特别的，<code>Set-Cookie</code>在响应中存在多次，且没有实现为列表语义，
+所以需要特别的处理。</p>
+</li>
+</ul>
+<p>接受者MAY将多个相同首部字段名的首部字段通过逗号、按顺序连接起来。
+因此，代理MUST NOT在转发报文的时候修改字段的值的顺序。</p>
+<h3 id="323-空白字符">3.2.3 空白字符</h3>
+<p>协议的空白字符分为三类：</p>
+<ul>
+<li>
+<p>可选 OWS (optional whitespace)</p>
+<p>可选的空白字符主要用于增强可读性。</p>
+</li>
+<li>
+<p>必须 RWS (required whitespace)</p>
+<p>必须的空白字符用于分割字段的token。</p>
+</li>
+<li>
+<p>坏的空白字符 BWS (bad whitespace)</p>
+<p>除历史原因之外，不能使用的空白字符。</p>
+</li>
+</ul>
+<h3 id="324-首部字段的解析">3.2.4 首部字段的解析</h3>
+<p>当接受到报文时，首先会使用通用的算法来解析，
+这个阶段会忽略首部字段内容的格式。</p>
+<p>出于安全考虑，首部字段名与冒号之间不允许存在空白字符。
+服务端MUST用400 <em>(Bad Request)</em> 拒绝这种请求。
+代理MUST在转发报文到下游之前，移除响应报文中的这种空白字符。</p>
+<p>首部字段值只获取[第一个非空白字符, 最后一个非空白字符]作为值。</p>
+<p>历史上，HTTP允许使用ISO-8859-1字符集，
+但实现上，通常只使用ASCII的子集。
+因此，新定义的首部字段SHOULD限制字段值只使用ASCII字符。
+接受者SHOULD将ASCII之外的字符作为<strong>不透明数据</strong> <em>(opaque data)</em> 来对待。</p>
+<h3 id="325-字段的各种限制">3.2.5 字段的各种限制</h3>
+<p>和协议开始的约定一致，没有在协议中定义首部字段的长度限制。</p>
+<p>服务器如果收到了一个超过自己支持的首部字段长度的请求，
+MUST返回一个4xx (Client Error) 错误。
+否则，会增加 <strong>夹带请求攻击</strong> <em>(request smuggling attack)</em> 的风险。</p>
+<p>如果语义上允许，客户端MAY丢弃或者截断超过支持的首部字段。</p>
+<h3 id="326-字段值的构成部分">3.2.6 字段值的构成部分</h3>
+<p>绝大多数的首部字段值格式是用通用语法组件 <em>(common syntax component)</em> 和各种<strong>定界字符</strong> <em>(delimiting character)</em> 定义的。
+对于定界字符，是从不能在<code>token</code>中出现的ASCII可见字符中选择的。</p>
+<p>双引号包裹的字符串会被作为整体解析为一个单独的值。</p>
+<p>反斜杠可以作为双引号包裹住的字符串或注释结构中的转义机制。</p>
+<h2 id="33-报文体">3.3 报文体</h2>
+<p>报文体承载了请求或响应的负载。
+除非指定了<strong>传输编码</strong> <em>(transfer coding)</em> ，
+报文体的内容与载荷的内容应该是完全一致的。</p>
+<p>指明是否存在报文体的规则在请求和响应中是不同的：</p>
+<ul>
+<li>
+<p>对于请求来说，需要在首部中存在<code>Content-Length</code> <strong>或</strong> <code>Transfer-Encoding</code>字段。</p>
+</li>
+<li>
+<p><strong>对于响应来说，是否存在报文体由请求方法和状态码来决定，</strong>
+有如下的特殊情况，没有报文体（，除此之外，都存在长度大于等于0的报文体）：</p>
+<ul>
+<li>对于<code>HEAD</code>方法的请求，都没有报文体。</li>
+<li>对去<code>CONNECT</code>请求，2xx状态码表示切换到隧道模式，没有报文体。</li>
+<li>所有的 1xx (Informational) 204 (No Content) 304 (Not Modified) 的响应都表明没有报文体。</li>
+</ul>
+</li>
+</ul>
+<p>另外，请求报文的结构与请求方法无关，尽管请求方法没有定义报文体的用途（也可以有报文体）。</p>
+<h3 id="331-传输编码-transfer-encoding">3.3.1 传输编码 Transfer-Encoding</h3>
+<p><code>Transfer-Encoding</code>首部字段表明了应用到了载荷的编码格式的列表。</p>
+<p>例子：</p>
+<blockquote>
+<p>Transfer-Encoding: gzip, chunked</p>
+</blockquote>
+<p>表示先经过gzip的压缩，然后进行了分片。</p>
+<p>在HTTP中，<code>Transfer-Encoding</code>有两个主要目的：</p>
+<ul>
+<li>精确的切分动态生成的载荷</li>
+<li>区分应用编码为了提高传输效率或安全性还是为了体现所选资源自身的特征</li>
+</ul>
+<p>接受者MUST能够解析<code>chunked</code>类型的传输编码，
+因为这是分片传输未知大小载荷的报文时重要的一环。
+发送者MUST NOT对同一报文体重复分块。
+如果应用了除<code>chunked</code>之外的其他编码，
+<code>chunked</code>编码一定要在最后应用来保证正确的分片。</p>
+<p>区分于<code>Content-Encoding</code>是表现 <em>(representation)</em> 的性质，
+<code>Transfer-Encoding</code>是报文的性质。
+对于一个请求和响应，
+从产生到到达的整个链路中的任意组件，
+都可能去按照<code>Transfer-Encoding</code>解码内容来减少一层编码
+或增加一层编码。</p>
+<p>服务端MUST NOT在1xx <em>(Informational)</em> 或204 <em>(No Content)</em>
+的响应中返回<code>Transfer-Encoding</code>首部字段。
+服务端MUST NOT在返回对应一个<code>CONNECT</code>请求的2xx <em>(Successful)</em>
+响应时包含<code>Transfer-Encoding</code>首部字段。</p>
+<p><code>Transfer-Encoding</code>是HTTP/1.1新加入的字段，
+所以客户端MUST NOT在不确定服务端是否支持HTTP/1.1的情况下，
+发送包含<code>Transfer-Encoding</code>的请求。
+同样地，除非能从请求中确定发送者支持HTTP/1.1，
+服务端MUST NOT使用<code>Transfer-Encoding</code>字段。</p>
+<p>当服务端接受到不支持的<code>Transfer-Encoding</code>（编码格式）时，
+SHOULD返回一个501 <em>(Not Implemented)</em> 错误。</p>
+<h3 id="332-content-length">3.3.2 Content-Length</h3>
+<p><code>Content-Length</code>在没有<code>Transfer-Encoding</code>时，
+提供了潜在的载荷内容长度（字符的个数）。
+如果报文拥有载荷，
+那么<code>Content-Length</code>帮助分片传输来确定报文体的结尾；
+如果报文没有载荷，
+<code>Content-Length</code>表明了被选中的<strong>表现</strong> <em>（representation 会在第三节介绍）</em> 的大小。</p>
+<p>发送者MUST NOT发送既有<code>Content-Length</code>也有<code>Transfer-Encoding</code>的报文。</p>
+<p>如果请求报文没有包含<code>Transfer-Encoding</code>，且请求方法需要一个封闭 <em>(enclosed)</em> 的载荷，
+那么用户代理SHOULD在报文中包含<code>Content-Length</code>字段。
+如果请求报文不包含载荷且请求方法也没有需要有载荷，
+那么用户代理SHOULD NOT设置<code>Content-Length</code>字段。</p>
+<p>对于HEAD请求的响应或304响应，
+MAY返回目标资源的200响应时的<code>Content-Length</code>。</p>
+<p>对于1xx和204响应，
+服务端MUST NOT设置<code>Content-Length</code>字段。
+对于CONNECT请求的响应，
+服务端MUST NOT设置<code>Content-Length</code>字段。</p>
+<p>除了一些特殊的情况，
+当没有设定<code>Transfer-Encoding</code>时，
+源服务器如果知道载荷的大小，
+SHOULD设置<code>Content-Length</code>帮助下游接受者处理报文。</p>
+<p>协议没有规定<code>Content-Length</code>的大小，处理时需要小心溢出的问题。</p>
+<p>有时报文会存在多个<code>Content-Length</code>字段或字段的值是一个列表，
+这种情况是由于上游存在处理的问题导致的，
+接受者应该拒绝或修复这个问题。</p>
+<h3 id="333-报文体的长度">3.3.3 报文体的长度</h3>
+<p>报文体的长度由以下规则决定，有优先级：</p>
+<ol>
+<li>
+<p>对于HEAD请求的响应和状态码为1xx、204、304的响应，
+报文的解析在遇到第一个空行时结束，因为这些响应没有也不能 <em>(cannot contain)</em> 报文体。</p>
+</li>
+<li>
+<p>对于CONNECT请求、状态码为2xx的响应，
+（因为在解析完该响应报文的首部之后，会立即成为一个隧道，所以）
+客户端MUST忽略首部的<code>Transfer-Encoding</code>和<code>Content-Length</code>字段。</p>
+</li>
+<li>
+<p>如果报文采用了<code>chunked</code>编码且是<code>Transfer-Encoding</code>的最后一个编码，报文体的结束由报文体的内容决定。
+如果响应报文应用了<code>chunked</code>编码但不是最终的编码，
+当链接被关闭时，报文数据传输结束。
+如果是请求报文存在这种情况，没有可靠的途径来决定什么时候报文传输完毕，
+服务端MUST返回一个400错误，然后关闭链接。
+如果一个报文同时包含<code>Transfer-Encoding</code>和<code>Content-Length</code>字段，
+<code>Transfer-Encoding</code>字段生效。</p>
+</li>
+<li>
+<p>如果报文中只包含<code>Content-Length</code>字段，
+且存在多个不同的<code>Content-Length</code>值或非法的<code>Content-Length</code>值，
+那么这个报文是一个非法的报文，接受者根据自己的角色和请求、响应来进行错误处理：</p>
+<ul>
+<li>对于请求报文，MUST返回400错误</li>
+<li>对于响应报文，如果是代理，那么代理MUST关闭于服务端的链接，丢弃这个响应，返回502错误；
+如果是客户端，MUST关闭与服务器的代理，并丢弃这个响应。</li>
+</ul>
+</li>
+<li>
+<p>如果有一个合法的<code>Content-Length</code>值且没有<code>Transfer-Encoding</code>时，
+那么<code>Content-Length</code>的值表明了期望传输的按字符计算的载荷长度。
+如果在接受到目标长度的报文之前断开了链接或超时，
+那么MUST丢弃这些数据，并关闭链接。</p>
+</li>
+<li>
+<p>如果没有上述的情况（，即没有<code>Content-Length</code>也没有<code>Transfer-Encoding</code>），
+且该报文是一个请求报文，那么表明报文的长度是0；
+如果是响应报文，服务端关闭链接表明数据传输完成。</p>
+</li>
+</ol>
+<p>特别的，并无可靠的方法来区分关闭链接是表明传输完成或者网络问题导致的关闭，
+所以服务端SHOULD在可能的情况下生成<code>Transfer-Encoding</code>或<code>Content-Length</code>字段。
+关闭链接表明报文传输完成是为了兼容HTTP/1.0。</p>
+<p>服务端MAY通过返回411 (Length Required) 错误来处理有消息体但缺乏<code>Content-Length</code>字段的请求。</p>
+<p>除非是应用了除了<code>chunked</code>之外的传输编码，
+客户端在知道报文体长度的情况下，SHOULD发送带有<code>Content-Length</code>的请求。
+这是因为存在一些服务端实现，
+会对于缺少<code>Content-Length</code>的<code>chunked</code>请求，会返回411 (Length Required) 错误。</p>
+<p>如果用户代理不确定服务端是否能够处理HTTP/1.1请求，
+MUST发送带有合法<code>Content-Length</code>字段的请求。</p>
+<p>如果客户端发现有超出<code>Content-Length</code>的数据，
+MUST NOT处理、缓存或者转发。</p>
+<h2 id="34-处理不完整的报文">3.4 处理不完整的报文</h2>
+<p>对于服务器来说，一个不完整的报文通常意味着超时等问题的发生，
+MAY发送一个标识错误的响应，然后关闭链接。</p>
+<p>当一个链接过早的关闭或解析分块的请求失败时，
+客户端接受到不完整的报文，
+MUST标记报文为<em>不完整</em>的。</p>
+<h2 id="35-解析报文的鲁棒性">3.5 解析报文的鲁棒性</h2>
+<h1 id="4-传输编码-transfer-codings">4 传输编码 <em>Transfer Codings</em></h1>
+<p>传输编码用来实现载荷体在网络中 <strong>“安全传输”</strong>。</p>
+<p>传输编码是报文的性质，区别于载荷中数据的表现格式的性质。</p>
+<p>传输编码的名称是大小写敏感且在HTTP Transfer Coding registry注册的。</p>
+<h2 id="41-分块传输编码-chunked-transfer-coding">4.1 分块传输编码 <em>Chunked Transfer Coding</em></h2>
+<p><strong>分块传输编码</strong> 用于将载荷转换为一系列数据块。</p>
+<p>整个数据块序列由若干普通块（<code>chunk</code>）、
+最终块（<code>last-chunk</code>）、
+可选的尾部部分（<code>trailer-part</code>）和表示结束的空行构成。</p>
+<p>普通块开头是表示该块大小的<code>chunk-size</code>，
+随后可能存在表示附加信息的<code>chunk-ext</code>，
+换行之后就是该块承载的数据<code>chunk-data</code>。</p>
+<h3 id="411-附加信息-chunk-ext">4.1.1 附加信息 <code>chunk-ext</code></h3>
+<p>每个块在块大小之后都可能有任何数量的附加信息，
+用来表示：</p>
+<ul>
+<li>每个块的元数据，如摘要或哈希</li>
+<li>mid-message control information</li>
+<li>randomization of message body size</li>
+</ul>
+<h3 id="412-分块的追加部分-chunked-trailer-part">4.1.2 分块的追加部分 <em>Chunked Trailer Part</em></h3>
+<p><strong>追加部分</strong>给分块消息的发送者提供了发送在发送分块信息的过程中生成的数据的能力。</p>
+<p>格式上，追加部分由若干字段构成；
+除了所处的位置不同，追加部分的字段与首部字段完全一致。</p>
+<p>当接受者接受到了非空的追加部分数据时，
+MAY按照“将这些字段放置在报文首部的最后”来处理。</p>
+<p>出于安全考虑，接受者MUST忽略不允许出现在<strong>追加部分</strong>中的首部字段。</p>
+<p>除非必要情况或客户端暗示<strong>追加部分</strong>是可接受的，
+服务端SHOULD NOT生成<strong>追加部分</strong>。
+如果客户端没有明确声明支持，
+<strong>追加部分</strong>可能会被链路上的环节静默丢弃。
+这允许中间件将分块的报文，在没有缓冲整个响应时，转换为非分块的报文。</p>
+<h3 id="413-解码分块">4.1.3 解码分块</h3>
+<p>解码被分块的报文：</p>
+<ol>
+<li>
+<p>一个循环，直到所有的块被读取完毕。</p>
+<p>读取该块的大小<code>chunk-size</code>。
+根据大小读取数据放到缓冲区中，
+增加数据的总长度。</p>
+</li>
+<li>
+<p>尝试读取追加部分。</p>
+<p>如果存在，将追加部分中的字段追加到已有的首部字段后。</p>
+</li>
+<li>
+<p>设置<code>Content-Length</code>为数据的总长度。</p>
+</li>
+<li>
+<p>从<code>Transfer-Encoding</code>移除<code>chunked</code>标记。</p>
+</li>
+</ol>
+<h2 id="42-压缩编码">4.2 压缩编码</h2>
+<p>用来压缩载荷。</p>
+<h3 id="421-compress-coding">4.2.1 Compress Coding</h3>
+<p>一种兼容LZW <em>(Lempel-Ziv-Welch)</em> 的压缩编码。</p>
+<h3 id="422-deflate-coding">4.2.2 Deflate Coding</h3>
+<p>一种压缩编码。</p>
+<h3 id="423-gzip-coding">4.2.3 Gzip Coding</h3>
+<p>一种压缩编码。</p>
+<h2 id="43-te">4.3 TE</h2>
+<p><strong>TE</strong> 首部字段在请求中表示客户端期望的传输编码，
+和是否希望在分块编码传输中接受追加字段。
+字段的内容为逗号分割的编码名称和关键字<code>trailers</code>。</p>
+<h2 id="44-trailer">4.4 Trailer</h2>
+<p>对于有追加字段的响应，
+发送者SHOULD在首部字段中增加<strong>Trailer</strong>字段，
+表明追加字段中有哪些字段。</p>
+<p>这项信息可以帮助接受者在解析报文时进行需要的工作。</p>
+<h1 id="5-报文路由-message-routing">5 报文路由 Message Routing</h1>
+<p>HTTP请求报文的路由选择由客户端决定，
+如下信息会影响这个决定：</p>
+<ul>
+<li>目标资源</li>
+<li>客户端的代理配置</li>
+<li>建立新的链接或复用inbound链接</li>
+</ul>
+<p>对应该请求的响应报文的路由会按照请求的链路原路返回。</p>
+<h2 id="51-区分出目标资源">5.1 区分出目标资源</h2>
+<p>HTTP链接由用户代理按照若干目的来初始化。
+目的是请求语义和需要执行语义的目标资源的组合。</p>
+<p>URI是一种区分目标资源的标识符。</p>
+<h2 id="52-建立到服务器的链接">5.2 建立到服务器的链接</h2>
+<p>根据URI定位到目标资源后，
+客户端需要判断是否需要一个网络请求来完成语义，
+以及该请求需要发送到哪里。</p>
+<p>如果存在能满足目的的缓存，通常，请求会被发送到缓存。</p>
+<p>否则，客户端会检查是否有代理能够满足这个请求。
+如果有的话，会建立或复用到代理的链接。</p>
+<p>最后，其他方式都无法满足，
+客户端会根据协议（比如HTTP或HTTPS）尝试直接连接到目标资源。</p>
+<h2 id="53-请求目标-request-target">5.3 请求目标 Request Target</h2>
+<p>当到服务器的链接建立完成之后，
+客户端发送一个包含了<code>request-target</code>的HTTP请求报文。</p>
+<p><code>request-target</code>根据请求的方法和请求是否通过代理有四种不同的格式：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-plain" data-lang="plain"><span class="line"><span class="cl">request-target = origin-form
+</span></span><span class="line"><span class="cl">    / absolute-form
+</span></span><span class="line"><span class="cl">    / authority-form
+</span></span><span class="line"><span class="cl">    / asterisk-form
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="531-origin-form">5.3.1 origin-form</h3>
+<p><code>origin-form    = absolute-path [ &quot;?&quot; query ]</code></p>
+<p><code>origin-form</code>是最常用的<code>request-target</code>格式。
+当客户端直接向目标服务器发送请求时，
+除了CONNECT请求或server-wide OPTIONS请求，
+MUST发送URI的绝对路径和query部分作为<code>request-target</code>，
+也就是<code>origin-form</code>格式。</p>
+<h3 id="532-absolute-form">5.3.2 absolute-form</h3>
+<p>用于向proxy发送的请求。</p>
+<p><code>absolute-form  = absolute-URI</code></p>
+<p>但是这里有个问题，缺少query如何正确的查询？</p>
+<h3 id="533-authority-form">5.3.3 authority-form</h3>
+<p>用于CONNECT请求。</p>
+<p><code>authority-form = authority</code></p>
+<h3 id="534-asterisk-form">5.3.4 asterisk-form</h3>
+<p>用于server-wide OPTIONS请求。</p>
+<p><code>asterisk-form  = &quot;*&quot;</code></p>
+<p>当客户端希望向整个服务端的资源发送OPTIONS请求时，
+会使用asterisk-form作为<code>request-target</code>。</p>
+<h2 id="54-host">5.4 Host</h2>
+<p>请求中的Host首部字段提供了目标URI的host和端口信息，
+这为在一个ip上部署的服务端程序提供了区分多个主机名称的能力。</p>
+<p>客户端MUST发送Host首部字段。</p>
+<p>代理接受到一个<code>absolute-form</code>格式的请求时，
+MUST忽略请求中的Host首部字段，
+并由<code>request-target</code>中的主机信息替代。</p>
+<p>由于Host首部字段被当作应用级别的路由机制，
+经常会有针对Host首部字段的攻击，
+如污染缓存、重定向到非预期的服务器。</p>
+<p>服务端MUST针对缺少Host首部字段、多个首部字段或非法Host字段值的请求返回400错误。</p>
+<h2 id="55-有效的请求uri">5.5 有效的请求URI</h2>
+<p>属实没弄明白是干啥的。</p>
+<h2 id="56-将响应关联到请求上">5.6 将响应关联到请求上</h2>
+<p>由于HTTP请求没有特定的字段等标识符将请求于响应关联起来，
+所以对于同一个链接上的请求，
+完全依赖发送请求的顺序和响应发送回客户端的顺序来匹配请求和响应。</p>
+<p>客户端MUST维持好这个机制。</p>
+<h2 id="57-报文转发">5.7 报文转发</h2>
+<p>除隧道类型的中间件，
+其他中间件MUST实现<code>Connection</code>的首部字段，
+并排除只用于incoming connection的字段。</p>
+<p>中间件MUST NOT转发发送给自己的报文，
+除非不会陷入无限循环的情况。</p>
+<h3 id="571-via字段">5.7.1 Via字段</h3>
+<p><code>Via</code>首部字段存储了用户代理到服务器之间的中间件协议 <em>（intermediate protocols）</em> 和收件人 <em>（recipients）</em> 。</p>
+<p><code>Via</code>字段用来主从转发避免循环，
+和识别在请求响应链中的发送者的协议能力 <em>（protocol capabilities）</em> 。</p>
+<p><code>Via</code>可能存在多个值，
+分别代表了整个链条中转发过这个请求的代理或网关。
+每个中间件都会追加“如何收到此报文”的信息到其中。</p>
+<p><code>Via</code>中的一项由接受的协议 <em>（received-protocol）</em>、
+标识当前接受者信息的 <em>（received-by）</em> 以及可选的备注构成。
+<strong>received-by</strong>由<code>uri-host:port/token</code>构成。</p>
+<p>代理MUST生成并发送适当的<code>Via</code>字段。
+HTTP到HTTP网关MUST为流向服务器的请求报文生成并发送适当的<code>Via</code>字段，
+MAY为响应生成并发送<code>Via</code>。</p>
+<p>对于每个中间件来说，<code>received-protocol</code>表明了上游发送者使用的协议以及版本。
+这些信息可以用来推断出哪些特性可以被安全的使用于响应或后续的请求中。</p>
+<p><code>received-by</code>部分通常是报文传输链条中的接受者的IP与PORT。</p>
+<p>发送者MAY为自己的<code>Via</code>记录生成备注，
+可以用来区分接受者的软件类型，
+作用类似于<code>User-Agent</code>和<code>Server</code>字段。</p>
+<p>对于连接防火墙内外的中间件，
+SHOULD NOT将防火墙内的转发节点写入到<code>Via</code>字段中的<code>received-by</code>信息直接转发到外部，
+作为替代，需要将<code>received-by</code>信息映射为代称 <em>（pseudonym）</em> 。</p>
+<h3 id="572-transformations">5.7.2 Transformations</h3>
+<p>某些种类的中间件会在转发时将报文的载荷或内容做一些转换，
+比如，可能尝试转换图片的编码格式来减少缓存时占用的空间
+或减少与上下游传输的数据量。
+在传输需要校验摘要和或严肃情景，如医学图像或科学图像，时，
+会产生问题。</p>
+<p>然后这段确实没看懂是为了解决啥问题，
+列出了一些代理的一些处理原则。</p>
+<h1 id="6-链接管理">6 链接管理</h1>
+<p>HTTP报文传输与下层的传输层链接协议或会话层链接协议互相独立。
+HTTP假定下层的链接是能够按照顺序投递请求和接受响应完成可靠的传输的链接。</p>
+<p>根据5.2节，
+使用哪种链接协议由客户端的配置和目标URI决定的。</p>
+<p>实现HTTP的组件被期望参与到链接的管理工作中，
+包括维护当前链接的状态、
+建立新的链接或重用已存在的链接、
+处理链接上接受到的报文、
+检测链接错误、
+关闭（不再需要的）链接。
+绝大多数客户端维护并行的多个链接，
+其中也存在多个链接连接到同一个服务器的情况。
+大多数服务器被设计为能够服务数千个并发的链接，
+能够很好的均衡这些链接的使用，
+并处理拒绝服务访问攻击。</p>
+<h2 id="61-connection首部字段">6.1 Connection首部字段</h2>
+<p>发送者使用<code>Connection</code>首部字段表明对于该链接的控制选项。
+出于避免下游接受者错误的理解<code>Connection</code>的原因，
+PROXY和GATEWAY在转发报文前MUST移除或者替换从上游接受到的报文的控制选项。</p>
+<p>发送者MUST将用于提供控制信息的首部字段列入<code>Connection</code>首部字段。
+类似于<code>Connection</code>，
+PROXY和GATEWAY在转发报文时，
+需要解析出这些提供控制信息的首部字段，
+并移除或替换掉。</p>
+<p>这种机制为链接管理提供了声明式的控制逐跳的链接的能力，
+又因为有自明性，可以较容易的加入新的控制选项。</p>
+<p><code>Connection</code>字段值中，
+除了首部字段名，
+还有可能是<code>close</code>。
+<code>close</code>表明发送者在完成这一次请求响应之后，
+会关闭这个链接。</p>
+<p>不支持持久链接的客户端MUST要发送<code>close</code>。</p>
+<p>不支持持久链接的服务端除了响应报文是1XX类型时，MUST发送<code>close</code>。</p>
+<h2 id="62-建立">6.2 建立</h2>
+<p>链接的建立超出了本协议讨论的范围。</p>
+<h2 id="63-持久化链接">6.3 持久化链接</h2>
+<p>HTTP/1.1默认使用持久化链接，
+这允许多个请求和响应在一个链接上传输。</p>
+<p>HTTP/1.1及之后的版本的实现SHOULD支持持久化链接。</p>
+<p>接受者判断该链接是否是持久化链接根据如下的原则：</p>
+<ol>
+<li>如果设置了<code>close</code>选项，那么这个链接不是持久化链接。</li>
+<li>如果版本是HTTP/1.1或之后的版本，那么认为是持久化的。</li>
+<li>如果版本是1.0，且设置了<code>keep-alive</code>选项，且接受者不是proxy，且支持<code>keep-alive</code>机制，那么认为是持久化的。</li>
+<li>否则，认为不是持久化的。</li>
+</ol>
+<p>客户端MAY向持久化链接追加请求，直到发送或接受到<code>close</code>的报文或没有<code>keep-alive</code>的1.0版本的报文。</p>
+<p>为了实现链接的持久化，所有传输的报文一定要有定义好的长度，
+而不是依赖链接的关闭作为报文结束的标志。
+服务端MUST读取完每个请求或在完成发送该响应之后就关闭链接，
+这可以避免因为残余的请求报文影响下个报文的解析。
+相似的，客户端也要完成这样的工作。</p>
+<p>代理MUST NOT与1.0版本的客户端维持持久化链接。</p>
+<h3 id="631-重试请求">6.3.1 重试请求</h3>
+<p>设定上，HTTP请求的链接可能在任何时候计划或意外的中断。
+HTTP的实现需要兼容这种情况，
+拥有从意外关闭中恢复的能力。</p>
+<p>当向源服务器的链接被提前的关闭了，
+客户端MAY重新开启一个新的链接并
+重新发送“幂等”的请求。</p>
+<p>关于 <strong>幂等的请求</strong> 更多的在RFC7231 4.2.2节。</p>
+<p>代理MUST NOT自动重试幂等的请求。</p>
+<p>除非</p>
+<ul>
+<li>已知道一个请求的语义是幂等的</li>
+<li>或探测到该请求没有生效</li>
+</ul>
+<p>用户代理MUST NOT自动重试 <strong>非幂等方法的请求</strong>。</p>
+<p>客户端SHOULD NOT自动重试失败的自动重试。</p>
+<h3 id="632-流水线-pipelining">6.3.2 流水线 pipelining</h3>
+<p>支持持久链接的客户端MAY流水线化多个请求。
+如果这些请求是 <strong>安全的方法</strong> 的请求，
+服务端MAY并行处理这些请求，
+返回结果的时候，
+服务端还是需要按照请求发送的顺序来返回响应。</p>
+<p>关于安全的方法更多的在RFC7231 4.2.1节。</p>
+<p>如果在接受到所有的请求之前链接被关闭，
+流水线化请求的客户端SHOULD重试服务端没有响应的请求。
+对于这种情况触发的用于重试的链接，
+客户端MUST NOT立即流水线化第一个没有接受到结果的请求，
+因为这个请求可能是导致上次链接中断的原因。</p>
+<p>在一个流水线中，
+用户代理SHOULD NOT在发送了一个非幂等方法的请求之后，
+再次追加请求，直到响应的状态码返回。
+除非用户代理能够从部分失败的情况中恢复。</p>
+<p>中间件MAY流水线化接受到的流水线化的inbound请求，
+请求的语义是否安全可以依赖用户代理来保证。
+如果与服务端方向的链接出现问题，
+中间件MAY重试发送拥有幂等方法的请求；
+对于非幂等方法的请求，
+SHOULD直接返回接收到的响应给客户端，
+然后关闭链接。
+恢复工作由用户代理完成。</p>
+<h2 id="64-并发">6.4 并发</h2>
+<p>客户端应该限制与同一个服务端的同时开启的链接的数量。</p>
+<p>本版本的协议不再给出一个绝对的数量限制，
+而是鼓励客户端在开启更多的链接时，保持谨慎。</p>
+<p>开启多个链接的一个典型场景是为了解决在单一链接上流水线化的请求
+可能会被一个处理或传输比较耗时的请求阻塞的问题。
+考虑到开启多个链接会消耗服务端与网络的资源，
+可能会在拥塞的网络条件下表现更差。</p>
+<p>服务端有可能会出于自身保护的目的来拒绝一些请求。</p>
+<h2 id="65-失败与超时">6.5 失败与超时</h2>
+<p>出于资源等的考虑，
+双方会设定一个超时时间，
+用于结束不活跃的链接。
+为了实现优雅的结束，
+HTTP的实现需要监听并处理每个开启的链接的关闭信号。</p>
+<p>服务端SHOULD在可能的情况下，
+尽力的维持有可能有新的数据传输过来的持久化的链接，
+并配置底层的传输流控机制来允许突发的负载。
+这是避免客户端为了传输数据开启新的链接，
+加剧网络的拥塞程度。</p>
+<p>客户端SHOULD监控数据的传输，
+当发现服务端想要关闭链接时，
+应及时的取消当前的请求，
+并关闭链接。</p>
+<h2 id="66-拆除-tear-down">6.6 拆除 Tear-down</h2>
+<p>当链接的任何一端希望关闭链接时，
+SHOULD在报文的Connection字段中写入<code>close</code>。</p>
+<p>客户端写入了<code>close</code>之后，
+MUST NOT再向同一个链接追加写入请求；
+MUST在接受到对应最后一个请求的响应报文时关闭链接。</p>
+<p>服务端接受到<code>close</code>时，
+MUST在发送完成对应于带有<code>close</code>的请求的响应报文时，
+开始将这个链接关闭。
+服务端SHOULD在最后的报文中携带<code>close</code>。
+服务端MUST NOT在这之后处理这个链接上的任何请求。</p>
+<p>服务端发送完（这里区别于接受是被动的）<code>close</code>后，
+MUST在发送完成后，开始将这个链接关闭。
+服务端MUST NOT在这之后处理这个链接上的任何请求。</p>
+<p>客户端接受到<code>close</code>之后，
+MUST取消正在这个链接上发送的请求，
+并在读取完带有<code>close</code>的响应报文之后，
+关闭这个链接。
+对于正在流水线中的请求，
+客户端SHOULD NOT假定它们会被处理。</p>
+<p>如果服务端忽视时机立即关闭一个TCP链接，
+有导致客户端无法读取到最后的响应的风险。
+考虑一个场景，
+客户端在接受到<code>close</code>响应之前，继续发送了一个报文，
+服务端此时已经关闭了这个TCP链接，
+会导致服务端向客户端发送一个reset报文，
+这会导致客户端未被应用层消费的HTTP报文被丢弃。</p>
+<p>为了避免这个问题，
+服务端关闭链接时需要按照一定的步骤。</p>
+<ol>
+<li>服务端首先进入半关闭状态，只关闭写入。</li>
+<li>服务端等待并读取报文，
+直到接受到客户端发来确认关闭的报文或服务端能够确认用户端已经消费到了最后的响应。</li>
+<li>关闭链接。</li>
+</ol>
+<h2 id="67-升级">6.7 升级</h2>
+<p><code>Upgrade</code>字段提供了一种简单机制用于实现在一个链接上将应用层协议从HTTP/1.1切换到其他协议。
+客户端MAY在<code>Upgrade</code>字段中传递希望切换到的协议列表，
+有先后顺序。
+服务端MAY忽略<code>Upgrade</code>字段，
+继续用当前协议进行传输。</p>
+<p>服务端在发送101（Switch Protocols）请求时，
+MUST发送<code>Upgrade</code>字段指出将要切换到的协议，
+如果有多层协议要切换，发送者MUST将协议按序排列。
+服务端MUST NOT切换到客户端没有在当前请求在<code>Upgrade</code>字段中指出的协议。
+服务端MAY忽略请求中的<code>Upgrade</code>顺序，
+转而因为其他因素来选择要切换到的协议。</p>
+<p>服务端发送一个426（Upgrade Required）响应时，
+MUST发送<code>Upgrade</code>字段来指明支持的协议，
+顺序反应服务端的偏好。</p>
+<p>服务端MAY在任何请求的响应中设置<code>Upgrade</code>字段，
+用于表明未来的请求可以使用这些协议。</p>
+<p>服务端决定切换协议之后，
+发送了一个101响应，然后可以直接发送新协议下对于原请求的响应。</p>
+<p>当发送一个<code>Upgrade</code>报文时，
+MUST将<code>Upgrade</code>字段包含到<code>Connection</code>字段中，
+这可以避免中间件将自己不支持的协议类型转发。</p>
+<p>客户端在“正在”传输一个请求时不能进行协议升级。
+服务端在接受到了一个同时设置了<code>Upgrade</code>和<code>Expect</code>首部字段的请求时，
+MUST先发送包含100（Continue）的响应，
+然后在发送101（Switching Protocols）的响应。</p>
+<p><code>Upgrade</code>首部字段只能用来切换该链接的顶层的协议，
+这意味着无法切换传输层协议或切换传输使用的链接。
+为了解决上述的场景，
+可以使用3xx（Redirection）报文来处理。</p>
+<h1 id="7-abnf-list-extension-rule">7 ABNF List Extension: #rule</h1>
+<p><code>#rule</code>在定义语法时用来当作“注释”性质，
+提高定义的可读性。</p>
+<h1 id="8-iana-considerations">8 IANA Considerations</h1>
+<p>向IANA注册信息的约定？</p>
+<h1 id="9-security-considerations">9 Security Considerations</h1>
+<p>关于HTTP报文的语法、解析和路由的安全考虑。
+关于语义和载荷的安全考虑在RFC7231。</p>
+<p>TODO</p>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc7230">rfc7230</a></li>
+</ul>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-07-22
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/http/">http</a>
+          <a href="/tags/rfc/">rfc</a>
+          <a href="/tags/memo/">memo</a>
+          <a href="/tags/http-1_1-rfc/">http-1_1-rfc</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/compile/compilers/golang-regex-execute/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">golang的regex实现 执行匹配</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/daily-problems/goland_unexpected_syntax_error/">
+            <span class="next-text nav-default">Goland异常提示语法错误</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2021-07-22 14:55:02 \u002b0800 \u002b0800',
+        title: 'RFC7230笔记',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

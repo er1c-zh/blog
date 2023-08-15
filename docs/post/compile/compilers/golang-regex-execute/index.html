@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>golang的regex实现 执行匹配 - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="本文是golang的正则表达式的学习笔记。
+主要介绍了在编译完成后，匹配的实现细节。
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/compile/compilers/golang-regex-execute/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="golang的regex实现 执行匹配" />
+<meta property="og:description" content="本文是golang的正则表达式的学习笔记。
+主要介绍了在编译完成后，匹配的实现细节。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/compile/compilers/golang-regex-execute/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-08-15T19:21:07+08:00" />
+<meta property="article:modified_time" content="2021-08-15T19:21:07+08:00" />
+<meta itemprop="name" content="golang的regex实现 执行匹配">
+<meta itemprop="description" content="本文是golang的正则表达式的学习笔记。
+主要介绍了在编译完成后，匹配的实现细节。"><meta itemprop="datePublished" content="2021-08-15T19:21:07+08:00" />
+<meta itemprop="dateModified" content="2021-08-15T19:21:07+08:00" />
+<meta itemprop="wordCount" content="2631">
+<meta itemprop="keywords" content="compilers-book,go,how," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="golang的regex实现 执行匹配"/>
+<meta name="twitter:description" content="本文是golang的正则表达式的学习笔记。
+主要介绍了在编译完成后，匹配的实现细节。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">golang的regex实现 执行匹配</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-15 </span>
+        
+          <span class="more-meta"> 约 2631 字 </span>
+          <span class="more-meta"> 预计阅读 6 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#最开始的">最开始的</a>
+      <ul>
+        <li><a href="#普通匹配">普通匹配</a>
+          <ul>
+            <li><a href="#machinematch"><code>machine.match</code></a></li>
+            <li><a href="#machineadd"><code>machine.add</code></a></li>
+            <li><a href="#machinestep"><code>machine.step</code></a></li>
+          </ul>
+        </li>
+        <li><a href="#一趟匹配">一趟匹配</a></li>
+        <li><a href="#回溯匹配">回溯匹配</a>
+          <ul>
+            <li><a href="#regexptrybacktrackb-bitstate-i-input-pc-uint32-pos-int-bool"><code>Regexp.tryBacktrack(b *bitState, i input, pc uint32, pos int) bool</code></a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#参考">参考</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p>本文是golang的正则表达式的学习笔记。</p>
+<p>主要介绍了在编译完成后，匹配的实现细节。</p>
+<p><em>基于golang 1.16</em></p>
+
+
+
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+            
+                <div class="serial-index">
+                    <p>系列列表</p>
+                    <ul>
+                    
+                        <li><a href="https://blog.er1c.dev/post/compile/compilers/1/">编译原理 第一章 笔记</a></li>
+                    
+                        <li><a href="https://blog.er1c.dev/post/compile/compilers/2/">编译原理 第二章 笔记</a></li>
+                    
+                        <li><a href="https://blog.er1c.dev/post/compile/compilers/golang-regex/">golang的regex实现 编译</a></li>
+                    
+                        <li><a href="https://blog.er1c.dev/post/compile/compilers/golang-regex-execute/">golang的regex实现 执行匹配</a></li>
+                    
+                    </ul>
+                </div>
+            
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+
+
+<h1 id="最开始的">最开始的</h1>
+<p>在编译完成后，用户持有一个<code>regexp.Regexp</code>对象。</p>
+<p>经过层层包装，
+最后执行的函数是<code>doExecute</code>方法。
+首先是检查是否可以一趟匹配来完成，
+如果可以会调用<code>Regexp.doOnePass</code>来进行一趟匹配。
+否则，会尝试利用<code>Regexp.backtrack</code>进行回溯匹配。
+如果以上都不可以，最后，会尝试利用自动机形式进行匹配。</p>
+<p>考虑到最后的匹配更为通用，
+首先分析的是普通的匹配，
+然后分析一趟匹配与回溯匹配。</p>
+<h2 id="普通匹配">普通匹配</h2>
+<p>如果以上的两种特别情况都不满足，
+就会进行普通匹配。</p>
+<p>实现的思路是构建一个自动机来执行编译好的匹配程序。
+自动机维护若干“进程”，每次从输入消费一个字符，迭代进程，
+并创建从当前位置开始匹配的一个“进程”。</p>
+<p>首先通过<code>Regexp.get</code>来获得一个自动机<code>machine</code>，
+随后初始化。</p>
+<p>通过<code>machine.match</code>来执行匹配。</p>
+<h3 id="machinematch"><code>machine.match</code></h3>
+<p>首先分析运行的状态、环境与变量。
+自动机拥有两个队列，
+用来交换作为当前处理的队列<code>runq</code>和下次要执行的队列<code>nextq</code>。
+<code>pos</code>表示下一个处理的字符的下标。
+<code>width</code>表示本轮处理的字符的宽度。
+<code>r</code>表示本轮处理的字符。</p>
+<p><code>match</code>方法逻辑比较清晰，
+首先初始化了若干变量，
+执行一些fast-path的处理，如需要从开头匹配，但<code>pos</code>已经不再开头这种情况。</p>
+<p>随后在循环中分别调用
+<code>machine.add</code>创建从<code>pos</code>开始匹配的“进程”
+和<code>machine.step</code>来推进队列中的进程处理当前字符<code>r</code>。</p>
+<p>检查如果匹配到了输入的结尾，跳出循环。
+否则迭代入下一轮处理，更新下标、待处理的字符<code>r</code>、宽度<code>width</code>，以及交换两个队列。</p>
+<p>最后返回<code>machine.matched</code>作为匹配的结果。</p>
+<h3 id="machineadd"><code>machine.add</code></h3>
+<p><code>add</code>会尝试向传入的任务队列中增加一组在不额外匹配字符的情况下可以执行到的指令。</p>
+<p><code>func (m *machine) add(q *queue, pc uint32, pos int, cap []int, cond *lazyFlag, t *thread) *thread</code></p>
+<p>函数接受很多参数：</p>
+<ul>
+<li>要加入的队列<code>q</code>。</li>
+<li>指令下标<code>pc</code>。</li>
+<li>当前匹配到的位置<code>pos</code>，用于递归增加进程时检查到捕获组等情况来标记位置。</li>
+<li><code>cap</code></li>
+<li><code>cond</code></li>
+<li><code>t</code> 如果有已经创建好的<code>thread</code>对象，会传入来复用。</li>
+</ul>
+<p>返回值的<code>thread</code>对象如果不为nil，表示没有被复用，
+比如在<code>step</code>调用<code>add</code>时，如果<code>thread</code>没有被复用，会在该轮执行结束后被回收。</p>
+<p>首先检查任务队列中是否已经拥有了指向当前指令的任务，
+如果有，直接返回。</p>
+<p>然后向队列中增加一个新建的、表示任务的<code>entry</code>对象。
+根据指令的类型：</p>
+<ul>
+<li>
+<p>如果遇到了<code>InstAlt</code>/<code>InstEmptyWidth</code>等不需要额外消费字符的指令，
+更新指令下标<code>pc</code>重复这个过程，直到全部遇到了会消费字符的指令。</p>
+</li>
+<li>
+<p>如果遇到了如<code>InstRune</code>等会匹配字符的指令，
+需要时（比如还未新建一个<code>thread</code>）会新建一个<code>thread</code>对象，
+设置到<code>entry</code>中。</p>
+</li>
+</ul>
+<p>在一个任务队列<code>regexp.queue</code>对象中，
+可以通过<code>queue.dense[queue.sparse[pc]].t</code>
+来查找到当前执行到pc指向的指令的<code>thread</code>对象。</p>
+<h3 id="machinestep"><code>machine.step</code></h3>
+<p><code>step</code>遍历<code>runq</code>队列中的所有任务，
+执行匹配，并将可能的任务放入到下一轮的任务队列<code>nextq</code>中。</p>
+<p><code>func (m *machine) step(runq, nextq *queue, pos, nextPos int, c rune, nextCond *lazyFlag)</code></p>
+<ul>
+<li>当前任务队列<code>runq</code>和下一轮任务队列<code>nextq</code>。</li>
+<li>本轮处理的字符<code>c</code>，在输入中的下标<code>pos</code>以及下一轮处理的字符的下标<code>nextPos</code>。</li>
+<li><code>nextCond</code></li>
+</ul>
+<p><code>step</code>遍历<code>runq.dense</code>中的每个<code>entry</code>。
+根据该任务的指令的类型，
+利用不同的匹配方式，
+如<code>InstRune</code>会调用<code>syntax.Inst.MatchRune</code>而
+<code>InstRune1</code>会直接<code>c == i.Rune[0]</code>比较，
+检查该任务是否能匹配该轮要处理的字符，
+如果可以，那么调用<code>machine.add</code>来将下一轮需要执行的指令推入<code>nextq</code>中。</p>
+<p>如果遇到了<code>InstMatch</code>指令，
+表示匹配完成，
+存储匹配的结果，
+并将<code>machine.matched</code>改为<code>true</code>。</p>
+<h2 id="一趟匹配">一趟匹配</h2>
+<p>编译好的正则表达式是否支持一趟匹配由<code>Regexp.onepass</code>为空来控制。</p>
+<p>编译过程上一篇文章已经简单分析了，
+匹配过程由<code>Regexp.doOnePass</code>来完成。</p>
+<p>根据上篇文章的分析，
+我们知道重新改写之后的<code>Regexp.onepass</code>中可以进行较为 <strong>“固定的”</strong> 的匹配，
+所以实现上比较简单。</p>
+<p><code>Regexp.doOnePass</code>核心逻辑由一个循环来实现，
+因为“一趟”的特性，
+所以可以简单的顺序的匹配即可。</p>
+<p>与普通匹配相比，匹配字符、捕获、匹配完成等十分类似，
+区别主要是<code>InstAlt</code>的分支指令的匹配。</p>
+<p><code>pc = int(onePassNext(&amp;inst, r))</code>会根据<code>lookahead</code>的<code>r</code>来判断下一步要执行的指令。</p>
+<p>根据生成的表示要匹配的备选字符参数结构，
+首先会进行一些快速检测，
+随后二分查找是否匹配与对应的下一步指令。</p>
+<h2 id="回溯匹配">回溯匹配</h2>
+<p>回溯匹配时，
+如果是锚定了开始的位置，
+会从对应的位置开始一个任务，
+反之，会遍历输入流，依次开始匹配。</p>
+<p>每依次匹配由<code>Regexp.tryBacktrack</code>具体的执行，
+每次调用会在一组输入偏移量和指令下标开始一次回溯匹配。</p>
+<h3 id="regexptrybacktrackb-bitstate-i-input-pc-uint32-pos-int-bool"><code>Regexp.tryBacktrack(b *bitState, i input, pc uint32, pos int) bool</code></h3>
+<p><code>tryBacktrack</code>是回溯匹配的具体实现，
+函数接受四个参数：</p>
+<ul>
+<li><code>b</code> 回溯过程中的上下文</li>
+<li><code>i</code> 输入字符流</li>
+<li><code>pc</code> 指令的位置</li>
+<li>从输入的<code>pos</code>开始匹配</li>
+</ul>
+<p>首先向<code>bitState.jobs</code>压入第一个任务，
+然后开始循环处理<code>jobs</code>。</p>
+<p>每次循环弹出一个任务进行处理，
+一个任务包括指令的下标<code>pc</code>，
+流中的位置<code>pos</code>，
+和参数<code>arg</code>。</p>
+<p>对于不会发生选择的情况，
+循环中会按照指令的语义进行匹配、捕获等操作，
+推动<code>pos</code>和<code>pc</code>。
+每次推进一步时，通过<code>bitState.shouldVisit</code>来计算
+<code>pos</code>与<code>pc</code>的组合是否访问过，
+如果已经访问，就不再继续，回溯到上一个分支节点；
+否则，继续推动。
+特别的，记录是否完成存储在<code>bitState.visited</code>数组中。
+数组每个值的每一位表示了一个<code>pos</code>和<code>pc</code>组合是否访问过，
+1表示访问过，反之没有，
+具体计算的方式是：</p>
+<ol>
+<li>计算出<code>pc * 字符流长度 + 字符流偏移量</code>作为组合的id</li>
+<li>计算<code>id/32</code>作为<code>bitState.visited</code>的定位到桶</li>
+<li>计算<code>id%32</code>作为上一步定位的桶的位数偏移量
+这样，就唯一的将<code>pos</code>和<code>pc</code>的组合定位到了一位上。</li>
+</ol>
+<p>对于<code>InstAlt</code>和<code>InstAltMatch</code>，
+会将一个分支压入<code>bitState.jobs</code>等待匹配失败时弹出进行处理，
+实现回溯。</p>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://swtch.com/~rsc/regexp/regexp2.html">Regular Expression Matching: the Virtual Machine Approach</a></li>
+</ul>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-15
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/compilers-book/">compilers-book</a>
+          <a href="/tags/go/">go</a>
+          <a href="/tags/how/">how</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/language/go/module/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">有关go module的一点点记录</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/http/rfc-7230-note/">
+            <span class="next-text nav-default">RFC7230笔记</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2021-08-15 19:21:07 \u002b0800 \u002b0800',
+        title: 'golang的regex实现 执行匹配',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

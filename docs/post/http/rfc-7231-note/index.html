@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>RFC7231笔记 - blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="er1c" /><meta name="description" content="本文根据RFC文档的章节划分记录相关笔记， 是HTTP/1.1定义的的第二篇， 内容主题是语义 (semantics) 和内容 (content) 。
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.117.0 with theme even" />
+
+
+<link rel="canonical" href="https://blog.er1c.dev/post/http/rfc-7231-note/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.6532b36b4f802eede75535222234030365d9a7234ae638b2fc807cbc3f8c6c38.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="RFC7231笔记" />
+<meta property="og:description" content="本文根据RFC文档的章节划分记录相关笔记，
+是HTTP/1.1定义的的第二篇，
+内容主题是语义 (semantics) 和内容 (content) 。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.er1c.dev/post/http/rfc-7231-note/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-10-28T23:06:56+08:00" />
+<meta property="article:modified_time" content="2022-10-28T23:06:56+08:00" />
+<meta itemprop="name" content="RFC7231笔记">
+<meta itemprop="description" content="本文根据RFC文档的章节划分记录相关笔记，
+是HTTP/1.1定义的的第二篇，
+内容主题是语义 (semantics) 和内容 (content) 。"><meta itemprop="datePublished" content="2022-10-28T23:06:56+08:00" />
+<meta itemprop="dateModified" content="2022-10-28T23:06:56+08:00" />
+<meta itemprop="wordCount" content="3441">
+<meta itemprop="keywords" content="http,rfc,memo,http-1_1-rfc," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="RFC7231笔记"/>
+<meta name="twitter:description" content="本文根据RFC文档的章节划分记录相关笔记，
+是HTTP/1.1定义的的第二篇，
+内容主题是语义 (semantics) 和内容 (content) 。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/memo/">
+        <li class="mobile-menu-item">备忘录</li>
+      </a><a href="/about-me/">
+        <li class="mobile-menu-item">about</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/memo/">备忘录</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about-me/">about</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">RFC7231笔记</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-10-28 </span>
+        
+          <span class="more-meta"> 约 3441 字 </span>
+          <span class="more-meta"> 预计阅读 7 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content always-active">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-简介">1 简介</a></li>
+    <li><a href="#2-资源">2 资源</a></li>
+    <li><a href="#3-表现-representations">3 表现 Representations</a>
+      <ul>
+        <li><a href="#31-表现元数据">3.1 表现元数据</a>
+          <ul>
+            <li><a href="#311-处理表现数据">3.1.1 处理表现数据</a></li>
+            <li><a href="#312-用于压缩或正确性-integrity-的编码">3.1.2 用于压缩或正确性 <em>(Integrity)</em> 的编码</a></li>
+            <li><a href="#313-audience-language">3.1.3 Audience Language</a></li>
+            <li><a href="#314-identification">3.1.4 Identification</a></li>
+          </ul>
+        </li>
+        <li><a href="#32-representation-data">3.2 Representation Data</a></li>
+        <li><a href="#33-负载的语义-payload-semantics">3.3 负载的语义 Payload Semantics</a></li>
+        <li><a href="#34-内容协商">3.4 内容协商</a>
+          <ul>
+            <li><a href="#341-主动协商">3.4.1 主动协商</a></li>
+            <li><a href="#342-被动协商">3.4.2 被动协商</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#4-请求方法">4 请求方法</a>
+      <ul>
+        <li><a href="#41-overview">4.1 Overview</a></li>
+        <li><a href="#42-通用方法属性">4.2 通用方法属性</a>
+          <ul>
+            <li><a href="#421-safe-methods">4.2.1 Safe Methods</a></li>
+            <li><a href="#422-幂等方法">4.2.2 幂等方法</a></li>
+            <li><a href="#423-缓存方法">4.2.3 缓存方法</a></li>
+          </ul>
+        </li>
+        <li><a href="#43-方法定义">4.3 方法定义</a>
+          <ul>
+            <li><a href="#431-get">4.3.1 GET</a></li>
+            <li><a href="#432-head">4.3.2 HEAD</a></li>
+            <li><a href="#433-post">4.3.3 POST</a></li>
+            <li><a href="#434-put">4.3.4 PUT</a></li>
+            <li><a href="#435-delete">4.3.5 DELETE</a></li>
+            <li><a href="#436-connect">4.3.6 CONNECT</a></li>
+            <li><a href="#437-options">4.3.7 OPTIONS</a></li>
+            <li><a href="#438-trace">4.3.8 TRACE</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#5-请求header">5 请求Header</a></li>
+    <li><a href="#6-响应状态码">6 响应状态码</a></li>
+    <li><a href="#7-响应-header-fields">7 响应 Header fields</a></li>
+    <li><a href="#参考">参考</a></li>
+  </ul>
+</nav>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      <p>本文根据RFC文档的章节划分记录相关笔记，
+是HTTP/1.1定义的的第二篇，
+内容主题是语义 <em>(semantics)</em> 和内容 <em>(content)</em> 。</p>
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+            
+                <div class="serial-index">
+                    <p>系列列表</p>
+                    <ul>
+                    
+                        <li><a href="https://blog.er1c.dev/post/http/rfc-7231-note/">RFC7231笔记</a></li>
+                    
+                        <li><a href="https://blog.er1c.dev/post/http/rfc-7230-note/">RFC7230笔记</a></li>
+                    
+                    </ul>
+                </div>
+            
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+        
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+
+
+<h1 id="1-简介">1 简介</h1>
+<p>所有的HTTP报文要么是请求报文要么是响应报文。
+服务端在链接上等待请求，
+解析接受到的报文，
+解释报文的语义，
+生成一个或多个响应报文来响应请求。
+客户端构建请求报文提出自己的期望，
+检测收到的响应是否满足需要，
+决定如何解释结果。</p>
+<p>HTTP提供了与资源交互的统一的接口，
+与类型、性质和实现无关。</p>
+<p>HTTP语义由请求方法来定义意图，
+可能由首部字段来扩充语义，
+状态码表明机器友好的的响应结果，
+响应的首部字段可能会包含其他的控制数据或资源元数据。</p>
+<h1 id="2-资源">2 资源</h1>
+<p>HTTP请求的目标被称作资源。
+协议不规定资源的属性，
+仅仅定义与资源交互的接口。
+资源由URI区分。</p>
+<p>客户端发送请求时，
+会将标识目标资源的URI按照RFC7230中的一个形式传入。
+服务端接收到请求时，
+重建有效的URI。</p>
+<p>一个HTTP的设计目标的是将资源描述符与请求的语义解耦，
+这通过请求方法和一些首部字段来实现。
+如果请求方法与URI定义的语义冲突，
+请求方法的语言更加优先。</p>
+<h1 id="3-表现-representations">3 表现 Representations</h1>
+<p>考虑到资源可以是任何形式的，
+和HTTP协议提供的接口像是定义了可以观察可操作资源的窗户，
+我们需要定义一个抽象的概念来描述资源的当前状态或需要（变成）的状态。
+这个抽象就是表现。</p>
+<p>根据HTTP协议的目标，
+表现是一种信息，
+满足：</p>
+<ul>
+<li>能反应资源的过去、现在或需要的状态</li>
+<li>格式可以容易的通过HTTP来传输</li>
+<li>包含元数据和需要表现的数据</li>
+</ul>
+<p>服务器有可能需要支持接受多种表现
+或生成多种表现，
+这个时候就需要服务器通过一些算法
+选出最适合请求的表现，
+这通常由内容协商机制来完成。
+选中的表现用来为evaluating conditional requests提供数据和元数据，
+和为GET请求的200或304响应构建载荷。</p>
+<h2 id="31-表现元数据">3.1 表现元数据</h2>
+<p>表现首部字段提供表现需要的元数据。
+当报文包含载荷体时，
+表现首部字段指明如何解析报文的载荷体中的表现数据。
+对于HEAD请求的响应报文来说，
+表现首部字段指明如何解析只有方法改为GET的请求的响应报文的载荷体中的表现数据。</p>
+<h3 id="311-处理表现数据">3.1.1 处理表现数据</h3>
+<h4 id="3111-media-type">3.1.1.1 Media Type</h4>
+<p>HTTP协议使用Internet media types在
+<code>Content-Type</code>字段和<code>Accept</code>字段中
+实现开放和可扩展的数据类型和类型协商机制。
+Media type定义了数据格式和多种处理数据的模型。</p>
+<p>Media Type形如<code>type &quot;/&quot; subtype *( OWS &quot;;&quot; OWS parameter )</code>，
+type、subtype和parameter的name大小写不敏感。
+parameter的value是否大小写敏感取决于parameter的语义。</p>
+<p>parameter的value是否有引号没有关系。</p>
+<h4 id="3112-charset">3.1.1.2 Charset</h4>
+<p><code>Charset</code>用于协商文本类型的表现的字符编码格式。</p>
+<p><code>Charset</code>的值大小写不敏感。</p>
+<h4 id="3113-规范化与文本默认格式">3.1.1.3 规范化与文本默认（格式？）</h4>
+<p>Internet media type在IANA注册时会有一个规范化的格式，
+为了在多种编码格式的系统中迁移。
+由于许多与与MIME相同的原因，
+HTTP使用规范化的格式来传输表现。</p>
+<p>与MIME不同的，
+HTTP允许文本类型的media使用CR或LF或CRLF作为换行符。</p>
+<h4 id="3114-multipart-types">3.1.1.4 Multipart Types</h4>
+<p>MIME提供了数种“多部分”的类型，
+将多个表现封装到同一个报文体中。
+所有的多部分类型拥有同样的语法，
+media type中有<code>boundary</code>参数 <em>（parameter）</em> 。</p>
+<p>发送者使用CRLF作为消息体多个部分的之间的换行。</p>
+<p>HTTP报文不使用<code>boundary</code>参数作为消息体长度。</p>
+<h4 id="3115-content-type">3.1.1.5 Content-Type</h4>
+<p><code>Content-Type</code>首部字段指明关联的表现的<strong>媒体类型</strong> <em>（media type）</em> 。
+媒体类型同时定义了数据格式和数据按照<code>Content-Encoding</code>解码后应该如何被接受者处理。</p>
+<p>发送者发送带有载荷体的报文
+SHOULD生成<code>Content-Type</code>字段，
+除非发送者自己不知道。
+如果接收到缺失<code>Content-Type</code>字段的报文，
+接受者MAY假定是<code>application/octet-stream</code>类型，
+或通过测试数据来决定类型。</p>
+<p>实践中，资源的提供方，服务器，不总是能正确的设置<code>Content-Type</code>，
+所以客户端有时会覆盖收到的报文中的<code>Content-Type</code>字段，
+这会导致安全上的风险和其他的问题，如一种数据能满足多种<code>Content-Type</code>。</p>
+<h3 id="312-用于压缩或正确性-integrity-的编码">3.1.2 用于压缩或正确性 <em>(Integrity)</em> 的编码</h3>
+<h4 id="3121-content-codings">3.1.2.1 Content Codings</h4>
+<p><code>Content coding</code>的值指出表现可以或已经被应用的转换编码。
+通常，被编码过的表现只会在最后的接收者处解开。</p>
+<p><code>content-coding</code>的值大小写不敏感，
+且应该是被注册的。</p>
+<p><code>content-coding</code>被用于<code>Accept-Encoding</code>字段
+和<code>Content-Encoding</code>字段。</p>
+<p>RFC7230定义了三个<code>content-coding</code>：</p>
+<ul>
+<li><code>compress</code> <code>x-compress</code></li>
+<li><code>deflate</code></li>
+<li><code>gzip</code> <code>x-gzip</code></li>
+</ul>
+<h4 id="3122-content-encoding">3.1.2.2 <code>Content-Encoding</code></h4>
+<p><code>Content-Encoding</code>指明表现已经应用的编码 <em>(content encoding)</em> ，
+在按照<code>Content-Type</code>指明的媒体类型处理之前，
+需要按照<code>Content-Encoding</code>解码。</p>
+<p>可以连续应用多种编码，
+发送者MUST将多种编码按照应用的顺序写入<code>Content-Encoding</code>中。</p>
+<p>区别于<code>Transfer-Encoding</code>，
+<code>Content-Encoding</code>是表现的属性。</p>
+<h3 id="313-audience-language">3.1.3 Audience Language</h3>
+<h3 id="314-identification">3.1.4 Identification</h3>
+<h2 id="32-representation-data">3.2 Representation Data</h2>
+<p>表现用的数据要么放置在payload中，或者通过message语义和提供的URI来定位。</p>
+<h2 id="33-负载的语义-payload-semantics">3.3 负载的语义 Payload Semantics</h2>
+<p>在请求中，payload的语义由方法决定。（PUT/POST/etc）</p>
+<p>在响应中，payload的语义由方法和响应的状态码共同决定。</p>
+<h2 id="34-内容协商">3.4 内容协商</h2>
+<p>对于同一个资源，
+不同的设备或者用户，
+可能有不同的最佳展现形式。
+因此，HTTP协议提供了内容协商机制。</p>
+<p>内容协商机制有两种形式：</p>
+<ul>
+<li><code>proactive</code> server根据请求的header等信息来做出选择。</li>
+<li><code>reactive</code> server提供一个展示信息的列表，由user agent来选择。</li>
+</ul>
+<h3 id="341-主动协商">3.4.1 主动协商</h3>
+<h3 id="342-被动协商">3.4.2 被动协商</h3>
+<h1 id="4-请求方法">4 请求方法</h1>
+<h2 id="41-overview">4.1 Overview</h2>
+<p>request method表明了这个请求希望是什么含义。</p>
+<p>大小写敏感。</p>
+<pre tabindex="0"><code class="language-ditaa" data-lang="ditaa">ditaa
++---------+-------------------------------------------------+-------+
+| Method  | Description                                     | Sec.  |
++---------+-------------------------------------------------+-------+
+| GET     | Transfer a current representation of the target | 4.3.1 |
+|         | resource.                                       |       |
+| HEAD    | Same as GET, but only transfer the status line  | 4.3.2 |
+|         | and header section.                             |       |
+| POST    | Perform resource-specific processing on the     | 4.3.3 |
+|         | request payload.                                |       |
+| PUT     | Replace all current representations of the      | 4.3.4 |
+|         | target resource with the request payload.       |       |
+| DELETE  | Remove all current representations of the       | 4.3.5 |
+|         | target resource.                                |       |
+| CONNECT | Establish a tunnel to the server identified by  | 4.3.6 |
+|         | the target resource.                            |       |
+| OPTIONS | Describe the communication options for the      | 4.3.7 |
+|         | target resource.                                |       |
+| TRACE   | Perform a message loop-back test along the path | 4.3.8 |
+|         | to the target resource.                         |       |
++---------+-------------------------------------------------+-------+
+</code></pre><p>其他方法会在<a href="https://www.iana.org/assignments/http-methods/http-methods.xhtml">IANA</a>注册。</p>
+<p>如果server不支持某个方法，那么SHOULD返回501；
+如果server不允许某个方法，那么SHOULD返回405。</p>
+<h2 id="42-通用方法属性">4.2 通用方法属性</h2>
+<h3 id="421-safe-methods">4.2.1 Safe Methods</h3>
+<p>如果方法的语义是只读的，那么称方法为safe的。</p>
+<p>GET HEAD OPTIONS TRACE 是安全的。</p>
+<p>区分是否安全的目的是消除爬虫或者缓存 pre-fetching 的顾虑。
+另外，也允许user-agent针对潜在的风险作出限制。</p>
+<p>资源的拥有者有义务来保证action和方法语义保持一致。</p>
+<h3 id="422-幂等方法">4.2.2 幂等方法</h3>
+<p>PUT DELETE 和 safe 方法是幂等方法。</p>
+<h3 id="423-缓存方法">4.2.3 缓存方法</h3>
+<p>如果一个方法是cacheable的，表明了响应可以被缓存和再次使用。</p>
+<p>不依赖当前状态或者鉴权的安全方法的响应市可缓存的。
+GET HEAD POST是可缓存的。</p>
+<h2 id="43-方法定义">4.3 方法定义</h2>
+<h3 id="431-get">4.3.1 GET</h3>
+<h3 id="432-head">4.3.2 HEAD</h3>
+<h3 id="433-post">4.3.3 POST</h3>
+<h3 id="434-put">4.3.4 PUT</h3>
+<h3 id="435-delete">4.3.5 DELETE</h3>
+<h3 id="436-connect">4.3.6 CONNECT</h3>
+<p>CONNECT方法表明，
+接收到这个方法请求的组件，需要建立一个tunnel到request-target指定的目标server。
+接受者可以选择直接建立链接或者将connect转发到另一个server。</p>
+<h3 id="437-options">4.3.7 OPTIONS</h3>
+<h3 id="438-trace">4.3.8 TRACE</h3>
+<h1 id="5-请求header">5 请求Header</h1>
+<p>TBD</p>
+<h1 id="6-响应状态码">6 响应状态码</h1>
+<ul>
+<li>1xx Informational: 请求被接受到，继续处理。</li>
+<li>2xx Successful: 请求成功的收到、理解、接收。</li>
+<li>3xx Redirection: 需要完成更多的操作来完成请求。</li>
+<li>4xx Client Error: 请求有错误。</li>
+<li>5xx Server Error: 服务端生成响应失败。</li>
+</ul>
+<pre tabindex="0"><code class="language-ditaa" data-lang="ditaa">ditaa
++------+-------------------------------+--------------------------+
+| Code | Reason-Phrase                 | Defined in...            |
++------+-------------------------------+--------------------------+
+| 100  | Continue                      | Section 6.2.1            |
+| 101  | Switching Protocols           | Section 6.2.2            |
+| 200  | OK                            | Section 6.3.1            |
+| 201  | Created                       | Section 6.3.2            |
+| 202  | Accepted                      | Section 6.3.3            |
+| 203  | Non-Authoritative Information | Section 6.3.4            |
+| 204  | No Content                    | Section 6.3.5            |
+| 205  | Reset Content                 | Section 6.3.6            |
+| 206  | Partial Content               | Section 4.1 of [RFC7233] |
+| 300  | Multiple Choices              | Section 6.4.1            |
+| 301  | Moved Permanently             | Section 6.4.2            |
+| 302  | Found                         | Section 6.4.3            |
+| 303  | See Other                     | Section 6.4.4            |
+| 304  | Not Modified                  | Section 4.1 of [RFC7232] |
+| 305  | Use Proxy                     | Section 6.4.5            |
+| 307  | Temporary Redirect            | Section 6.4.7            |
+| 400  | Bad Request                   | Section 6.5.1            |
+| 401  | Unauthorized                  | Section 3.1 of [RFC7235] |
+| 402  | Payment Required              | Section 6.5.2            |
+| 403  | Forbidden                     | Section 6.5.3            |
+| 404  | Not Found                     | Section 6.5.4            |
+| 405  | Method Not Allowed            | Section 6.5.5            |
+| 406  | Not Acceptable                | Section 6.5.6            |
+| 407  | Proxy Authentication Required | Section 3.2 of [RFC7235] |
+| 408  | Request Timeout               | Section 6.5.7            |
+| 409  | Conflict                      | Section 6.5.8            |
+| 410  | Gone                          | Section 6.5.9            |
+| 411  | Length Required               | Section 6.5.10           |
+| 412  | Precondition Failed           | Section 4.2 of [RFC7232] |
+| 413  | Payload Too Large             | Section 6.5.11           |
+| 414  | URI Too Long                  | Section 6.5.12           |
+| 415  | Unsupported Media Type        | Section 6.5.13           |
+| 416  | Range Not Satisfiable         | Section 4.4 of [RFC7233] |
+| 417  | Expectation Failed            | Section 6.5.14           |
+| 426  | Upgrade Required              | Section 6.5.15           |
+| 500  | Internal Server Error         | Section 6.6.1            |
+| 501  | Not Implemented               | Section 6.6.2            |
+| 502  | Bad Gateway                   | Section 6.6.3            |
+| 503  | Service Unavailable           | Section 6.6.4            |
+| 504  | Gateway Timeout               | Section 6.6.5            |
+| 505  | HTTP Version Not Supported    | Section 6.6.6            |
++------+-------------------------------+--------------------------+
+</code></pre><h1 id="7-响应-header-fields">7 响应 Header fields</h1>
+<p>TBD</p>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc7231">rfc7231</a></li>
+</ul>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">er1c</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-10-28
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/http/">http</a>
+          <a href="/tags/rfc/">rfc</a>
+          <a href="/tags/memo/">memo</a>
+          <a href="/tags/http-1_1-rfc/">http-1_1-rfc</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/linux/permission/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">Linux用户权限</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/mq/kafka/implementation/">
+            <span class="next-text nav-default">kafka的实现</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-10-28 23:06:56 \u002b0800 \u002b0800',
+        title: 'RFC7231笔记',
+        clientID: '7db395cd884df491da26',
+        clientSecret: 'af86f1d50732b5ddd11fbea67da73c1d4c2880eb',
+        repo: 'blog',
+        owner: 'er1c-zh',
+        admin: ['er1c-zh'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:ericzhao96@hotmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/er1c-zh" class="iconfont icon-github" title="github"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2023
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">er1c</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/jmnote/plantuml-encoder@1.2.4/dist/plantuml-encoder.min.js" integrity="sha256-Qsk2KRBCN5qVZX7B+8+2IvQl1Aqc723qV1tBCQaVoqo=" crossorigin="anonymous"></script>
+<script>
+(function(){
+  let plantumlPrefix = "language-plantuml";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + plantumlPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/svg/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+  let ditaaPrefix = "language-ditaa";
+  Array.prototype.forEach.call(document.querySelectorAll("[class^=" + ditaaPrefix + "]"), function(code){
+    let image = document.createElement("IMG");
+    image.loading = 'lazy'; 
+    image.src = 'https://www.plantuml.com/plantuml/png/~1' + plantumlEncoder.encode(code.innerText);
+    code.parentNode.insertBefore(image, code);
+    code.style.display = 'none';
+  });
+})();
+</script>
+
+
+
+
+
+
+<script type="text/javascript" src="/js/main.min.1c70606d1b733282f06230615f5561b5894924b6f9930ba2ab99cf1254f75a1a.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: {equationNumbers: {autoNumber: "AMS"}},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"  integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-125096767-1', 'auto');
+	ga('set', 'anonymizeIp', true);
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>
